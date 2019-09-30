@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin/Release/magic.data.common.xml</DocumentationFile>
+    <DocumentationFile>bin/Release/netstandard2.0/magic.data.common.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
