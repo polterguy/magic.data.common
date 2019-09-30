@@ -8,7 +8,7 @@ These are the commonalities between the [magic.lambda.mysql](https://github.com/
 They also happen to be useful if you intend to implement your own data adapter for Magic, providing base class functionality for
 transforming a lambda object into a dialectic SQL statement, among other things.
 
-Not particularly interesting unless you intend to create your own magic data adapter.
+This project is not particularly interesting unless you intend to create your own magic data adapter.
 
 ## License
 
