@@ -4,7 +4,7 @@
 [![Build status](https://travis-ci.org/polterguy/magic.data.common.svg?master)](https://travis-ci.org/polterguy/magic.data.common)
 
 These are the commonalities between the [magic.lambda.mysql](https://github.com/polterguy/magic.lambda.mysql) and the 
-[magic.lambda.mssql](https://github.com/polterguy/magic.lambda.mssql) data adapters for [Magic](magic.lambda.mysql](https://github.com/polterguy/magic).
+[magic.lambda.mssql](https://github.com/polterguy/magic.lambda.mssql) data adapters for [Magic](https://github.com/polterguy/magic).
 They also happen to be useful if you intend to implement your own data adapter for Magic, providing base class functionality for
 transforming a lambda object into a dialectic SQL statement, among other things.
 
