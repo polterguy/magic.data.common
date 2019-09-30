@@ -12,12 +12,25 @@ using magic.signals.contracts;
 
 namespace magic.data.common
 {
+    /// <summary>
+    /// Specialised insert SQL builder, to create an insert SQL statement by semantically traversing an input node.
+    /// </summary>
     public abstract class SqlCreateBuilder : SqlBuilder
     {
+        /// <summary>
+        /// Creates an insert SQL statement
+        /// </summary>
+        /// <param name="node">Root node to generate your SQL from.</param>
+        /// <param name="signaler">Signaler to invoke slots.</param>
+        /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
         public SqlCreateBuilder(Node node, ISignaler signaler, string escapeChar)
             : base(node, signaler, escapeChar)
         { }
 
+        /// <summary>
+        /// Builds your insert SQL statement, and returns a structured SQL statement, plus any parameters.
+        /// </summary>
+        /// <returns>Node containing insert SQL as root node, and parameters as children.</returns>
         public override Node Build()
         {
             // Return value.
@@ -31,7 +44,7 @@ namespace magic.data.common
             GetTableName(builder);
 
             // Building insertion [values].
-            BuildValues(builder, result);
+            BuildValues(result, builder);
 
             // In case derived class wants to inject something here ...
             GetTail(builder);
@@ -43,7 +56,12 @@ namespace magic.data.common
 
         #region [ -- Protected helper methods -- ]
 
-        protected virtual void BuildValues(StringBuilder builder, Node result)
+        /// <summary>
+        /// Adds the 'values' parts of your SQL to the specified string builder.
+        /// </summary>
+        /// <param name="valuesNode">Current input node from where to start looking for semantic values parts.</param>
+        /// <param name="builder">String builder to put the results into.</param>
+        protected virtual void BuildValues(Node valuesNode, StringBuilder builder)
         {
             // Appending actual insertion values.
             var values = Root.Children.Where(x => x.Name == "values");
@@ -85,16 +103,25 @@ namespace magic.data.common
                 else
                 {
                     builder.Append("@" + idxNo);
-                    result.Add(new Node("@" + idxNo, idx.GetEx<object>()));
+                    valuesNode.Add(new Node("@" + idxNo, idx.GetEx<object>()));
                     ++idxNo;
                 }
             }
             builder.Append(")");
         }
 
+        /// <summary>
+        /// Returns the tail for your SQL statement, which by default is none.
+        /// </summary>
+        /// <param name="builder">Where to put your tail.</param>
         protected virtual void GetTail(StringBuilder builder)
         { }
 
+        /// <summary>
+        /// Adds "in between" parts to your SQL, which might include specialized SQL text, depending upon your adapter.
+        /// Default implementation adds nothing.
+        /// </summary>
+        /// <param name="builder">Where to put the resulting in between parts.</param>
         protected virtual void GetInBetween(StringBuilder builder)
         { }
 

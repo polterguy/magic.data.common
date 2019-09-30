@@ -12,12 +12,25 @@ using magic.signals.contracts;
 
 namespace magic.data.common
 {
-    public class SqlUpdateBuilder : SqlBuilder
+    /// <summary>
+    /// Specialised update SQL builder, to create a select SQL statement by semantically traversing an input node.
+    /// </summary>
+    public abstract class SqlUpdateBuilder : SqlBuilder
     {
+        /// <summary>
+        /// Creates an update SQL statement
+        /// </summary>
+        /// <param name="node">Root node to generate your SQL from.</param>
+        /// <param name="signaler">Signaler to invoke slots.</param>
+        /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
         public SqlUpdateBuilder(Node node, ISignaler signaler, string escapeChar)
             : base(node, signaler, escapeChar)
         { }
 
+        /// <summary>
+        /// Builds your update SQL statement, and returns a structured SQL statement, plus any parameters.
+        /// </summary>
+        /// <returns>Node containing update SQL as root node, and parameters as children.</returns>
         public override Node Build()
         {
             // Return value.

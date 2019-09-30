@@ -12,8 +12,17 @@ using magic.signals.contracts;
 
 namespace magic.data.common
 {
+    /// <summary>
+    /// Common base class for SQL generators, allowing you to generate SQL from a lambda object.
+    /// </summary>
     public abstract class SqlBuilder
     {
+        /// <summary>
+        /// Creates a new SQL builder.
+        /// </summary>
+        /// <param name="node">Root node to generate your SQL from.</param>
+        /// <param name="signaler">Signaler to invoke slots.</param>
+        /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
         public SqlBuilder(Node node, ISignaler signaler, string escapeChar)
         {
             Root = node ?? throw new ArgumentNullException(nameof(node));
@@ -21,18 +30,38 @@ namespace magic.data.common
             EscapeChar = escapeChar ?? throw new ArgumentNullException(nameof(escapeChar));
         }
 
+        /// <summary>
+        /// Builds your SQL statement, and returns a structured SQL statement, plus any parameters.
+        /// </summary>
+        /// <returns>Node containing SQL as root node, and parameters as children.</returns>
         public abstract Node Build();
 
+        /// <summary>
+        /// Signals to inherited class if this is a pure generate job, or if it should also evaluate the SQL command.
+        /// </summary>
         public bool IsGenerateOnly => Root.Children.FirstOrDefault(x => x.Name == "generate")?.Get<bool>() ?? false;
 
+        /// <summary>
+        /// Returns the escape character, which is normally for instance " or `
+        /// </summary>
         protected string EscapeChar { get; private set; }
 
         #region [ -- Protected helper methods and properties -- ]
 
+        /// <summary>
+        /// Root node from which the SQL generator is being evaluated towards.
+        /// </summary>
         protected Node Root { get; private set; }
 
+        /// <summary>
+        /// Signaler provided to CTOR during construction.
+        /// </summary>
         protected ISignaler Signaler { get; private set; }
 
+        /// <summary>
+        /// Securely adds the table name into the specified builder.
+        /// </summary>
+        /// <param name="builder">StringBuilder to append the table name into.</param>
         protected void GetTableName(StringBuilder builder)
         {
             builder.Append(EscapeChar);
@@ -46,7 +75,12 @@ namespace magic.data.common
             builder.Append(EscapeChar);
         }
 
-        protected void BuildWhere(Node result, StringBuilder builder)
+        /// <summary>
+        /// Builds the 'where' parts of the SQL statement.
+        /// </summary>
+        /// <param name="whereNode">Current input node from where to start looking for semantic where parts.</param>
+        /// <param name="builder">String builder to put the results into.</param>
+        protected void BuildWhere(Node whereNode, StringBuilder builder)
         {
             var where = Root.Children.Where(x => x.Name == "where");
             if (where.Count() > 1)
@@ -66,13 +100,13 @@ namespace magic.data.common
                     case "and":
                         if (levelNo != 0)
                             builder.Append(" and ");
-                        BuildWhereLevel(result, builder, idx, "and", ref levelNo);
+                        BuildWhereLevel(whereNode, builder, idx, "and", ref levelNo);
                         break;
 
                     case "or":
                         if (levelNo != 0)
                             builder.Append(" or ");
-                        BuildWhereLevel(result, builder, idx, "or", ref levelNo);
+                        BuildWhereLevel(whereNode, builder, idx, "or", ref levelNo);
                         break;
 
                     default:

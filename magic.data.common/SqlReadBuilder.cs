@@ -12,12 +12,25 @@ using magic.signals.contracts;
 
 namespace magic.data.common
 {
-    public class SqlReadBuilder : SqlBuilder
+    /// <summary>
+    /// Specialised select SQL builder, to create a select SQL statement by semantically traversing an input node.
+    /// </summary>
+    public abstract class SqlReadBuilder : SqlBuilder
     {
+        /// <summary>
+        /// Creates a select SQL statement
+        /// </summary>
+        /// <param name="node">Root node to generate your SQL from.</param>
+        /// <param name="signaler">Signaler to invoke slots.</param>
+        /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
         public SqlReadBuilder(Node node, ISignaler signaler, string escapeChar)
             : base(node, signaler, escapeChar)
         { }
 
+        /// <summary>
+        /// Builds your select SQL statement, and returns a structured SQL statement, plus any parameters.
+        /// </summary>
+        /// <returns>Node containing insert SQL as root node, and parameters as children.</returns>
         public override Node Build()
         {
             // Return value.
@@ -48,6 +61,10 @@ namespace magic.data.common
 
         #region [ -- Protected and virtual methods -- ]
 
+        /// <summary>
+        /// Adds limit and offset parts to your SQL if requested by caller.
+        /// </summary>
+        /// <param name="builder">Where to put the resulting SQL into.</param>
         protected virtual void GetTail(StringBuilder builder)
         {
             // Getting [order].
@@ -83,7 +100,11 @@ namespace magic.data.common
         }
 
 
-        protected void GetOrderBy(StringBuilder builder)
+        #endregion
+
+        #region [ -- Private helper methods -- ]
+
+        void GetOrderBy(StringBuilder builder)
         {
             var orderNodes = Root.Children.Where(x => x.Name == "order");
             if (orderNodes.Any())
@@ -111,10 +132,6 @@ namespace magic.data.common
                 }
             }
         }
-
-        #endregion
-
-        #region [ -- Private helper methods -- ]
 
         void GetColumns(StringBuilder builder)
         {
