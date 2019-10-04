@@ -3,15 +3,20 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>magic.data.common</PackageId>
+    <Authors>Thomas Hansen</Authors>
     <Company>Thomas Hansen</Company>
-    <Description>Commonalities for magic.lambda.mssql and mysql</Description>
     <Copyright>Thomas Hansen, thomas@gaiasoul.com</Copyright>
+    <Description>Commonalities for the magic.mysql and magic.mssql data adapters in magic.</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.data.common</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/polterguy/magic.data.common/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://polterguy.github.io/favicon.ico</PackageIconUrl>
-    <PackageReleaseNotes>First serious release</PackageReleaseNotes>
-    <Version>1.0.1</Version>
+    <PackOnBuild>true</PackOnBuild>
+    <PackageVersion>1.1.0</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/polterguy/magic.data.common.git</RepositoryUrl>
+    <PackageTags>sql, generator, data, db</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
