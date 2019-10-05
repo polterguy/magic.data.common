@@ -97,12 +97,11 @@ namespace magic.data.common
             }
         }
 
-
-        #endregion
-
-        #region [ -- Private helper methods -- ]
-
-        void GetOrderBy(StringBuilder builder)
+        /// <summary>
+        /// Appends the order by clause into builder.
+        /// </summary>
+        /// <param name="builder">Builder where clause should be appended.</param>
+        protected virtual void GetOrderBy(StringBuilder builder)
         {
             var orderNodes = Root.Children.Where(x => x.Name == "order");
             if (orderNodes.Any())
@@ -130,6 +129,10 @@ namespace magic.data.common
                 }
             }
         }
+
+        #endregion
+
+        #region [ -- Private helper methods -- ]
 
         void GetColumns(StringBuilder builder)
         {
