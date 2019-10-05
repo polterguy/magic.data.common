@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using magic.node;
 using magic.node.extensions;
-using magic.signals.contracts;
 
 namespace magic.data.common
 {
@@ -21,10 +20,9 @@ namespace magic.data.common
         /// Creates a select SQL statement
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
-        /// <param name="signaler">Signaler to invoke slots.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        public SqlReadBuilder(Node node, ISignaler signaler, string escapeChar)
-            : base(node, signaler, escapeChar)
+        public SqlReadBuilder(Node node, string escapeChar)
+            : base(node, escapeChar)
         { }
 
         /// <summary>

@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using magic.node;
 using magic.node.extensions;
-using magic.signals.contracts;
 
 namespace magic.data.common
 {
@@ -21,12 +20,10 @@ namespace magic.data.common
         /// Creates a new SQL builder.
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
-        /// <param name="signaler">Signaler to invoke slots.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        public SqlBuilder(Node node, ISignaler signaler, string escapeChar)
+        public SqlBuilder(Node node, string escapeChar)
         {
             Root = node ?? throw new ArgumentNullException(nameof(node));
-            Signaler = signaler ?? throw new ArgumentNullException(nameof(signaler));
             EscapeChar = escapeChar ?? throw new ArgumentNullException(nameof(escapeChar));
         }
 
@@ -52,11 +49,6 @@ namespace magic.data.common
         /// Root node from which the SQL generator is being evaluated towards.
         /// </summary>
         protected Node Root { get; private set; }
-
-        /// <summary>
-        /// Signaler provided to CTOR during construction.
-        /// </summary>
-        protected ISignaler Signaler { get; private set; }
 
         /// <summary>
         /// Securely adds the table name into the specified builder.
