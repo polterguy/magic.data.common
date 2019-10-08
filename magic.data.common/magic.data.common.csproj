@@ -26,6 +26,7 @@
   <ItemGroup>
     <PackageReference Include="magic.node" Version="1.1.2" />
     <PackageReference Include="magic.node.extensions" Version="1.1.2" />
+    <PackageReference Include="magic.signals" Version="1.1.6" />
   </ItemGroup>
 
 </Project>
