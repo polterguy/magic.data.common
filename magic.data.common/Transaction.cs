@@ -15,7 +15,6 @@ namespace magic.data.common
      /// </summary>
     public class Transaction : IDisposable
     {
-        readonly DbTransaction _transaction;
         bool _signaled;
 
         /// <summary>
@@ -25,8 +24,13 @@ namespace magic.data.common
         /// <param name="connection">Database connection.</param>
         public Transaction(ISignaler signaler, DbConnection connection)
         {
-            _transaction = connection.BeginTransaction();
+            Value = connection.BeginTransaction();
         }
+
+        /// <summary>
+        /// Returns actual DB transaction object.
+        /// </summary>
+        public DbTransaction Value { get; }
 
         /// <summary>
         /// Explicitly rolls back the transaction.
@@ -34,7 +38,7 @@ namespace magic.data.common
         public void Rollback()
         {
             _signaled = true;
-            _transaction.Rollback();
+            Value.Rollback();
         }
 
          /// <summary>
@@ -43,7 +47,7 @@ namespace magic.data.common
         public void Commit()
         {
             _signaled = true;
-            _transaction.Commit();
+            Value.Commit();
         }
 
         #region [ -- Interface implementation -- ]
@@ -54,7 +58,8 @@ namespace magic.data.common
         public void Dispose()
         {
             if (!_signaled)
-                _transaction.Rollback();
+                Value.Rollback();
+            Value.Dispose();
         }
 
         #endregion

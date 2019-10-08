@@ -27,11 +27,16 @@ namespace magic.data.common
         public static void Execute(
             Node input,
             DbConnection connection,
+            Transaction transaction,
             Action<DbCommand> functor)
         {
             // Making sure we dispose our command after execution.
             using (var cmd = connection.CreateCommand())
             {
+                // Associating transaction with command.
+                if (transaction != null)
+                    cmd.Transaction = transaction.Value;
+
                 // Parametrizing command.
                 PrepareCommand(cmd, input);
 
@@ -52,10 +57,15 @@ namespace magic.data.common
         public static async Task ExecuteAsync(
             Node input,
             DbConnection connection,
+            Transaction transaction,
             Func<DbCommand, Task> functor)
         {
             using (var cmd = connection.CreateCommand())
             {
+                // Associating transaction with command.
+                if (transaction != null)
+                    cmd.Transaction = transaction.Value;
+
                 // Parametrizing command.
                 PrepareCommand(cmd, input);
 
