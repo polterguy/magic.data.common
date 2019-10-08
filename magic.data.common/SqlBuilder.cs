@@ -85,15 +85,22 @@ namespace magic.data.common
         /// <param name="builder">StringBuilder to append the table name into.</param>
         protected void GetTableName(StringBuilder builder)
         {
-            builder.Append(EscapeChar);
-
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
                 throw new ApplicationException($"No table name supplied to '{GetType().FullName}'");
-            builder.Append(tableName.Replace(EscapeChar, EscapeChar + EscapeChar));
 
-            builder.Append(EscapeChar);
+            var first = true;
+            foreach (var idx in tableName.Split('.'))
+            {
+                if (first)
+                    first = false;
+                else
+                    builder.Append(".");
+                builder.Append(EscapeChar);
+                builder.Append(idx.Replace(EscapeChar, EscapeChar + EscapeChar));
+                builder.Append(EscapeChar);
+            }
         }
 
         /// <summary>

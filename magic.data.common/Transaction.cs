@@ -22,10 +22,10 @@ namespace magic.data.common
         /// Creates a new instance of your type.
         /// </summary>
         /// <param name="signaler">Signaler used to retrieve connection as stack object.</param>
-        /// <param name="stackName">Name of connection in stack.</param>
-        public Transaction(ISignaler signaler, string stackName)
+        /// <param name="connection">Database connection.</param>
+        public Transaction(ISignaler signaler, DbConnection connection)
         {
-            _transaction = signaler.Peek<DbConnection>(stackName).BeginTransaction();
+            _transaction = connection.BeginTransaction();
         }
 
         /// <summary>
