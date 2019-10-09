@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using magic.node;
 using magic.node.extensions;
+using magic.signals.contracts;
 
 namespace magic.data.common
 {
@@ -43,6 +44,34 @@ namespace magic.data.common
         /// </summary>
         protected string EscapeChar { get; private set; }
 
+        /// <summary>
+        /// Generic helper method to create an SqlBuilder of type T.
+        /// </summary>
+        /// <typeparam name="T">Type of SQL builder to create.</typeparam>
+        /// <param name="signaler">Signaler for instance.</param>
+        /// <param name="input">Node to parser.</param>
+        /// <returns>If execution of node should be done, the method will return the node to execute.</returns>
+        public static Node Parse<T>(ISignaler signaler, Node input) where T : SqlBuilder
+        {
+            /*
+             * Unfortunately this is our only method to create an instance of type,
+             * since it requires arguments in its CTOR, and we can't create constraints
+             * for constructor arguments using generic constraints.
+             */
+            var builder = Activator.CreateInstance(typeof(T), new object[] { input, signaler }) as T;
+            var sqlNode = builder.Build();
+
+            // Checking if this is a "build only" invocation.
+            if (builder.IsGenerateOnly)
+            {
+                input.Value = sqlNode.Value;
+                input.Clear();
+                input.AddRange(sqlNode.Children.ToList());
+                return null ;
+            }
+            return sqlNode;
+        }
+
         #region [ -- Protected helper methods and properties -- ]
 
         /// <summary>
@@ -56,15 +85,22 @@ namespace magic.data.common
         /// <param name="builder">StringBuilder to append the table name into.</param>
         protected void GetTableName(StringBuilder builder)
         {
-            builder.Append(EscapeChar);
-
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
                 throw new ApplicationException($"No table name supplied to '{GetType().FullName}'");
-            builder.Append(tableName.Replace(EscapeChar, EscapeChar + EscapeChar));
 
-            builder.Append(EscapeChar);
+            var first = true;
+            foreach (var idx in tableName.Split('.'))
+            {
+                if (first)
+                    first = false;
+                else
+                    builder.Append(".");
+                builder.Append(EscapeChar);
+                builder.Append(idx.Replace(EscapeChar, EscapeChar + EscapeChar));
+                builder.Append(EscapeChar);
+            }
         }
 
         /// <summary>

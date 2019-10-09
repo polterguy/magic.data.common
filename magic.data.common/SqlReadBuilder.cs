@@ -68,6 +68,17 @@ namespace magic.data.common
             // Getting [order].
             GetOrderBy(builder);
 
+            var offsetNodes = Root.Children.Where(x => x.Name == "offset");
+            if (offsetNodes.Any())
+            {
+                // Sanity checking.
+                if (offsetNodes.Count() > 1)
+                    throw new ApplicationException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
+
+                var offsetValue = offsetNodes.First().GetEx<long>();
+                builder.Append(" offset " + offsetValue);
+            }
+
             // Getting [limit].
             var limitNodes = Root.Children.Where(x => x.Name == "limit");
             if (limitNodes.Any())
@@ -83,17 +94,6 @@ namespace magic.data.common
             {
                 // Defaulting to 25 records, unless [limit] was explicitly given.
                 builder.Append(" limit 25");
-            }
-
-            var offsetNodes = Root.Children.Where(x => x.Name == "offset");
-            if (offsetNodes.Any())
-            {
-                // Sanity checking.
-                if (offsetNodes.Count() > 1)
-                    throw new ApplicationException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
-
-                var offsetValue = offsetNodes.First().GetEx<long>();
-                builder.Append(" offset " + offsetValue);
             }
         }
 
@@ -128,7 +128,18 @@ namespace magic.data.common
                     builder.Append(" " + dir);
                 }
             }
+            else
+            {
+                GetDefaultOrderBy(builder);
+            }
         }
+
+        /// <summary>
+        /// Adds the default order by clause for queries.
+        /// </summary>
+        /// <param name="builder">Where to put the default order by clause.</param>
+        protected virtual void GetDefaultOrderBy(StringBuilder builder)
+        { }
 
         #endregion
 
