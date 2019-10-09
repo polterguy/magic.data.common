@@ -23,6 +23,7 @@ namespace magic.data.common
         /// </summary>
         /// <param name="input">Node containing SQL and parameters as children.</param>
         /// <param name="connection">Database connection.</param>
+        /// <param name="transaction">Database transaction, or null if there are none.</param>
         /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
         public static void Execute(
             Node input,
@@ -52,6 +53,7 @@ namespace magic.data.common
         /// </summary>
         /// <param name="input">Node containing SQL and parameters as children.</param>
         /// <param name="connection">Database connection.</param>
+        /// <param name="transaction">Database transaction, or null if there are none.</param>
         /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
         /// <returns>An awaitable task.</returns>
         public static async Task ExecuteAsync(
