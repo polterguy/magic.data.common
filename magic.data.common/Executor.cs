@@ -34,12 +34,8 @@ namespace magic.data.common
             // Making sure we dispose our command after execution.
             using (var cmd = connection.CreateCommand())
             {
-                // Associating transaction with command.
-                if (transaction != null)
-                    cmd.Transaction = transaction.Value;
-
-                // Parametrizing command.
-                PrepareCommand(cmd, input);
+                // Parametrizing and decorating command.
+                PrepareCommand(cmd, transaction, input);
 
                 // Invoking lambda callback supplied by caller.
                 functor(cmd);
@@ -64,12 +60,8 @@ namespace magic.data.common
         {
             using (var cmd = connection.CreateCommand())
             {
-                // Associating transaction with command.
-                if (transaction != null)
-                    cmd.Transaction = transaction.Value;
-
-                // Parametrizing command.
-                PrepareCommand(cmd, input);
+                // Parametrizing and decorating command.
+                PrepareCommand(cmd, transaction, input);
 
                 // Invoking lambda callback supplied by caller.
                 await functor(cmd);
@@ -78,9 +70,23 @@ namespace magic.data.common
 
         #region [ -- Private helper methods -- ]
 
-        static void PrepareCommand(DbCommand cmd, Node input)
+        /*
+         * Helper method to parametrize command with SQL parameters, in addition to
+         * decorating command with the specified transaction, if any.
+         */
+        static void PrepareCommand(
+            DbCommand cmd, 
+            Transaction transaction, 
+            Node input)
         {
+            // Associating transaction with command.
+            if (transaction != null)
+                cmd.Transaction = transaction.Value;
+
+            // Retrieves the command text.
             cmd.CommandText = input.GetEx<string>();
+
+            // Applies the parameters, if any.
             foreach (var idxPar in input.Children)
             {
                 var par = cmd.CreateParameter();

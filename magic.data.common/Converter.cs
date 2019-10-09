@@ -12,6 +12,12 @@ namespace magic.data.common
     /// </summary>
     public static class Converter
     {
+        /// <summary>
+        /// Converts the given database value to the relevant native .Net type.
+        /// for instance, if given DBNull as type, it will return simply "null" value, etc.
+        /// </summary>
+        /// <param name="value">Database value.</param>
+        /// <returns>The value in the equivalent .Net type.</returns>
         public static object GetValue(object value)
         {
             if (value == null || value.GetType() == typeof(DBNull))

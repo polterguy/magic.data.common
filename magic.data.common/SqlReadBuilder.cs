@@ -130,6 +130,11 @@ namespace magic.data.common
             }
             else
             {
+                /*
+                 * Some databases requires "default order by" statement, such as
+                 * for instance MS SQL Server does in cases where we have defined a
+                 * "limit" and "offset".
+                 */
                 GetDefaultOrderBy(builder);
             }
         }

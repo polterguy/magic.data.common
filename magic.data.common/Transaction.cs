@@ -57,6 +57,10 @@ namespace magic.data.common
         /// </summary>
         public void Dispose()
         {
+            /*
+             * Notice, only if transaction has not been explicitly rolled
+             * back, or committed, we actually rollback here in the dispose.
+             */
             if (!_signaled)
                 Value.Rollback();
             Value.Dispose();

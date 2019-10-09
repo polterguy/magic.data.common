@@ -9,7 +9,8 @@ using magic.node;
 namespace magic.data.common
 {
     /// <summary>
-    /// Specialised delete SQL builder, to create a delete SQL statement by semantically traversing an input node.
+    /// Specialised delete SQL builder, to create a delete SQL statement by
+    /// semantically traversing an input node.
     /// </summary>
     public abstract class SqlDeleteBuilder : SqlBuilder
     {

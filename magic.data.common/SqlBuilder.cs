@@ -45,7 +45,8 @@ namespace magic.data.common
         protected string EscapeChar { get; private set; }
 
         /// <summary>
-        /// Generic helper method to create an SqlBuilder of type T.
+        /// Generic helper method to create an SqlBuilder of type T, and use it to semantically
+        /// traverse a node hierarchy, to create the relevant SQL and its parameter collection.
         /// </summary>
         /// <typeparam name="T">Type of SQL builder to create.</typeparam>
         /// <param name="signaler">Signaler for instance.</param>
@@ -54,7 +55,7 @@ namespace magic.data.common
         public static Node Parse<T>(ISignaler signaler, Node input) where T : SqlBuilder
         {
             /*
-             * Unfortunately this is our only method to create an instance of type,
+             * Unfortunately this is our only means to create an instance of type,
              * since it requires arguments in its CTOR, and we can't create constraints
              * for constructor arguments using generic constraints.
              */
@@ -83,13 +84,17 @@ namespace magic.data.common
         /// Securely adds the table name into the specified builder.
         /// </summary>
         /// <param name="builder">StringBuilder to append the table name into.</param>
-        protected void GetTableName(StringBuilder builder)
+        protected virtual void GetTableName(StringBuilder builder)
         {
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
                 throw new ApplicationException($"No table name supplied to '{GetType().FullName}'");
 
+            /*
+             * Notice, if table name contains ".", we assume these are namespace qualifiers
+             * (MS SQL server type of namespaces).
+             */
             var first = true;
             foreach (var idx in tableName.Split('.'))
             {
@@ -108,18 +113,25 @@ namespace magic.data.common
         /// </summary>
         /// <param name="whereNode">Current input node from where to start looking for semantic where parts.</param>
         /// <param name="builder">String builder to put the results into.</param>
-        protected void BuildWhere(Node whereNode, StringBuilder builder)
+        protected virtual void BuildWhere(Node whereNode, StringBuilder builder)
         {
+            // finding where node, if any, and doing some basic sanity checking.
             var where = Root.Children.Where(x => x.Name == "where");
             if (where.Count() > 1)
                 throw new ApplicationException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
 
-            // Checking we actuall have a [where] declaration
+            // Checking we actuall have a [where] declaration at all.
             if (!where.Any() || !where.First().Children.Any())
                 return;
 
+            // Appending actual "where" parts into SQL.
             builder.Append(" where ");
 
+            /*
+             * Recursively looping through each level, and appending its parts
+             * as a "name/value" collection, making sure we add each value as an
+             * SQL parameter.
+             */
             int levelNo = 0;
             foreach (var idx in where.First().Children)
             {
@@ -147,6 +159,11 @@ namespace magic.data.common
 
         #region [ -- Private helper methods -- ]
 
+        /*
+         * Building one "where level" (within one set of paranthesis),
+         * and recursivelu adding a new level for each "and" and "or"
+         * parts we can find in our level.
+         */
         void BuildWhereLevel(
             Node result,
             StringBuilder builder,
@@ -184,6 +201,11 @@ namespace magic.data.common
                     case "!=":
                     case "=":
                     case "like":
+
+                        /*
+                         * Notice, calling self with comparison operator explicitly set this time,
+                         * and no needs to add paranthesis.
+                         */
                         BuildWhereLevel(result, builder, idxCol, logicalOperator, ref levelNo, idxCol.Name, false);
                         break;
 
