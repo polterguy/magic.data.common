@@ -210,11 +210,12 @@ namespace magic.data.common
                         break;
 
                     default:
-                        var unwrapped = idxCol.GetEx<object>();
-                        var argName = "@" + levelNo;
+                        var comparisonValue = idxCol.GetEx<object>();
+                        var sqlArgumentName = "@" + levelNo;
                         var columnName = idxCol.Name;
                         if (columnName.StartsWith("\\"))
                         {
+                            // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
                             columnName = columnName.Substring(1);
                         }
                         else if (columnName.Contains("."))
@@ -227,10 +228,8 @@ namespace magic.data.common
                              * 
                              * Assuming first part is our operator.
                              */
-                            var entities = columnName.Split('.');
-                            if (entities.Length != 2)
-                                throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '\\{columnName}'?");
-                            switch (entities[1])
+                            var entities = columnName.Split('.').Reverse();
+                            switch (entities.First())
                             {
                                 case ">":
                                 case "<":
@@ -239,19 +238,19 @@ namespace magic.data.common
                                 case "!=":
                                 case "=":
                                 case "like":
-                                    comparisonOperator = entities[1];
-                                    columnName = entities[0];
+                                    comparisonOperator = entities.First();
+                                    columnName = string.Join(".", entities.Skip(1));
                                     break;
                                 default:
                                     throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '\\{columnName}'?");
                             }
                         }
-                        columnName = EscapeChar +
+                        var criteria = EscapeChar +
                             columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
                             EscapeChar + " " + comparisonOperator + " " +
-                            argName;
-                        builder.Append(columnName);
-                        result.Add(new Node(argName, unwrapped));
+                            sqlArgumentName;
+                        builder.Append(criteria);
+                        result.Add(new Node(sqlArgumentName, comparisonValue));
                         ++levelNo;
                         break;
                 }
