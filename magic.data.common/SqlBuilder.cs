@@ -254,9 +254,9 @@ namespace magic.data.common
                                     currentOperator = "=";
                                     break;
                                 default:
-                                    throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '\\{columnName}'?");
+                                    throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
                             }
-                            columnName = string.Join(".", entities.Skip(1));
+                            columnName = string.Join(".", entities.Skip(1).Reverse());
                         }
                         var criteria = EscapeChar +
                             columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
