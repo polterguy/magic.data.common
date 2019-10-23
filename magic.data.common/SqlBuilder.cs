@@ -211,9 +211,10 @@ namespace magic.data.common
 
                     default:
                         var comparisonValue = idxCol.GetEx<object>();
+                        var currentOperator = comparisonOperator;
                         var sqlArgumentName = "@" + levelNo;
                         var columnName = idxCol.Name;
-                        if (columnName.StartsWith("\\"))
+                        if (columnName.StartsWith("."))
                         {
                             // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
                             columnName = columnName.Substring(1);
@@ -231,23 +232,35 @@ namespace magic.data.common
                             var entities = columnName.Split('.').Reverse();
                             switch (entities.First())
                             {
-                                case ">":
-                                case "<":
-                                case ">=":
-                                case "<=":
-                                case "!=":
-                                case "=":
                                 case "like":
-                                    comparisonOperator = entities.First();
-                                    columnName = string.Join(".", entities.Skip(1));
+                                    currentOperator = "like";
+                                    break;
+                                case "mt":
+                                    currentOperator = ">";
+                                    break;
+                                case "lt":
+                                    currentOperator = "<";
+                                    break;
+                                case "mteq":
+                                    currentOperator = ">=";
+                                    break;
+                                case "lteq":
+                                    currentOperator = "<=";
+                                    break;
+                                case "neq":
+                                    currentOperator = "!=";
+                                    break;
+                                case "eq":
+                                    currentOperator = "=";
                                     break;
                                 default:
                                     throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '\\{columnName}'?");
                             }
+                            columnName = string.Join(".", entities.Skip(1));
                         }
                         var criteria = EscapeChar +
                             columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                            EscapeChar + " " + comparisonOperator + " " +
+                            EscapeChar + " " + currentOperator + " " +
                             sqlArgumentName;
                         builder.Append(criteria);
                         result.Add(new Node(sqlArgumentName, comparisonValue));
