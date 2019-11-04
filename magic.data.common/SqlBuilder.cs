@@ -198,24 +198,12 @@ namespace magic.data.common
                     case "in":
 
                         // TODO: Refactor and create one implementation, shared with the piece of code below.
-                        var values1 = idxCol.Children.First().Children.Select(x => x.GetEx<long>());
-                        builder.Append(
-                            EscapeChar +
-                            idxCol.Children.First().Name.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                            EscapeChar + " in ");
-                        builder.Append("(");
-                        var firstInValue1 = true;
-                        foreach (var idx in values1)
-                        {
-                            if (firstInValue1)
-                                firstInValue1 = false;
-                            else
-                                builder.Append(",");
-                            builder.Append("@" + levelNo);
-                            result.Add(new Node("@" + levelNo, idx));
-                            ++levelNo;
-                        }
-                        builder.Append(")");
+                        levelNo = CreateInCriteria(
+                            result, 
+                            builder, 
+                            levelNo, 
+                            idxCol.Children.First().Name, 
+                            idxCol.Children.First().Children.Select(x => x.GetEx<long>()).ToArray());
                         break;
 
                     // TODO: Implement "in".
@@ -289,24 +277,14 @@ namespace magic.data.common
                         }
                         if (currentOperator == "in")
                         {
-                            var values = comparisonValue.ToString().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                            builder.Append(
-                                EscapeChar + 
-                                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                                EscapeChar + " in ");
-                            builder.Append("(");
-                            var firstInValue = true;
-                            foreach (var idx in values)
-                            {
-                                if (firstInValue)
-                                    firstInValue = false;
-                                else
-                                    builder.Append(",");
-                                builder.Append("@" + levelNo);
-                                result.Add(new Node("@" + levelNo, Convert.ToInt64(idx, CultureInfo.InvariantCulture)));
-                                ++levelNo;
-                            }
-                            builder.Append(")");
+                            levelNo = CreateInCriteria(
+                                result, 
+                                builder, 
+                                levelNo, 
+                                columnName,
+                                comparisonValue.ToString()
+                                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(x => Convert.ToInt64(x, CultureInfo.InvariantCulture)).ToArray());
                         }
                         else
                         {
@@ -324,6 +302,36 @@ namespace magic.data.common
 
             if (paranthesis)
                 builder.Append(")");
+        }
+
+        /*
+         * Creates an "in" SQL criteria.
+         */
+        int CreateInCriteria(
+            Node result, 
+            StringBuilder builder, 
+            int levelNo, 
+            string columnName, 
+            params long[] values)
+        {
+            builder.Append(
+                EscapeChar +
+                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                EscapeChar + " in ");
+            builder.Append("(");
+            var firstInValue = true;
+            foreach (var idx in values)
+            {
+                if (firstInValue)
+                    firstInValue = false;
+                else
+                    builder.Append(",");
+                builder.Append("@" + levelNo);
+                result.Add(new Node("@" + levelNo, idx));
+                ++levelNo;
+            }
+            builder.Append(")");
+            return levelNo;
         }
 
         #endregion
