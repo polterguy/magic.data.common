@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
@@ -194,6 +195,7 @@ namespace magic.data.common
                         BuildWhereLevel(result, builder, idxCol, "or", ref levelNo);
                         break;
 
+                    // TODO: Implement "in".
                     case ">":
                     case "<":
                     case ">=":
@@ -210,6 +212,7 @@ namespace magic.data.common
                         break;
 
                     default:
+
                         var comparisonValue = idxCol.GetEx<object>();
                         var currentOperator = comparisonOperator;
                         var sqlArgumentName = "@" + levelNo;
@@ -253,18 +256,45 @@ namespace magic.data.common
                                 case "eq":
                                     currentOperator = "=";
                                     break;
+                                case "in":
+                                    currentOperator = "in";
+                                    break;
                                 default:
                                     throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
                             }
                             columnName = string.Join(".", entities.Skip(1).Reverse());
                         }
-                        var criteria = EscapeChar +
-                            columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                            EscapeChar + " " + currentOperator + " " +
-                            sqlArgumentName;
-                        builder.Append(criteria);
-                        result.Add(new Node(sqlArgumentName, comparisonValue));
-                        ++levelNo;
+                        if (currentOperator == "in")
+                        {
+                            var values = comparisonValue.ToString().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                            builder.Append(
+                                EscapeChar + 
+                                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                                EscapeChar + " in ");
+                            builder.Append("(");
+                            var firstInValue = true;
+                            foreach (var idx in values)
+                            {
+                                if (firstInValue)
+                                    firstInValue = false;
+                                else
+                                    builder.Append(",");
+                                builder.Append("@" + levelNo);
+                                result.Add(new Node("@" + levelNo, Convert.ToInt64(idx, CultureInfo.InvariantCulture)));
+                                ++levelNo;
+                            }
+                            builder.Append(")");
+                        }
+                        else
+                        {
+                            var criteria = EscapeChar +
+                                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                                EscapeChar + " " + currentOperator + " " +
+                                sqlArgumentName;
+                            builder.Append(criteria);
+                            result.Add(new Node(sqlArgumentName, comparisonValue));
+                            ++levelNo;
+                        }
                         break;
                 }
             }
