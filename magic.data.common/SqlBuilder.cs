@@ -195,6 +195,29 @@ namespace magic.data.common
                         BuildWhereLevel(result, builder, idxCol, "or", ref levelNo);
                         break;
 
+                    case "in":
+
+                        // TODO: Refactor and create one implementation, shared with the piece of code below.
+                        var values1 = idxCol.Children.First().Children.Select(x => x.GetEx<long>());
+                        builder.Append(
+                            EscapeChar +
+                            idxCol.Children.First().Name.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                            EscapeChar + " in ");
+                        builder.Append("(");
+                        var firstInValue1 = true;
+                        foreach (var idx in values1)
+                        {
+                            if (firstInValue1)
+                                firstInValue1 = false;
+                            else
+                                builder.Append(",");
+                            builder.Append("@" + levelNo);
+                            result.Add(new Node("@" + levelNo, idx));
+                            ++levelNo;
+                        }
+                        builder.Append(")");
+                        break;
+
                     // TODO: Implement "in".
                     case ">":
                     case "<":
