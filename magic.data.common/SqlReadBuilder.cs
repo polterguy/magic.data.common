@@ -164,7 +164,10 @@ namespace magic.data.common
                     else
                         builder.Append(",");
 
-                    builder.Append(EscapeChar + idx.Name.Replace(EscapeChar, EscapeChar + EscapeChar) + EscapeChar);
+                    if (idx.Name.Contains("(") && idx.Name.Contains(")"))
+                        builder.Append(idx.Name); // Aggregate column
+                    else
+                        builder.Append(EscapeChar + idx.Name.Replace(EscapeChar, EscapeChar + EscapeChar) + EscapeChar);
                 }
             }
             else
