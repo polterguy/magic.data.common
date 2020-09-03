@@ -74,7 +74,7 @@ namespace magic.data.common
             {
                 // Sanity checking.
                 if (limitNodes.Count() > 1)
-                    throw new ApplicationException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
+                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
 
                 var limitValue = limitNodes.First().GetEx<long>();
                 builder.Append(" limit " + limitValue);
@@ -91,7 +91,7 @@ namespace magic.data.common
             {
                 // Sanity checking.
                 if (offsetNodes.Count() > 1)
-                    throw new ApplicationException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
+                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
 
                 var offsetValue = offsetNodes.First().GetEx<long>();
                 builder.Append(" offset " + offsetValue);
@@ -109,7 +109,7 @@ namespace magic.data.common
             {
                 // Sanity checking.
                 if (orderNodes.Count() > 1)
-                    throw new ApplicationException($"syntax error in '{GetType().FullName}', too many [order] nodes");
+                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [order] nodes");
 
                 var orderColumn = orderNodes.First().GetEx<string>().Replace(EscapeChar, EscapeChar + EscapeChar);
                 builder.Append(" order by " + EscapeChar + orderColumn + EscapeChar);
@@ -120,7 +120,7 @@ namespace magic.data.common
                 {
                     // Sanity checking.
                     if (direction.Count() > 1)
-                        throw new ApplicationException($"syntax error in '{GetType().FullName}', too many [direction] nodes");
+                        throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [direction] nodes");
 
                     var dir = direction.First().GetEx<string>();
                     if (dir != "asc" && dir != "desc")

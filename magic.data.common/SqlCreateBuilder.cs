@@ -66,7 +66,7 @@ namespace magic.data.common
 
             // Sanity checking, making sure there's exactly one [values] node.
             if (values.Count() != 1)
-                throw new ApplicationException($"Exactly one [values] needs to be provided to '{GetType().FullName}'");
+                throw new ArgumentException($"Exactly one [values] needs to be provided to '{GetType().FullName}'");
 
             // Appending column names.
             builder.Append(" (");

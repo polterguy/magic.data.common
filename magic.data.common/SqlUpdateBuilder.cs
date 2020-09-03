@@ -61,7 +61,7 @@ namespace magic.data.common
         {
             var valuesNodes = Root.Children.Where(x => x.Name == "values");
             if (!valuesNodes.Any() || !valuesNodes.First().Children.Any())
-                throw new ApplicationException($"Missing [values] node in '{GetType().FullName}'");
+                throw new ArgumentException($"Missing [values] node in '{GetType().FullName}'");
 
             var idxNo = 0;
             foreach (var idxCol in valuesNodes.First().Children)

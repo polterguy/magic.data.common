@@ -90,7 +90,7 @@ namespace magic.data.common
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
-                throw new ApplicationException($"No table name supplied to '{GetType().FullName}'");
+                throw new ArgumentException($"No table name supplied to '{GetType().FullName}'");
 
             /*
              * Notice, if table name contains ".", we assume these are namespace qualifiers
@@ -119,7 +119,7 @@ namespace magic.data.common
             // finding where node, if any, and doing some basic sanity checking.
             var where = Root.Children.Where(x => x.Name == "where");
             if (where.Count() > 1)
-                throw new ApplicationException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
+                throw new ArgumentException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
 
             // Checking we actuall have a [where] declaration at all.
             if (!where.Any() || !where.First().Children.Any())
