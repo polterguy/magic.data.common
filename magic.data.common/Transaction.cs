@@ -13,7 +13,7 @@ namespace magic.data.common
      /// Wraps a database transaction, such that it automatically is rolled back when
      /// instance is disposed, unless it has been previously rolled back, or committed.
      /// </summary>
-    public class Transaction : IDisposable
+    public sealed class Transaction : IDisposable
     {
         bool _signaled;
 
