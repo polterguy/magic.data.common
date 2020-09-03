@@ -20,7 +20,7 @@ namespace magic.data.common
         /// <returns>The value in the equivalent .Net type.</returns>
         public static object GetValue(object value)
         {
-            if (value == null || value.GetType() == typeof(DBNull))
+            if (value == null || value is DBNull)
                 return null;
             return value;
         }

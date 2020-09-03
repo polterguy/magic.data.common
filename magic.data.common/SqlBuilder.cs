@@ -23,7 +23,7 @@ namespace magic.data.common
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        public SqlBuilder(Node node, string escapeChar)
+        protected SqlBuilder(Node node, string escapeChar)
         {
             Root = node ?? throw new ArgumentNullException(nameof(node));
             EscapeChar = escapeChar ?? throw new ArgumentNullException(nameof(escapeChar));
