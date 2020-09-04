@@ -217,22 +217,6 @@ namespace magic.data.common
                             idxCol.Children.First().Children.Select(x => x.Value).ToArray());
                         break;
 
-                    // TODO: Implement "in".
-                    case ">":
-                    case "<":
-                    case ">=":
-                    case "<=":
-                    case "!=":
-                    case "=":
-                    case "like":
-
-                        /*
-                         * Notice, calling self with comparison operator explicitly set this time,
-                         * and no needs to add paranthesis.
-                         */
-                        BuildWhereLevel(result, builder, idxCol, logicalOperator, ref levelNo, idxCol.Name, false);
-                        break;
-
                     default:
 
                         var comparisonValue = idxCol.GetEx<object>();
