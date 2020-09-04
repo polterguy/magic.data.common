@@ -137,12 +137,9 @@ namespace magic.data.common
             {
                 switch (idx.Name)
                 {
-                    case "and":
-                        BuildWhereLevel(whereNode, builder, idx, "and", ref levelNo);
-                        break;
-
                     case "or":
-                        BuildWhereLevel(whereNode, builder, idx, "or", ref levelNo);
+                    case "and":
+                        BuildWhereLevel(whereNode, builder, idx, idx.Name, ref levelNo);
                         break;
 
                     default:
@@ -183,13 +180,9 @@ namespace magic.data.common
                 switch (idxCol.Name)
                 {
                     case "and":
-
-                        BuildWhereLevel(result, builder, idxCol, "and", ref levelNo);
-                        break;
-
                     case "or":
 
-                        BuildWhereLevel(result, builder, idxCol, "or", ref levelNo);
+                        BuildWhereLevel(result, builder, idxCol, idxCol.Name, ref levelNo);
                         break;
 
                     case "in":
@@ -204,68 +197,82 @@ namespace magic.data.common
 
                     default:
 
-                        // Field comparison of some sort.
-                        var comparisonValue = idxCol.GetEx<object>();
-                        var currentOperator = comparisonOperator;
-                        var sqlArgumentName = "@" + levelNo;
-                        var columnName = idxCol.Name;
-                        if (columnName.StartsWith("\\"))
-                        {
-                            // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
-                            columnName = columnName.Substring(1);
-                        }
-                        else if (columnName.Contains("."))
-                        {
-                            /*
-                             * Notice, for simplicity reasons, and to allow passing in operators
-                             * as a single level hierarchy, we allow for an additional method to supply the comparison
-                             * operator, which is having the operator to the right of a ".", where the column name is
-                             * the first parts.
-                             * 
-                             * Assuming first part is our operator.
-                             */
-                            var entities = columnName.Split('.').Reverse();
-                            switch (entities.First())
-                            {
-                                case "like":
-                                    currentOperator = "like";
-                                    break;
-                                case "mt":
-                                    currentOperator = ">";
-                                    break;
-                                case "lt":
-                                    currentOperator = "<";
-                                    break;
-                                case "mteq":
-                                    currentOperator = ">=";
-                                    break;
-                                case "lteq":
-                                    currentOperator = "<=";
-                                    break;
-                                case "neq":
-                                    currentOperator = "!=";
-                                    break;
-                                case "eq":
-                                    currentOperator = "=";
-                                    break;
-                                default:
-                                    throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
-                            }
-                            columnName = string.Join(".", entities.Skip(1).Reverse());
-                        }
-                        var criteria = EscapeChar +
-                            columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                            EscapeChar + " " + currentOperator + " " +
-                            sqlArgumentName;
-                        builder.Append(criteria);
-                        result.Add(new Node(sqlArgumentName, comparisonValue));
-                        ++levelNo;
+                        levelNo = CreateCondition(result, builder, levelNo, comparisonOperator, idxCol);
                         break;
                 }
             }
 
             if (paranthesis)
                 builder.Append(")");
+        }
+
+        /*
+         * Creates a single condition for where clause.
+         */
+        int CreateCondition(
+            Node result,
+            StringBuilder builder,
+            int levelNo,
+            string comparisonOperator,
+            Node idxCol)
+        {
+            // Field comparison of some sort.
+            var comparisonValue = idxCol.GetEx<object>();
+            var currentOperator = comparisonOperator;
+            var sqlArgumentName = "@" + levelNo;
+            var columnName = idxCol.Name;
+            if (columnName.StartsWith("\\"))
+            {
+                // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
+                columnName = columnName.Substring(1);
+            }
+            else if (columnName.Contains("."))
+            {
+                /*
+                 * Notice, for simplicity reasons, and to allow passing in operators
+                 * as a single level hierarchy, we allow for an additional method to supply the comparison
+                 * operator, which is having the operator to the right of a ".", where the column name is
+                 * the first parts.
+                 * 
+                 * Assuming first part is our operator.
+                 */
+                var entities = columnName.Split('.').Reverse();
+                switch (entities.First())
+                {
+                    case "like":
+                        currentOperator = "like";
+                        break;
+                    case "mt":
+                        currentOperator = ">";
+                        break;
+                    case "lt":
+                        currentOperator = "<";
+                        break;
+                    case "mteq":
+                        currentOperator = ">=";
+                        break;
+                    case "lteq":
+                        currentOperator = "<=";
+                        break;
+                    case "neq":
+                        currentOperator = "!=";
+                        break;
+                    case "eq":
+                        currentOperator = "=";
+                        break;
+                    default:
+                        throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
+                }
+                columnName = string.Join(".", entities.Skip(1).Reverse());
+            }
+            var criteria = EscapeChar +
+                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                EscapeChar + " " + currentOperator + " " +
+                sqlArgumentName;
+            builder.Append(criteria);
+            result.Add(new Node(sqlArgumentName, comparisonValue));
+            ++levelNo;
+            return levelNo;
         }
 
         /*
