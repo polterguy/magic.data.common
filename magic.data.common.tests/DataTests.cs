@@ -309,6 +309,50 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWhereMultipleLevels_03()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var or1 = new Node("or");
+            or1.Add(new Node("foo1", 5));
+            or1.Add(new Node("foo2", "howdy"));
+            var in1 = new Node("in");
+            var inColumns = new Node("field1");
+            inColumns.Add(new Node("", 5));
+            inColumns.Add(new Node("", 7));
+            in1.Add(inColumns);
+            or1.Add(in1);
+            where.Add(or1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            System.Console.WriteLine(result.ToHyperlambda());
+            System.Console.WriteLine(sql);
+            Assert.Equal("select * from 'foo' where ('foo1' = @0 or 'foo2' = @1 or 'field1' in (@2,@3)) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal("howdy", arg2.Value);
+
+            var arg3 = result.Children.Skip(2).First();
+            Assert.Equal("@2", arg3.Name);
+            Assert.Equal(5, arg3.Value);
+
+            var arg4 = result.Children.Skip(3).First();
+            Assert.Equal("@3", arg4.Name);
+            Assert.Equal(7, arg4.Value);
+        }
+
+        [Fact]
         public void ReadIn()
         {
             // Creating node hierarchy.
@@ -323,13 +367,11 @@ namespace magic.data.common.tests
             in1.Add(inValues);
             where.Add(in1);
             node.Add(where);
-            System.Console.WriteLine(node.ToHyperlambda());
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            System.Console.WriteLine(sql);
             Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
 
             var arg1 = result.Children.First();
@@ -360,7 +402,6 @@ namespace magic.data.common.tests
             in1.Add(inValues);
             where.Add(in1);
             node.Add(where);
-            System.Console.WriteLine(node.ToHyperlambda());
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.

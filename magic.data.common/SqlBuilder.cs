@@ -214,7 +214,7 @@ namespace magic.data.common
                             builder, 
                             levelNo, 
                             idxCol.Children.First().Name, 
-                            idxCol.Children.First().Children.Select(x => x.GetEx<long>()).ToArray());
+                            idxCol.Children.First().Children.Select(x => x.Value).ToArray());
                         break;
 
                     // TODO: Implement "in".
