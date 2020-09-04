@@ -137,6 +137,57 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWhereMultipleLevels()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            and1.Add(new Node("foo1", 5));
+            and1.Add(new Node("foo2", "howdy"));
+            var or1 = new Node("or");
+            or1.Add(new Node("foo3", "jalla"));
+            or1.Add(new Node("foo4", "balla"));
+            and1.Add(or1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            System.Console.WriteLine(sql);
+            Assert.Equal("select * from 'foo' where ('foo1' = @0 and 'foo2' = @1 and ('foo3' = @2 or 'foo4' = @3)) limit 25", sql);
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal("howdy", arg2.Value);
+            var arg3 = result.Children.Skip(2).First();
+            Assert.Equal("@2", arg3.Name);
+            Assert.Equal("jalla", arg3.Value);
+            var arg4 = result.Children.Skip(3).First();
+            Assert.Equal("@3", arg4.Name);
+            Assert.Equal("balla", arg4.Value);
+        }
+
+        [Fact]
+        public void ReadNamespaced()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo.bar"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo'.'bar' limit 25", sql);
+        }
+
+        [Fact]
         public void ReadWithColumns()
         {
             // Creating node hierarchy.
