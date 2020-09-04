@@ -254,6 +254,11 @@ sql.read:select * from 'table1' where ('field1' = @0 or ('field2' = @1 and 'fiel
    @2:dudes
 ```
 
+**Notice**, the parent of a list of criteria is deciding which logical operator to separate your conditions
+with, contrary to traditional languages, where you separate your conditions with the logical operator.
+This might seem a little bit backwards in the beginning, but this is a general rule with everything in
+Hyperlambda, and after a while will feel more natural than the alternatives.
+
 ## License
 
 Although most of Magic's source code is Open Source, you will need a license key to use it.

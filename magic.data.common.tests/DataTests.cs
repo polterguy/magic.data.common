@@ -372,20 +372,22 @@ namespace magic.data.common.tests
             var node = new Node();
             node.Add(new Node("table", "foo"));
             var where = new Node("where");
+            var and1 = new Node("and");
             var in1 = new Node("in");
             var inValues = new Node("field1");
             inValues.Add(new Node("", 5L));
             inValues.Add(new Node("", 7L));
             inValues.Add(new Node("", 9L));
             in1.Add(inValues);
-            where.Add(in1);
+            and1.Add(in1);
+            where.Add(and1);
             node.Add(where);
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
+            Assert.Equal("select * from 'foo' where ('field1' in (@0,@1,@2)) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -407,20 +409,22 @@ namespace magic.data.common.tests
             var node = new Node();
             node.Add(new Node("table", "foo"));
             var where = new Node("where");
+            var and1 = new Node("and");
             var in1 = new Node("in");
             var inValues = new Node("field1");
             inValues.Add(new Node("", "howdy"));
             inValues.Add(new Node("", "world"));
             inValues.Add(new Node("", "jalla"));
             in1.Add(inValues);
-            where.Add(in1);
+            and1.Add(in1);
+            where.Add(and1);
             node.Add(where);
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
+            Assert.Equal("select * from 'foo' where ('field1' in (@0,@1,@2)) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -739,7 +743,7 @@ namespace magic.data.common.tests
             node.Add(new Node("table", "foo"));
             var where = new Node("where");
             var and1 = new Node("and");
-            var cond1 = new Node(".field1.lteq", 5);
+            var cond1 = new Node("\\field1.lteq", 5);
             and1.Add(cond1);
             where.Add(and1);
             node.Add(where);

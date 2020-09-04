@@ -120,9 +120,9 @@ namespace magic.data.common
             if (where.Count() > 1)
                 throw new ArgumentException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
 
-            // Checking we actuall have a [where] declaration at all.
+            // Checking that we actually have a [where] declaration at all.
             if (!where.Any() || !where.First().Children.Any())
-                return;
+                return; // No where statement supplied, or not children in [where] argument.
 
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
@@ -143,17 +143,6 @@ namespace magic.data.common
 
                     case "or":
                         BuildWhereLevel(whereNode, builder, idx, "or", ref levelNo);
-                        break;
-
-                    case "in":
-
-                        // TODO: Refactor and create one implementation, shared with the piece of code below.
-                        levelNo = CreateInCriteria(
-                            whereNode, 
-                            builder, 
-                            levelNo, 
-                            idx.Children.First().Name, 
-                            idx.Children.First().Children.Select(x => x.Value).ToArray());
                         break;
 
                     default:
@@ -194,16 +183,17 @@ namespace magic.data.common
                 switch (idxCol.Name)
                 {
                     case "and":
+
                         BuildWhereLevel(result, builder, idxCol, "and", ref levelNo);
                         break;
 
                     case "or":
+
                         BuildWhereLevel(result, builder, idxCol, "or", ref levelNo);
                         break;
 
                     case "in":
 
-                        // TODO: Refactor and create one implementation, shared with the piece of code below.
                         levelNo = CreateInCriteria(
                             result, 
                             builder, 
@@ -214,11 +204,12 @@ namespace magic.data.common
 
                     default:
 
+                        // Field comparison of some sort.
                         var comparisonValue = idxCol.GetEx<object>();
                         var currentOperator = comparisonOperator;
                         var sqlArgumentName = "@" + levelNo;
                         var columnName = idxCol.Name;
-                        if (columnName.StartsWith("."))
+                        if (columnName.StartsWith("\\"))
                         {
                             // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
                             columnName = columnName.Substring(1);
