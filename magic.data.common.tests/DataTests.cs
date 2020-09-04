@@ -117,6 +117,37 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithLimitOffset()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("limit", 10));
+            node.Add(new Node("offset", 5));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' limit 10 offset 5", sql);
+        }
+
+        [Fact]
+        public void ReadWithOrder()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "fieldOrder"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' order by 'fieldOrder' limit 25", sql);
+        }
+
+        [Fact]
         public void Update()
         {
             // Creating node hierarchy.
