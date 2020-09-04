@@ -167,6 +167,93 @@ sql.update:update 'table1' set 'field1' = @v0
    @v0:howdy
 ```
 
+## The [where] argument
+
+This argument is common for both **[sql.update]**, **[sql.delete]** and **[sql.read]**, and it follows
+a recursive structure, allowing you to supply multiple layers of `where` criteria, being applied
+recursively, using some sort of grouping operator. Its most basic usage is as follows.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   where
+      and
+         field1:howdy
+```
+
+The above would result in the following result.
+
+```
+sql.read:select * from 'table1' where ('field1' = @0)
+   @0:howdy
+```
+
+To apply multiple **[and]** criteria, you can simply add them consecutively as follows.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   where
+      and
+         field1:howdy
+         field2:world
+```
+
+The above resulting in the following.
+
+```
+sql.read:select * from 'table1' where ('field1' = @0 and 'field2' = @1)
+   @0:howdy
+   @1:world
+```
+
+If you exchange the above **[and]** with **[or]**, the system will use the `or` operator to
+separate your arguments, such as the following illustrates.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   where
+      or
+         field1:howdy
+         field2:world
+```
+
+The above results in the following result.
+
+```
+sql.read:select * from 'table1' where ('field1' = @0 or 'field2' = @1)
+    @0:howdy
+    @1:world
+```
+
+You can also nest operators, producing paranthesis, creating complex conditions, such as the following
+illustrates.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   where
+      or
+         field1:howdy
+         and
+            field2:world
+            field3:dudes
+```
+
+Which of course results in the following result.
+
+```
+sql.read:select * from 'table1' where ('field1' = @0 or ('field2' = @1 and 'field3' = @2))
+   @0:howdy
+   @1:world
+   @2:dudes
+```
+
 ## License
 
 Although most of Magic's source code is Open Source, you will need a license key to use it.
