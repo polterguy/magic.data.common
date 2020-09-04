@@ -759,6 +759,30 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithOperators_09()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.like", "howdy%");
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' like @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy%", arg1.Value);
+        }
+
+        [Fact]
         public void Update()
         {
             // Creating node hierarchy.

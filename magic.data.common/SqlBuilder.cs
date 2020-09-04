@@ -6,7 +6,6 @@
 using System;
 using System.Linq;
 using System.Text;
-using System.Globalization;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
@@ -139,14 +138,10 @@ namespace magic.data.common
                 switch (idx.Name)
                 {
                     case "and":
-                        if (levelNo != 0)
-                            builder.Append(" and ");
                         BuildWhereLevel(whereNode, builder, idx, "and", ref levelNo);
                         break;
 
                     case "or":
-                        if (levelNo != 0)
-                            builder.Append(" or ");
                         BuildWhereLevel(whereNode, builder, idx, "or", ref levelNo);
                         break;
 
