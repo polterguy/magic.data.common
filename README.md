@@ -6,13 +6,16 @@
 This is the generic data adapter, that transform dynamically from a lambda node structure, into SQL, intended
 to be executed towards your specific database implementation. If you wish to extend Magic to support a custom
 database type, this is the project you'd want to extend from, to make sure you keep the exact same structure as
-you create your lambda objects, intended to be converted into SQL and executed towards some database
+you create your lambda objects, intended to be converted into SQL, and executed towards some database
 type. The project contains 4 base classes, which you should inherit from and extend to implement your custom logic.
 
 * `SqlCreateBuilder` - Helper class to generate insert SQL statements.
 * `SqlDeleteBuilder` - Helper class to generate delete SQL statements.
 * `SqlReadBuilder` - Helper class to generate select SQL statements.
 * `SqlUpdateBuilder` - Helper class to generate update SQL statements.
+
+If you create your own database implementation, you'll need to inherit from the above classes, and override
+whatever parts of these classes that doesn't by default work as your database type needs it to work.
 
 Although the project is _not_ intended to be used directly, but rather through its special implementation,
 such as the MySQL or MS SQL adapters - You can consume the project directly, and it does provide slots
@@ -33,16 +36,12 @@ not support joins.
 
 The project protects you against SQL injection attacks, and values, and criteria, etc - But you should
 _not_ allow the client to dynamically declare which columns to select, and/or field _names_ for
-your `where` clauses. It will only protect your values, and not table column names, etc.
+your `where` clauses. It will only protect your _values_, and _not_ table names, column names, etc.
 
 ## [sql.create]
 
-This slot will generate the SQL necessary to insert a record into a database for you. Its arguments
-can be found below.
-
-* __[values]__ - Values for your new record.
-
-Below is an example of usage.
+This slot will generate the SQL necessary to insert a record into a database for you. It can only be given
+one argument, which is __[values]__. Below is an example of usage.
 
 ```
 sql.create
@@ -64,11 +63,12 @@ sql.create:insert into 'table1' ('field1', 'field2') values (@0, @1)
 
 The basica idea is that everything that might be dynamically injected into your data access layer,
 should be consumed as `SqlParameters`, or something equivalent, to prevent SQL injection attacks
-to your database. This is true for all arguments passed in as data for all slots in the project.
+towards your database. This is true for all arguments passed in as data for all slots in the project.
 
 ## [sql.read]
 
-This slot requires one mandatory argument, being your table name. An example can be found below.
+This slot requires only one mandatory argument, being your table name. The slot creates a select
+SQL statement for you. An example can be found below.
 
 ```
 sql.read
