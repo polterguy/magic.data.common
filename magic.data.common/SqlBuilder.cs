@@ -197,7 +197,12 @@ namespace magic.data.common
 
                     default:
 
-                        levelNo = CreateCondition(result, builder, levelNo, comparisonOperator, idxCol);
+                        levelNo = CreateCondition(
+                            result,
+                            builder,
+                            levelNo,
+                            comparisonOperator,
+                            idxCol);
                         break;
                 }
             }
@@ -237,31 +242,39 @@ namespace magic.data.common
                  * Assuming first part is our operator.
                  */
                 var entities = columnName.Split('.').Reverse();
-                switch (entities.First())
+                var keyword = entities.First();
+                switch (keyword)
                 {
                     case "like":
                         currentOperator = "like";
                         break;
+
                     case "mt":
                         currentOperator = ">";
                         break;
+
                     case "lt":
                         currentOperator = "<";
                         break;
+
                     case "mteq":
                         currentOperator = ">=";
                         break;
+
                     case "lteq":
                         currentOperator = "<=";
                         break;
+
                     case "neq":
                         currentOperator = "!=";
                         break;
+
                     case "eq":
                         currentOperator = "=";
                         break;
+
                     default:
-                        throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
+                        throw new ArgumentException($"'{keyword}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
                 }
                 columnName = string.Join(".", entities.Skip(1).Reverse());
             }
@@ -271,8 +284,7 @@ namespace magic.data.common
                 sqlArgumentName;
             builder.Append(criteria);
             result.Add(new Node(sqlArgumentName, comparisonValue));
-            ++levelNo;
-            return levelNo;
+            return ++levelNo;
         }
 
         /*
