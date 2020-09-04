@@ -212,6 +212,21 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadNegativeLimit()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("limit", -1));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo'", sql);
+        }
+
+        [Fact]
         public void ReadAggregate()
         {
             // Creating node hierarchy.

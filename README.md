@@ -30,13 +30,14 @@ the process for you. The project exposes the following slots.
 
 All of the above slots require you to pass in **[table]** as a mandatory argument, declaring which
 table you intend to create your SQL towards. You can only supply _one_ table. The project does
-not support joins.
+not support joins. The project is intended to create CRUD wrappers for your underlaying database provider.
 
 ## SQL injection attacks
 
-The project protects you against SQL injection attacks, and values, and criteria, etc - But you should
-_not_ allow the client to dynamically declare which columns to select, and/or field _names_ for
-your `where` clauses. It will only protect your _values_, and _not_ table names, column names, etc.
+The project protects you against SQL injection attacks, and protect values, and criteria, etc from
+SQL injection attacks - But you should _not_ allow the client to dynamically declare which columns
+to select, and/or field _names_ for your `where` clauses. It will only protect your _values_,
+and _not_ table names, column names, etc.
 
 ## [sql.create]
 
@@ -105,7 +106,12 @@ sql.read
       field2
 ```
 
-This will result in the following SQL returned `select 'field1','field2' from 'table1' order by 'field3' desc limit 25`.
+This will result in the following SQL returned.
+
+```
+select 'field1','field2' from 'table1' order by 'field3' desc limit 25
+```
+
 **Notice**, you can also create aggregate results, by simply adding your aggregate as your column, such as the
 following illustrates.
 
@@ -117,10 +123,15 @@ sql.read
       count(*)
 ```
 
-The above will result in the following SQL `select count(*) from 'table1'`. **Notice**, by setting **[limit]**
-to _"-1"_, we avoid adding the limit parts to our SQL. Unless you explicitly specify a limit, the default value
-will always be 25, to avoid accidentally exhausting your database, and/or server, by selecting all records from
-a table with millions of records.
+The above will result in the following SQL.
+
+```
+select count(*) from 'table1'
+```
+
+**Notice**, by setting **[limit]** to _"-1"_, we avoid adding the limit parts to our SQL. Unless you explicitly
+specify a limit, the default value will always be 25, to avoid accidentally exhausting your database, and/or
+web server, by selecting all records from a table with millions of records.
 
 ### Paging
 
