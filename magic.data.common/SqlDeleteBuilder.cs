@@ -12,14 +12,14 @@ namespace magic.data.common
     /// Specialised delete SQL builder, to create a delete SQL statement by
     /// semantically traversing an input node.
     /// </summary>
-    public abstract class SqlDeleteBuilder : SqlBuilder
+    public class SqlDeleteBuilder : SqlBuilder
     {
         /// <summary>
         /// Creates a delete SQL statement
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        protected SqlDeleteBuilder(Node node, string escapeChar)
+        public SqlDeleteBuilder(Node node, string escapeChar)
             : base(node, escapeChar)
         { }
 

@@ -14,14 +14,14 @@ namespace magic.data.common
     /// <summary>
     /// Specialised insert SQL builder, to create an insert SQL statement by semantically traversing an input node.
     /// </summary>
-    public abstract class SqlCreateBuilder : SqlBuilder
+    public class SqlCreateBuilder : SqlBuilder
     {
         /// <summary>
         /// Creates an insert SQL statement
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        protected SqlCreateBuilder(Node node, string escapeChar)
+        public SqlCreateBuilder(Node node, string escapeChar)
             : base(node, escapeChar)
         { }
 
@@ -67,6 +67,10 @@ namespace magic.data.common
             // Sanity checking, making sure there's exactly one [values] node.
             if (values.Count() != 1)
                 throw new ArgumentException($"Exactly one [values] needs to be provided to '{GetType().FullName}'");
+
+            // Sanity checking that we've actually got any values to insert.
+            if (!values.First().Children.Any())
+                throw new ArgumentException("No [values] found in lambda");
 
             // Appending column names.
             builder.Append(" (");

@@ -14,14 +14,14 @@ namespace magic.data.common
     /// <summary>
     /// Specialised update SQL builder, to create a select SQL statement by semantically traversing an input node.
     /// </summary>
-    public abstract class SqlUpdateBuilder : SqlBuilder
+    public class SqlUpdateBuilder : SqlBuilder
     {
         /// <summary>
         /// Creates an update SQL statement
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        protected SqlUpdateBuilder(Node node, string escapeChar)
+        public SqlUpdateBuilder(Node node, string escapeChar)
             : base(node, escapeChar)
         { }
 
