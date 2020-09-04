@@ -17,8 +17,8 @@ type. The project contains 4 base classes, which you should inherit from and ext
 Although the project is _not_ intended to be used directly, but rather through its special implementation,
 such as the MySQL or MS SQL adapters - You can consume the project directly, and it does provide slots
 for working directly with the generic adapter - Although, it will never actually execute the SQL,
-but only allow you to generically parse a lambda object, producing SQL and SQL parameters in the process
-for you. The project exposes the following slots.
+but only allow you to generically parse a lambda object, producing generic SQL and SQL parameters in
+the process for you. The project exposes the following slots.
 
 * __[sql.create]__ - Creates an insert SQL for you, using the generic syntax for SQL.
 * __[sql.read]__ - Creates a select SQL for you, using the generic syntax for SQL.
@@ -118,7 +118,9 @@ sql.read
 ```
 
 The above will result in the following SQL `select count(*) from 'table1'`. **Notice**, by setting **[limit]**
-to _"-1"_, we avoid adding the limit parts to our SQL.
+to _"-1"_, we avoid adding the limit parts to our SQL. Unless you explicitly specify a limit, the default value
+will always be 25, to avoid accidentally exhausting your database, and/or serve, by selecting all records from
+a table with millions of records.
 
 ### Paging
 
