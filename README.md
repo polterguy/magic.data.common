@@ -35,7 +35,6 @@ This slot will generate the SQL necessary to insert a record into a database for
 can be found below.
 
 * __[values]__ - Values for your new record.
-* __[where]__ - Where condition. Described further down, since it's common for all slots.
 
 Below is an example of usage.
 
@@ -47,7 +46,7 @@ sql.create
       field2:world
 ```
 
-Notice, to avoid SQL injection attacks, the slot will always return parameters expected to be passed in
+Notice, to avoid SQL injection attacks, this slot will always return parameters expected to be passed in
 from any potentially malicious clients as SQL parameters - Hence, the complete returned value of the
 above Hyperlambda will be as follows.
 
@@ -59,7 +58,7 @@ sql.create:insert into 'table1' ('field1', 'field2') values (@0, @1)
 
 The basica idea is that everything that might be dynamically injected into your data access layer,
 should be consumed as `SqlParameters`, or something equivalent, to prevent SQL injection attacks
-to your database.
+to your database. This is true for all arguments passed in as data for all slots in the project.
 
 ## [sql.read]
 
@@ -85,7 +84,7 @@ You can optionally supply the following arguments to this slot.
 * __[direction]__ - Which direction to order your columns.
 * __[limit]__ - How many records to return, default is 25. Set this value to -1 to avoid having the parser inject it.
 * __[offset]__ - Offset of where to start returning records.
-* __[where]__ - Where condition. Described further down, since it's common for all slots.
+* __[where]__ - Where condition. Described further down, since it's common for all slots that supports `where` clauses.
 
 For instance, to select only the _"field1"_ column and the _"field2"_ column from _"table1"_,
 and ordering descending by _"field3"_ - You can use something resembling the following.
