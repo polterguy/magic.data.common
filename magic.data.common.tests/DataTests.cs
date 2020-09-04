@@ -137,6 +137,24 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithColumns()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "table"));
+            var columns = new Node("columns");
+            columns.Add(new Node("foo"));
+            columns.Add(new Node("bar"));
+            node.Add(columns);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select 'foo','bar' from 'table' limit 25", sql);
+        }
+
+        [Fact]
         public void ReadWithLimitOffset()
         {
             // Creating node hierarchy.
@@ -195,6 +213,35 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'foo' order by 'fieldOrder' limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadWithOrderThrows_01()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "fieldOrder"));
+            node.Add(new Node("order", "fieldOrder"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void ReadWithOrderThrows_02()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "fieldOrder"));
+            node.Add(new Node("direction", "desc"));
+            node.Add(new Node("direction", "desc"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
         }
 
         [Fact]
