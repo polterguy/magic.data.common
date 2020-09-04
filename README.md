@@ -5,9 +5,9 @@
 
 This is the generic data adapter, that transform dynamically from a lambda node structure, into SQL, intended
 to be executed towards your specific database implementation. If you wish to extend Magic to support a custom
-database, this is the project you'd want to extend from, to make sure you keep the exact same structure as
+database type, this is the project you'd want to extend from, to make sure you keep the exact same structure as
 you create your lambda objects, intended to be converted into SQL and executed towards some database
-implementation. It contains 4 basic classes, which you should extend to implement your custom logic.
+type. The project contains 4 base classes, which you should inherit from and extend to implement your custom logic.
 
 * `SqlCreateBuilder` - Helper class to generate insert SQL statements.
 * `SqlDeleteBuilder` - Helper class to generate delete SQL statements.
@@ -20,17 +20,20 @@ for working directly with the generic adapter - Although, it will never actually
 but only allow you to generically parse a lambda object, producing SQL and SQL parameters in the process
 for you. The project exposes the following slots.
 
-* __[sql.create]__ - Creates an insert SQL for you, using the generic syntax for SQL
-* __[sql.read]__ - Creates a select SQL for you, using the generic syntax for SQL
-* __[sql.update]__ - Creates an update SQL for you, using the generic syntax for SQL
-* __[sql.delete]__ - Creates a delete SQL for you, using the generic syntax for SQL
+* __[sql.create]__ - Creates an insert SQL for you, using the generic syntax for SQL.
+* __[sql.read]__ - Creates a select SQL for you, using the generic syntax for SQL.
+* __[sql.update]__ - Creates an update SQL for you, using the generic syntax for SQL.
+* __[sql.delete]__ - Creates a delete SQL for you, using the generic syntax for SQL.
+
+All of the above slots require you to pass in **[table]** as a mandatory argument, declaring which
+table you intend to create your SQL towards. You can only supply _one_ table. The project does
+not support joins.
 
 ## [sql.create]
 
 This slot will generate the SQL necessary to insert a record into a database for you. Its arguments
 can be found below.
 
-* __[table]__ - Mandatory, and defines the table to insert your record into.
 * __[values]__ - Values for your new record.
 * __[where]__ - Where condition. Described further down, since it's common for all slots.
 
