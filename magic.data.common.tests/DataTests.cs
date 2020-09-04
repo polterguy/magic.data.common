@@ -1009,5 +1009,17 @@ namespace magic.data.common.tests
             Assert.Equal("@1", arg2.Name);
             Assert.Equal("value2", arg2.Get<string>());
         }
+
+        [Fact]
+        public void CreateSlot()
+        {
+            var lambda = Common.Evaluate(@"sql.create
+   table:table1
+   values
+      field1:value1");
+            Assert.Equal("insert into 'table1' ('field1') values (@0)", lambda.Children.First().Get<string>());
+            Assert.Equal("@0", lambda.Children.First().Children.First().Name);
+            Assert.Equal("value1", lambda.Children.First().Children.First().Get<string>());
+        }
     }
 }
