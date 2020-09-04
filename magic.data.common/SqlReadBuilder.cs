@@ -77,7 +77,8 @@ namespace magic.data.common
                     throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
 
                 var limitValue = limitNodes.First().GetEx<long>();
-                builder.Append(" limit " + limitValue);
+                if (limitValue > -1)
+                    builder.Append(" limit " + limitValue);
             }
             else
             {

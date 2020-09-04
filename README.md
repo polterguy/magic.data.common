@@ -29,6 +29,12 @@ All of the above slots require you to pass in **[table]** as a mandatory argumen
 table you intend to create your SQL towards. You can only supply _one_ table. The project does
 not support joins.
 
+## SQL injection attacks
+
+The project protects you against SQL injection attacks, and values, and criteria, etc - But you should
+_not_ allow the client to dynamically declare which columns to select, and/or field _names_ for
+your `where` clauses. It will only protect your values, and not table column names, etc.
+
 ## [sql.create]
 
 This slot will generate the SQL necessary to insert a record into a database for you. Its arguments
@@ -106,11 +112,13 @@ following illustrates.
 ```
 sql.read
    table:table1
+   limit:-1
    columns
       count(*)
 ```
 
-The above will result in the following SQL `select count(*) from 'table1' limit 25`.
+The above will result in the following SQL `select count(*) from 'table1'`. **Notice**, by setting **[limit]**
+to _"-1"_, we avoid adding the limit parts to our SQL.
 
 ### Paging
 
