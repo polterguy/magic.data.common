@@ -3,6 +3,7 @@
  * See the enclosed LICENSE file for details.
  */
 
+using System;
 using System.Linq;
 using Xunit;
 using magic.node;
@@ -30,6 +31,13 @@ namespace magic.data.common.tests
             Assert.Equal("insert into 'foo' ('field1') values (@0)", sql);
             Assert.Equal("@0", arg1.Name);
             Assert.Equal("howdy", arg1.Get<string>());
+        }
+
+        [Fact]
+        public void CreateThrows()
+        {
+            Assert.Throws<ArgumentNullException>(() => new SqlCreateBuilder(null, "'"));
+            Assert.Throws<ArgumentNullException>(() => new SqlCreateBuilder(new Node(), null));
         }
 
         [Fact]
