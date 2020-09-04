@@ -27,6 +27,39 @@ for you. The project exposes the following slots.
 
 ## [sql.create]
 
+This slot will generate the SQL necessary to insert a record into a database for you. Its arguments
+can be found below.
+
+* __[table]__ - Mandatory, and defines the table to insert your record into.
+* __[values]__ - Values for your new record.
+* __[where]__ - Where condition. Described further down, since it's common for all slots.
+
+Below is an example of usage.
+
+```
+sql.create
+   table:table1
+   values
+      field1:howdy
+      field2:world
+```
+
+Notice, to avoid SQL injection attacks, the slot will always return parameters expected to be passed in
+from any potentially malicious clients as SQL parameters - Hence, the complete returned value of the
+above Hyperlambda will be as follows.
+
+```
+sql.create:insert into 'table1' ('field1', 'field2') values (@0, @1)
+   @0:howdy
+   @1:world
+```
+
+The basica idea is that everything that might be dynamically injected into your data access layer,
+should be consumed as `SqlParameters`, or something equivalent, to prevent SQL injection attacks
+to your database.
+
+## [sql.read]
+
 This slot requires one mandatory argument, being your table name. An example can be found below.
 
 ```
@@ -34,9 +67,9 @@ sql.read
    table:foo
 ```
 
-The above will result in the following SQL returned to you. Notice, if you're using the special implementations,
+The above will result in the following SQL returned to you. **Notice**, if you're using the special implementations,
 such as e.g. **[mysql.read]** or **[mssql.read]** - The returned SQL might vary, according to your dialect. But the
-results of the SQL will be compatible.
+results of executing the SQL will be the same.
 
 ```
 select * from 'foo' limit 25
@@ -65,7 +98,7 @@ sql.read
 ```
 
 This will result in the following SQL returned `select 'field1','field2' from 'table1' order by 'field3' desc limit 25`.
-Notice, you can also create aggregate results, by simply adding your aggregate as your column, such as the
+**Notice**, you can also create aggregate results, by simply adding your aggregate as your column, such as the
 following illustrates.
 
 ```
@@ -79,7 +112,7 @@ The above will result in the following SQL `select count(*) from 'table1' limit 
 
 ### Paging
 
-To page your results, use **[limit]** and **[offset]**, such as the following illustrates.
+To page your **[sql.read]** results, use **[limit]** and **[offset]**, such as the following illustrates.
 
 ```
 sql.read
