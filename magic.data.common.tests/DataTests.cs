@@ -8,6 +8,7 @@ using System.Linq;
 using Xunit;
 using magic.node;
 using magic.node.extensions;
+using magic.signals.contracts;
 
 namespace magic.data.common.tests
 {
@@ -28,6 +29,67 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             var arg1 = result.Children.First();
+            Assert.Equal("insert into 'foo' ('field1') values (@0)", sql);
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Get<string>());
+        }
+
+        [Fact]
+        public void CreateNoTable()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            node.Add(values);
+            Assert.Throws<ArgumentException>(() => new SqlCreateBuilder(node, "'").Build());
+        }
+
+        [Fact]
+        public void CreateGenerateOnly()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("generate", true));
+            node.Add(new Node("table", "foo"));
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            node.Add(values);
+            var builder = new SqlCreateBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.True(builder.IsGenerateOnly);
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            var arg1 = result.Children.First();
+            Assert.Equal("insert into 'foo' ('field1') values (@0)", sql);
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Get<string>());
+        }
+
+        class SqlMockCreateBuilder : SqlCreateBuilder
+        {
+            public SqlMockCreateBuilder(Node node, ISignaler signaler)
+                : base(node, "'")
+            { }
+        }
+
+        [Fact]
+        public void CreateUsingParse()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("generate", true));
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            node.Add(values);
+            var result = SqlBuilder.Parse<SqlMockCreateBuilder>(null, node);
+            Assert.Null(result);
+
+            // Extracting SQL + params, and asserting correctness.
+            var sql = node.Get<string>();
+            var arg1 = node.Children.First();
             Assert.Equal("insert into 'foo' ('field1') values (@0)", sql);
             Assert.Equal("@0", arg1.Name);
             Assert.Equal("howdy", arg1.Get<string>());
