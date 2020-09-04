@@ -153,6 +153,36 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithLimitOffsetThrows_01()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("limit", 10));
+            node.Add(new Node("limit", 10));
+            node.Add(new Node("offset", 5));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void ReadWithLimitOffsetThrows_02()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("limit", 10));
+            node.Add(new Node("offset", 5));
+            node.Add(new Node("offset", 5));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
         public void ReadWithOrder()
         {
             // Creating node hierarchy.
@@ -165,6 +195,22 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'foo' order by 'fieldOrder' limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadWithOrderDescending()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "fieldOrder"));
+            node.Add(new Node("direction", "desc"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' order by 'fieldOrder' desc limit 25", sql);
         }
 
         [Fact]
