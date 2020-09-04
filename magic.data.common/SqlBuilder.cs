@@ -150,6 +150,17 @@ namespace magic.data.common
                         BuildWhereLevel(whereNode, builder, idx, "or", ref levelNo);
                         break;
 
+                    case "in":
+
+                        // TODO: Refactor and create one implementation, shared with the piece of code below.
+                        levelNo = CreateInCriteria(
+                            whereNode, 
+                            builder, 
+                            levelNo, 
+                            idx.Children.First().Name, 
+                            idx.Children.First().Children.Select(x => x.GetEx<long>()).ToArray());
+                        break;
+
                     default:
                         throw new ArgumentException($"I don't understand '{idx.Name}' as a where clause while trying to build SQL");
                 }

@@ -249,20 +249,60 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            System.Console.WriteLine(sql);
             Assert.Equal("select * from 'foo' where ('foo1' = @0 and 'foo2' = @1 and ('foo3' = @2 or 'foo4' = @3)) limit 25", sql);
+
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
             Assert.Equal(5, arg1.Value);
+
             var arg2 = result.Children.Skip(1).First();
             Assert.Equal("@1", arg2.Name);
             Assert.Equal("howdy", arg2.Value);
+
             var arg3 = result.Children.Skip(2).First();
             Assert.Equal("@2", arg3.Name);
             Assert.Equal("jalla", arg3.Value);
+
             var arg4 = result.Children.Skip(3).First();
             Assert.Equal("@3", arg4.Name);
             Assert.Equal("balla", arg4.Value);
+        }
+
+        [Fact]
+        public void ReadIn()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var in1 = new Node("in");
+            var inValues = new Node("field1");
+            inValues.Add(new Node("", 5));
+            inValues.Add(new Node("", 7));
+            inValues.Add(new Node("", 9));
+            in1.Add(inValues);
+            where.Add(in1);
+            node.Add(where);
+            System.Console.WriteLine(node.ToHyperlambda());
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            System.Console.WriteLine(sql);
+            Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5L, arg1.Value);
+
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal(7L, arg2.Value);
+
+            var arg3 = result.Children.Skip(2).First();
+            Assert.Equal("@2", arg3.Name);
+            Assert.Equal(9L, arg3.Value);
         }
 
         [Fact]
