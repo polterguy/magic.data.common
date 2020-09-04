@@ -158,7 +158,7 @@ namespace magic.data.common
                             builder, 
                             levelNo, 
                             idx.Children.First().Name, 
-                            idx.Children.First().Children.Select(x => x.GetEx<long>()).ToArray());
+                            idx.Children.First().Children.Select(x => x.Value).ToArray());
                         break;
 
                     default:
@@ -323,7 +323,7 @@ namespace magic.data.common
             StringBuilder builder, 
             int levelNo, 
             string columnName, 
-            params long[] values)
+            params object[] values)
         {
             builder.Append(
                 EscapeChar +

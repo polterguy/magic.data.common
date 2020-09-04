@@ -229,7 +229,7 @@ namespace magic.data.common.tests
         }
 
         [Fact]
-        public void ReadWhereMultipleLevels()
+        public void ReadWhereMultipleLevels_01()
         {
             // Creating node hierarchy.
             var node = new Node();
@@ -269,6 +269,46 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWhereMultipleLevels_02()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("or");
+            and1.Add(new Node("foo1", 5));
+            and1.Add(new Node("foo2", "howdy"));
+            var or1 = new Node("and");
+            or1.Add(new Node("foo3", "jalla"));
+            or1.Add(new Node("foo4", "balla"));
+            and1.Add(or1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('foo1' = @0 or 'foo2' = @1 or ('foo3' = @2 and 'foo4' = @3)) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal("howdy", arg2.Value);
+
+            var arg3 = result.Children.Skip(2).First();
+            Assert.Equal("@2", arg3.Name);
+            Assert.Equal("jalla", arg3.Value);
+
+            var arg4 = result.Children.Skip(3).First();
+            Assert.Equal("@3", arg4.Name);
+            Assert.Equal("balla", arg4.Value);
+        }
+
+        [Fact]
         public void ReadIn()
         {
             // Creating node hierarchy.
@@ -277,9 +317,9 @@ namespace magic.data.common.tests
             var where = new Node("where");
             var in1 = new Node("in");
             var inValues = new Node("field1");
-            inValues.Add(new Node("", 5));
-            inValues.Add(new Node("", 7));
-            inValues.Add(new Node("", 9));
+            inValues.Add(new Node("", 5L));
+            inValues.Add(new Node("", 7L));
+            inValues.Add(new Node("", 9L));
             in1.Add(inValues);
             where.Add(in1);
             node.Add(where);
@@ -303,6 +343,42 @@ namespace magic.data.common.tests
             var arg3 = result.Children.Skip(2).First();
             Assert.Equal("@2", arg3.Name);
             Assert.Equal(9L, arg3.Value);
+        }
+
+        [Fact]
+        public void ReadInStrings()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var in1 = new Node("in");
+            var inValues = new Node("field1");
+            inValues.Add(new Node("", "howdy"));
+            inValues.Add(new Node("", "world"));
+            inValues.Add(new Node("", "jalla"));
+            in1.Add(inValues);
+            where.Add(in1);
+            node.Add(where);
+            System.Console.WriteLine(node.ToHyperlambda());
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Value);
+
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal("world", arg2.Value);
+
+            var arg3 = result.Children.Skip(2).First();
+            Assert.Equal("@2", arg3.Name);
+            Assert.Equal("jalla", arg3.Value);
         }
 
         [Fact]
