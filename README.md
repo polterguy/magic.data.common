@@ -34,7 +34,9 @@ sql.read
    table:foo
 ```
 
-The above will result in the following SQL returned to you.
+The above will result in the following SQL returned to you. Notice, if you're using the special implementations,
+such as e.g. **[mysql.read]** or **[mssql.read]** - The returned SQL might vary, according to your dialect. But the
+results of the SQL will be compatible.
 
 ```
 select * from 'foo' limit 25
