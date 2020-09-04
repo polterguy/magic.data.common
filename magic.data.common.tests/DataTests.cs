@@ -48,5 +48,27 @@ namespace magic.data.common.tests
             var sql = result.Get<string>();
             Assert.Equal("select * from 'foo' limit 25", sql);
         }
+
+        [Fact]
+        public void Delete()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and = new Node("and");
+            and.Add(new Node("field1", "value1"));
+            where.Add(and);
+            node.Add(where);
+            var builder = new SqlDeleteBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("delete from 'foo' where ('field1' = @0)", sql);
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("value1", arg1.Get<string>());
+        }
     }
 }
