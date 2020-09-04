@@ -22,7 +22,7 @@ namespace magic.data.common.crud
         /// <param name="input">Arguments to your slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            var builder = new SqlReadBuilder(input, "'");
+            var builder = new SqlUpdateBuilder(input, "'");
             var result = builder.Build();
             input.Value = result.Value;
             input.Clear();

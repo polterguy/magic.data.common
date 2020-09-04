@@ -119,7 +119,7 @@ sql.read
 
 The above will result in the following SQL `select count(*) from 'table1'`. **Notice**, by setting **[limit]**
 to _"-1"_, we avoid adding the limit parts to our SQL. Unless you explicitly specify a limit, the default value
-will always be 25, to avoid accidentally exhausting your database, and/or serve, by selecting all records from
+will always be 25, to avoid accidentally exhausting your database, and/or server, by selecting all records from
 a table with millions of records.
 
 ### Paging
@@ -134,6 +134,27 @@ sql.read
 ```
 
 The above will return the following SQL `select * from 'table1' limit 10 offset 5`.
+
+## [sql.update]
+
+This slot allows you to update one or more records, in a specified **[table]**. Just like create, it requires
+one mandatory argument, being **[values]**, implying columns/values you wish to update. This slot also takes
+an optional **[where]** argument, which is described further down on this page. Its simplest version can be
+imagined such as follows.
+
+```
+sql.update
+   table:table1
+   values
+      field1:howdy
+```
+
+The above of course will result in the following.
+
+```
+sql.update:update 'table1' set 'field1' = @v0
+   @v0:howdy
+```
 
 ## License
 
