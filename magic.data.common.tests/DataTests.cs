@@ -1021,5 +1021,33 @@ namespace magic.data.common.tests
             Assert.Equal("@0", lambda.Children.First().Children.First().Name);
             Assert.Equal("value1", lambda.Children.First().Children.First().Get<string>());
         }
+
+        [Fact]
+        public void ReadSlot()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   table:table1");
+            Assert.Equal("select * from 'table1' limit 25", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void UpdateSlot()
+        {
+            var lambda = Common.Evaluate(@"sql.update
+   table:table1
+   values
+      field1:value1");
+            Assert.Equal("update 'table1' set 'field1' = @v0", lambda.Children.First().Get<string>());
+            Assert.Equal("@v0", lambda.Children.First().Children.First().Name);
+            Assert.Equal("value1", lambda.Children.First().Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void DeleteSlot()
+        {
+            var lambda = Common.Evaluate(@"sql.delete
+   table:table1");
+            Assert.Equal("delete from 'table1'", lambda.Children.First().Get<string>());
+        }
     }
 }
