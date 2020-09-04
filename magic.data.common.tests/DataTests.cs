@@ -75,7 +75,7 @@ namespace magic.data.common.tests
         }
 
         [Fact]
-        public void CreateUsingParse()
+        public void CreateUsingParseGenerate()
         {
             // Creating node hierarchy.
             var node = new Node();
@@ -90,6 +90,26 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var sql = node.Get<string>();
             var arg1 = node.Children.First();
+            Assert.Equal("insert into 'foo' ('field1') values (@0)", sql);
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Get<string>());
+        }
+
+        [Fact]
+        public void CreateUsingParse()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            node.Add(values);
+            var result = SqlBuilder.Parse<SqlMockCreateBuilder>(null, node);
+            Assert.NotNull(result);
+
+            // Extracting SQL + params, and asserting correctness.
+            var sql = result.Get<string>();
+            var arg1 = result.Children.First();
             Assert.Equal("insert into 'foo' ('field1') values (@0)", sql);
             Assert.Equal("@0", arg1.Name);
             Assert.Equal("howdy", arg1.Get<string>());
@@ -195,6 +215,32 @@ namespace magic.data.common.tests
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
             Assert.Equal("value1", arg1.Get<string>());
+        }
+
+        [Fact]
+        public void DeleteWithOr()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var or = new Node("or");
+            or.Add(new Node("field1", "value1"));
+            or.Add(new Node("field2", "value2"));
+            where.Add(or);
+            node.Add(where);
+            var builder = new SqlDeleteBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("delete from 'foo' where ('field1' = @0 or 'field2' = @1)", sql);
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("value1", arg1.Get<string>());
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal("value2", arg2.Get<string>());
         }
     }
 }
