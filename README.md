@@ -3,7 +3,7 @@
 
 [![Build status](https://travis-ci.org/polterguy/magic.data.common.svg?master)](https://travis-ci.org/polterguy/magic.data.common)
 
-This is the generic data adapter, that transform dynamically from a lambda node structure, into SQL intended
+This is the generic data adapter, that transform dynamically from a lambda node structure, into SQL, intended
 to be executed towards your specific database implementation. If you wish to extend Magic to support a custom
 database, this is the project you'd want to extend from, to make sure you keep the exact same structure as
 you create your lambda objects, intended to be converted into SQL and executed towards some database
@@ -37,10 +37,12 @@ select * from 'foo' limit 25
 
 You can optionally supply the following arguments to this slot.
 
-* __[where]__ - Where condition. Described further down, since it's common for all slots.
 * __[columns]__ - Columns to select.
 * __[order]__ - Which column to order the results by.
 * __[direction]__ - Which direction to order your columns.
+* __[limit]__ - How many records to return, default is 25. Set this value to -1 to avoid having the parser inject it.
+* __[offset]__ - Offset of where to start returning records.
+* __[where]__ - Where condition. Described further down, since it's common for all slots.
 
 For instance, to select only the _"field1"_ column and the _"field2"_ column from _"table1"_,
 and ordering descending by _"field3"_ - You can use something resembling the following.
@@ -67,6 +69,19 @@ sql.read
 ```
 
 The above will result in the following SQL `select count(*) from 'table1' limit 25`.
+
+### Paging
+
+To page your results, use **[limit]** and **[offset]**, such as the following illustrates.
+
+```
+sql.read
+   table:table1
+   offset:5
+   limit:10
+```
+
+The above will return the following SQL `select * from 'table1' limit 10 offset 5`.
 
 ## License
 
