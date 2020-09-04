@@ -218,6 +218,37 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void DeleteThrowsMultipleWhere()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and = new Node("and");
+            and.Add(new Node("field1", "value1"));
+            where.Add(and);
+            node.Add(where);
+            node.Add(new Node("where"));
+            var builder = new SqlDeleteBuilder(node, "'");
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void DeleteThrowsWrongBoolean()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and = new Node("xor");
+            and.Add(new Node("field1", "value1"));
+            where.Add(and);
+            node.Add(where);
+            var builder = new SqlDeleteBuilder(node, "'");
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
         public void DeleteWithOr()
         {
             // Creating node hierarchy.
