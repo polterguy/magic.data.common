@@ -278,35 +278,18 @@ namespace magic.data.common
                                 case "eq":
                                     currentOperator = "=";
                                     break;
-                                case "in":
-                                    currentOperator = "in";
-                                    break;
                                 default:
                                     throw new ArgumentException($"'{columnName}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
                             }
                             columnName = string.Join(".", entities.Skip(1).Reverse());
                         }
-                        if (currentOperator == "in")
-                        {
-                            levelNo = CreateInCriteria(
-                                result, 
-                                builder, 
-                                levelNo, 
-                                columnName,
-                                comparisonValue.ToString()
-                                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                    .Select(x => Convert.ToInt64(x, CultureInfo.InvariantCulture)).ToArray());
-                        }
-                        else
-                        {
-                            var criteria = EscapeChar +
-                                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                                EscapeChar + " " + currentOperator + " " +
-                                sqlArgumentName;
-                            builder.Append(criteria);
-                            result.Add(new Node(sqlArgumentName, comparisonValue));
-                            ++levelNo;
-                        }
+                        var criteria = EscapeChar +
+                            columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                            EscapeChar + " " + currentOperator + " " +
+                            sqlArgumentName;
+                        builder.Append(criteria);
+                        result.Add(new Node(sqlArgumentName, comparisonValue));
+                        ++levelNo;
                         break;
                 }
             }

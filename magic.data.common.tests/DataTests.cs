@@ -331,8 +331,6 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            System.Console.WriteLine(result.ToHyperlambda());
-            System.Console.WriteLine(sql);
             Assert.Equal("select * from 'foo' where ('foo1' = @0 or 'foo2' = @1 or 'field1' in (@2,@3)) limit 25", sql);
 
             var arg1 = result.Children.First();
@@ -572,6 +570,150 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'foo' order by 'fieldOrder' desc limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadWithOperators_01()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.eq", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' = @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+        }
+
+        [Fact]
+        public void ReadWithOperators_02()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.neq", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' != @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+        }
+
+        [Fact]
+        public void ReadWithOperators_03()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.mt", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' > @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+        }
+
+        [Fact]
+        public void ReadWithOperators_04()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.lt", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' < @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+        }
+
+        [Fact]
+        public void ReadWithOperators_05()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.mteq", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' >= @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+        }
+
+        [Fact]
+        public void ReadWithOperators_06()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.lteq", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1' <= @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
         }
 
         [Fact]
