@@ -11,9 +11,16 @@ namespace magic.data.common.tests
     public class ConverterTests
     {
         [Fact]
-        public void ConvertNull()
+        public void ConvertDBNull()
         {
             var val = Converter.GetValue(DBNull.Value);
+            Assert.Null(val);
+        }
+
+        [Fact]
+        public void ConvertNull()
+        {
+            var val = Converter.GetValue(null);
             Assert.Null(val);
         }
 

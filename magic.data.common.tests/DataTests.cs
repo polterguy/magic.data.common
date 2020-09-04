@@ -35,6 +35,81 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void CreateMultipleValues()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            values.Add(new Node("field2", "world"));
+            node.Add(values);
+            var builder = new SqlCreateBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("insert into 'foo' ('field1', 'field2') values (@0, @1)", sql);
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Get<string>());
+            var arg2 = result.Children.Skip(1).First();
+            Assert.Equal("@1", arg2.Name);
+            Assert.Equal("world", arg2.Get<string>());
+        }
+
+        [Fact]
+        public void CreateNullValue()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            values.Add(new Node("field2"));
+            node.Add(values);
+            var builder = new SqlCreateBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("insert into 'foo' ('field1', 'field2') values (@0, null)", sql);
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Get<string>());
+        }
+
+        [Fact]
+        public void CreateMultipleValuesThrows_01()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var values = new Node("values");
+            values.Add(new Node("field1", "howdy"));
+            node.Add(values);
+            node.Add(new Node("values"));
+            var builder = new SqlCreateBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void CreateMultipleValuesThrows_02()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var values = new Node("values");
+            node.Add(values);
+            var builder = new SqlCreateBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
         public void CreateNoTable()
         {
             // Creating node hierarchy.
@@ -134,6 +209,23 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'foo' limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadAggregate()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var columns = new Node("columns");
+            columns.Add(new Node("count(*)"));
+            node.Add(columns);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select count(*) from 'foo' limit 25", sql);
         }
 
         [Fact]
@@ -289,6 +381,20 @@ namespace magic.data.common.tests
             node.Add(new Node("order", "fieldOrder"));
             node.Add(new Node("direction", "desc"));
             node.Add(new Node("direction", "desc"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void ReadWithOrderThrows_03()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "fieldOrder"));
+            node.Add(new Node("direction", "throws"));
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
