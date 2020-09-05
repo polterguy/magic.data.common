@@ -429,7 +429,7 @@ sql.update:update 'table1' set 'field1' = @v0
 ## [sql.delete]
 
 This slot works similar to the **[sql.select]** slot, except (ofc) it doesn't allow for **[join]**, and is for
-deleting records. But its where arguments are applied in a similar fashion. You can find an example below.
+deleting records. But its **[where]** argument is applied in a similar fashion. You can find an example below.
 
 ```
 sql.delete
