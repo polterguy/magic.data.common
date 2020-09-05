@@ -245,6 +245,34 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithRecursiveJoin()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var table1 = new Node("table", "table1");
+            var join1 = new Node("join", "table2");
+            join1.Add(new Node("type", "inner"));
+            var on1 = new Node("on");
+            on1.Add(new Node("fk1", "pk1"));
+            join1.Add(on1);
+            var join2 = new Node("join", "table3");
+            var on2 = new Node("on");
+            on2.Add(new Node("fk2", "pk2"));
+            join2.Add(on2);
+            join1.Add(join2);
+            table1.Add(join1);
+            node.Add(table1);
+            System.Console.WriteLine(node.ToHyperlambda());
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            System.Console.WriteLine(sql);
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1', inner join 'table3' on 'table2'.'fk2' = 'table3'.'pk2' limit 25", sql);
+        }
+
+        [Fact]
         public void ReadWithJoinOperator()
         {
             // Creating node hierarchy.

@@ -70,7 +70,17 @@ namespace magic.data.common
                 base.GetTableName(builder);
                 return;
             }
-            GetTableName(builder, tableNode);
+            var idxNo = 0;
+            foreach (var idx in tableNode.GetEx<string>().Split('.'))
+            {
+                if (idxNo++ > 0)
+                    builder.Append(".");
+                builder.Append(EscapeColumnName(idx));
+            }
+            foreach (var idxJoin in tableNode.Children)
+            {
+                GetTableName(builder, tableNode.GetEx<string>(), idxJoin);
+            }
         }
 
         /// <summary>
@@ -203,59 +213,50 @@ namespace magic.data.common
         /*
          * Joins multiple tables into builder.
          */
-        void GetTableName(StringBuilder builder, Node tableNode)
+        void GetTableName(StringBuilder builder, string primaryTableName, Node joinNode)
         {
-            var primaryTableName = tableNode.GetEx<string>();
+            // Appending join and its type.
+            var joinType = joinNode.Children
+                .FirstOrDefault(x => x.Name == "type")?
+                .GetEx<string>() ?? "inner";
+            builder.Append(" ")
+                .Append(joinType)
+                .Append(" join ");
+
+            // Appending secondary table name, and its "on" parts.
+            var secondaryTableName = joinNode.GetEx<string>();
+            GetSingleTableName(builder, secondaryTableName);
+            builder.Append(" on ");
+
+            // Retrieving and appending all "on" criteria.
+            var onNodes = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
+                throw new ArgumentException("No [on] arguments supplied to [join]");
             var idxNo = 0;
-            foreach (var idx in primaryTableName.Split('.'))
+            foreach (var idxOn in onNodes.Children)
             {
+                // Making sure we separate multiple criteria by ",'.
                 if (idxNo++ > 0)
-                    builder.Append(".");
-                builder.Append(EscapeColumnName(idx));
+                    builder.Append(", ");
+
+                // Adding primary table's name, and column.
+                GetSingleTableName(builder, primaryTableName);
+                builder.Append(".")
+                    .Append(EscapeColumnName(idxOn.Name));
+
+                // Adding comparison operator for join.
+                AppendOperator(builder, idxOn);
+
+                // Adding secondary table's name and column.
+                GetSingleTableName(builder, secondaryTableName);
+                builder.Append(".")
+                    .Append(EscapeColumnName(idxOn.GetEx<string>()));
             }
 
-            // Sanity checking invocation.
-            if (tableNode.Children.Any(x => x.Name != "join"))
-                throw new ArgumentException($"I don't understand anything but [join] as arguments to your [table] nodes");
-
-            // Iterating through all [join] arguments specified.
-            foreach (var idx in tableNode.Children)
+            // Recursively iterating through all inner/inner joins
+            foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
-                // Appending join and its type.
-                var joinType = idx.Children
-                    .FirstOrDefault(x => x.Name == "type")?
-                    .GetEx<string>() ?? "inner";
-                builder.Append(" ")
-                    .Append(joinType)
-                    .Append(" join ");
-
-                // Appending secondary table name, and its "on" parts.
-                GetSingleTableName(builder, idx.GetEx<string>());
-                builder.Append(" on ");
-
-                // Retrieving and appending all "on" criteria.
-                idxNo = 0;
-                var onNodes = idx.Children.FirstOrDefault(x => x.Name == "on") ??
-                    throw new ArgumentException("No [on] arguments supplied to [join]");
-                foreach (var idxOn in onNodes.Children)
-                {
-                    // Making sure we separate multiple criteria by ",'.
-                    if (idxNo++ > 0)
-                        builder.Append(", ");
-
-                    // Adding primary table's name, and column.
-                    GetSingleTableName(builder, primaryTableName);
-                    builder.Append(".")
-                        .Append(EscapeColumnName(idxOn.Name));
-
-                    // Adding comparison operator for join.
-                    AppendOperator(builder, idxOn);
-
-                    // Adding secondary table's name and column.
-                    GetSingleTableName(builder, idx.GetEx<string>());
-                    builder.Append(".")
-                        .Append(EscapeColumnName(idxOn.GetEx<string>()));
-                }
+                builder.Append(",");
+                GetTableName(builder, secondaryTableName, idxInner);
             }
         }
 
