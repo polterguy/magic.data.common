@@ -275,7 +275,9 @@ sql.read
 The above lambda will result in the following SQL being generated.
 
 ```
-select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' and 'table1'.'fk2' = 'table2'.'pk2'
+select * from 'table1'
+   inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' and
+      'table1'.'fk2' = 'table2'.'pk2'
 ```
 
 **Notice** - You can currently _only and_ join conditions together, and not use _"or"_ for your joining conditions.
