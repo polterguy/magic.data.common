@@ -60,6 +60,7 @@ namespace magic.data.common
 
         #region [ -- Protected, overridden, and virtual methods -- ]
 
+        /// <inheritdoc />
         protected override void GetTableName(StringBuilder builder)
         {
             var tableNode = Root.Children.FirstOrDefault(x => x.Name == "table") ??
@@ -173,6 +174,9 @@ namespace magic.data.common
 
         #region [ -- Private helper methods -- ]
 
+        /*
+         * Appends all requested columns into resulting builder.
+         */
         void GetColumns(StringBuilder builder)
         {
             var columnsNodes = Root.Children.Where(x => x.Name == "columns");
@@ -194,28 +198,35 @@ namespace magic.data.common
             {
                 if (idxNo++ > 0)
                     builder.Append(",");
+                AppendSingleColumn(builder, idx);
+            }
+        }
 
-                if (idx.Name.Contains("(") && idx.Name.Contains(")"))
+        /*
+         * Appends a single column name into resulting builder.
+         */
+        void AppendSingleColumn(StringBuilder builder, Node columnNode)
+        {
+            if (columnNode.Name.Contains("(") && columnNode.Name.Contains(")"))
+            {
+                builder.Append(columnNode.Name); // Aggregate column, avoid escaping.
+            }
+            else
+            {
+                // Checking if column name is escaped.
+                if (columnNode.Name.StartsWith("\\"))
                 {
-                    builder.Append(idx.Name); // Aggregate column, avoid escaping.
+                    builder.Append(EscapeColumnName(columnNode.Name.Substring(1)));
                 }
                 else
                 {
-                    // Checking if column name is escaped.
-                    if (idx.Name.StartsWith("\\"))
+                    var entities = columnNode.Name.Split('.');
+                    var idxNo2 = 0;
+                    foreach (var idxEntity in entities)
                     {
-                        builder.Append(EscapeColumnName(idx.Name.Substring(1)));
-                    }
-                    else
-                    {
-                        var entities = idx.Name.Split('.');
-                        var idxNo2 = 0;
-                        foreach (var idxEntity in entities)
-                        {
-                            if (idxNo2++ > 0)
-                                throw new ArgumentException($"I don't understand how to create a query traversing more than two entities in [{idx.Name}]");
-                            builder.Append(EscapeColumnName(idxEntity));
-                        }
+                        if (idxNo2++ > 0)
+                            throw new ArgumentException($"I don't understand how to create a query traversing more than two entities for [{columnNode.Name}]");
+                        builder.Append(EscapeColumnName(idxEntity));
                     }
                 }
             }
