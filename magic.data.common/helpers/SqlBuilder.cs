@@ -89,8 +89,8 @@ namespace magic.data.common.helpers
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
-                throw new ArgumentException($"No table name supplied to '{GetType().FullName}'");
-            GetSingleTableName(builder, tableName);
+                throw new ArgumentException($"No [table[ supplied to '{GetType().FullName}'");
+            AppendSingleTableName(builder, tableName);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace magic.data.common.helpers
         /// </summary>
         /// <param name="builder">Where to append table name.</param>
         /// <param name="tableName">Name of table.</param>
-        protected void GetSingleTableName(StringBuilder builder, string tableName)
+        protected void AppendSingleTableName(StringBuilder builder, string tableName)
         {
             /*
              * Notice, if table name contains ".", we assume these are namespace qualifiers

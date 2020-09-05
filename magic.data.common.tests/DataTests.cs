@@ -262,13 +262,11 @@ namespace magic.data.common.tests
             join1.Add(join2);
             table1.Add(join1);
             node.Add(table1);
-            System.Console.WriteLine(node.ToHyperlambda());
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            System.Console.WriteLine(sql);
             Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1', inner join 'table3' on 'table2'.'fk2' = 'table3'.'pk2' limit 25", sql);
         }
 

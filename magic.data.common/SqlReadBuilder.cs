@@ -64,22 +64,14 @@ namespace magic.data.common
         {
             var tableNode = Root.Children.FirstOrDefault(x => x.Name == "table") ??
                 throw new ArgumentException($"No [table] argument supplied to {GetType().FullName}");
-            if (!tableNode.Children.Any())
-            {
-                // No joins here, hence simply invoking base class implementation, and returning early.
-                base.GetTableName(builder);
-                return;
-            }
-            var idxNo = 0;
-            foreach (var idx in tableNode.GetEx<string>().Split('.'))
-            {
-                if (idxNo++ > 0)
-                    builder.Append(".");
-                builder.Append(EscapeColumnName(idx));
-            }
+
+            // Appending base table first.
+            base.GetTableName(builder);
+
+            // Then making sure we apply [join] tables, if there are any.
             foreach (var idxJoin in tableNode.Children)
             {
-                GetTableName(builder, tableNode.GetEx<string>(), idxJoin);
+                AppendJoinedTables(builder, tableNode.GetEx<string>(), idxJoin);
             }
         }
 
@@ -213,8 +205,15 @@ namespace magic.data.common
         /*
          * Joins multiple tables into builder.
          */
-        void GetTableName(StringBuilder builder, string primaryTableName, Node joinNode)
+        void AppendJoinedTables(
+            StringBuilder builder,
+            string primaryTableName,
+            Node joinNode)
         {
+            // Sanity checking invocation.
+            if (joinNode.Name != "join")
+                throw new ArgumentException($"I don't understand [{joinNode.Name}], only [join] arguments here.");
+
             // Appending join and its type.
             var joinType = joinNode.Children
                 .FirstOrDefault(x => x.Name == "type")?
@@ -225,7 +224,7 @@ namespace magic.data.common
 
             // Appending secondary table name, and its "on" parts.
             var secondaryTableName = joinNode.GetEx<string>();
-            GetSingleTableName(builder, secondaryTableName);
+            AppendSingleTableName(builder, secondaryTableName);
             builder.Append(" on ");
 
             // Retrieving and appending all "on" criteria.
@@ -239,7 +238,7 @@ namespace magic.data.common
                     builder.Append(", ");
 
                 // Adding primary table's name, and column.
-                GetSingleTableName(builder, primaryTableName);
+                AppendSingleTableName(builder, primaryTableName);
                 builder.Append(".")
                     .Append(EscapeColumnName(idxOn.Name));
 
@@ -247,7 +246,7 @@ namespace magic.data.common
                 AppendOperator(builder, idxOn);
 
                 // Adding secondary table's name and column.
-                GetSingleTableName(builder, secondaryTableName);
+                AppendSingleTableName(builder, secondaryTableName);
                 builder.Append(".")
                     .Append(EscapeColumnName(idxOn.GetEx<string>()));
             }
@@ -256,7 +255,7 @@ namespace magic.data.common
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
                 builder.Append(",");
-                GetTableName(builder, secondaryTableName, idxInner);
+                AppendJoinedTables(builder, secondaryTableName, idxInner);
             }
         }
 
