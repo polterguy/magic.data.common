@@ -32,6 +32,13 @@ All of the above slots require you to pass in **[table]** as a mandatory argumen
 table you intend to create your SQL towards. You can only supply _one_ table, but you can create joins on that
 single table, allowing you to create inner and outer joins, extracting data from multiple tables in a single SQL.
 
+## Project's intentions
+
+This project will _never_ solve _all_ your SQL problems, and it's probably impossible to abstract away
+all differences between all different database providers - But its intentions are to make it possible to
+generically declare a lambda object for 80% of your use cases, which you can then later decide which database
+to execute towards.
+
 ## SQL injection attacks
 
 The project protects you automatically against SQL injection attacks, and protect values, and criteria, etc.
@@ -282,8 +289,20 @@ Resulting in the following SQL.
 select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1'
 ```
 
+You can use the following operators in your joins.
+
+* `=`
+* `!=`
+* `>`
+* `<`
+* `>=`
+* `<=`
+
 The **[type]** argument to your **[join]** arguments, can only currently be _"inner"_ or _"outer"_, allowing
 only for inner joins and outer joins.
+
+The primary table's column is always assumed to be the name of the node, and the secondary (joined table's) column
+is always assumed to be the value of the node.
 
 #### 'Namespacing' columns
 
