@@ -125,10 +125,15 @@ namespace magic.data.common
                         throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [direction] nodes");
 
                     var dir = direction.First().GetEx<string>();
-                    if (dir != "asc" && dir != "desc")
-                        throw new ArgumentException($"I don't know how to sort according to the '{dir}' [direction], only 'asc' and 'desc'");
-
-                    builder.Append(" " + dir);
+                    switch (dir)
+                    {
+                        case "asc":
+                        case "desc":
+                            builder.Append(" ").Append(dir);
+                            break;
+                        default:
+                            throw new ArgumentException($"I don't know how to sort according to the '{dir}' [direction], only 'asc' and 'desc'");
+                    }
                 }
             }
             else
