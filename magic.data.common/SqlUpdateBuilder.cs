@@ -61,15 +61,19 @@ namespace magic.data.common
         void GetValues(StringBuilder builder, Node result)
         {
             var valuesNodes = Root.Children.Where(x => x.Name == "values");
-            if (!valuesNodes.Any() || !valuesNodes.First().Children.Any())
+            if (!valuesNodes.Any())
                 throw new ArgumentException($"Missing [values] node in '{GetType().FullName}'");
 
+            var valuesNode = valuesNodes.First();
+            if (!valuesNode.Children.Any())
+                throw new ArgumentException($"No actual [values] provided to '{GetType().FullName}'");
+
             var idxNo = 0;
-            foreach (var idxCol in valuesNodes.First().Children)
+            foreach (var idxCol in valuesNode.Children)
             {
                 if (idxNo > 0)
                     builder.Append(", ");
-                builder.Append(EscapeChar + idxCol.Name.Replace(EscapeChar, EscapeChar + EscapeChar) + EscapeChar);
+                builder.Append(EscapeColumnName(idxCol.Name));
                 if (idxCol.Value == null)
                 {
                     builder.Append(" = null");

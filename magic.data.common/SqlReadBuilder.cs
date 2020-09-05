@@ -113,8 +113,8 @@ namespace magic.data.common
                 if (orderNodes.Count() > 1)
                     throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [order] nodes");
 
-                var orderColumn = orderNodes.First().GetEx<string>().Replace(EscapeChar, EscapeChar + EscapeChar);
-                builder.Append(" order by " + EscapeChar + orderColumn + EscapeChar);
+                var orderColumn = EscapeColumnName(orderNodes.First().GetEx<string>());
+                builder.Append(" order by " + orderColumn);
 
                 // Checking if [direction] node exists.
                 var direction = Root.Children.Where(x => x.Name == "direction");
@@ -169,7 +169,7 @@ namespace magic.data.common
                     if (idx.Name.Contains("(") && idx.Name.Contains(")"))
                         builder.Append(idx.Name); // Aggregate column
                     else
-                        builder.Append(EscapeChar + idx.Name.Replace(EscapeChar, EscapeChar + EscapeChar) + EscapeChar);
+                        builder.Append(EscapeColumnName(idx.Name));
                 }
             }
             else

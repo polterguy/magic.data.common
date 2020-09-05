@@ -58,9 +58,9 @@ namespace magic.data.common
         /// <summary>
         /// Adds the 'values' parts of your SQL to the specified string builder.
         /// </summary>
-        /// <param name="valuesNode">Current input node from where to start looking for semantic values parts.</param>
+        /// <param name="result">Current input node from where to start looking for semantic values parts.</param>
         /// <param name="builder">String builder to put the results into.</param>
-        protected virtual void BuildValues(Node valuesNode, StringBuilder builder)
+        protected virtual void BuildValues(Node result, StringBuilder builder)
         {
             // Appending actual insertion values.
             var values = Root.Children.Where(x => x.Name == "values");
@@ -83,7 +83,7 @@ namespace magic.data.common
                 else
                     builder.Append(", ");
 
-                builder.Append(EscapeChar + idx.Name.Replace(EscapeChar, EscapeChar + EscapeChar) + EscapeChar);
+                builder.Append(EscapeColumnName(idx.Name));
             }
 
             // Appending actual values, as parameters.
@@ -106,7 +106,7 @@ namespace magic.data.common
                 else
                 {
                     builder.Append("@" + idxNo);
-                    valuesNode.Add(new Node("@" + idxNo, idx.GetEx<object>()));
+                    result.Add(new Node("@" + idxNo, idx.GetEx<object>()));
                     ++idxNo;
                 }
             }

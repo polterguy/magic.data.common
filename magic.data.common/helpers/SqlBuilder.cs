@@ -102,10 +102,20 @@ namespace magic.data.common.helpers
                     first = false;
                 else
                     builder.Append(".");
-                builder.Append(EscapeChar);
-                builder.Append(idx.Replace(EscapeChar, EscapeChar + EscapeChar));
-                builder.Append(EscapeChar);
+                builder.Append(EscapeColumnName(idx));
             }
+        }
+
+        /// <summary>
+        /// Escapes a column name, and returns to caller.
+        /// </summary>
+        /// <param name="column">Name of column as supplied by lambda object.</param>
+        /// <returns></returns>
+        protected virtual string EscapeColumnName(string column)
+        {
+            return EscapeChar + 
+                column.Replace(EscapeChar, EscapeChar + EscapeChar) +
+                EscapeChar;
         }
 
         #endregion

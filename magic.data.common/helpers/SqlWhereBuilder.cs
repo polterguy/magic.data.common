@@ -149,7 +149,7 @@ namespace magic.data.common.helpers
             // Field comparison of some sort.
             var comparisonValue = idxCol.GetEx<object>();
             var currentOperator = comparisonOperator;
-            var sqlArgumentName = "@" + levelNo;
+            var argName = "@" + levelNo;
             var columnName = idxCol.Name;
             if (columnName.StartsWith("\\"))
             {
@@ -203,12 +203,12 @@ namespace magic.data.common.helpers
                 }
                 columnName = string.Join(".", entities.Skip(1).Reverse());
             }
-            var criteria = EscapeChar +
-                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                EscapeChar + " " + currentOperator + " " +
-                sqlArgumentName;
-            builder.Append(criteria);
-            result.Add(new Node(sqlArgumentName, comparisonValue));
+            builder.Append(EscapeColumnName(columnName))
+                .Append(" ")
+                .Append(currentOperator)
+                .Append(" ")
+                .Append(argName);
+            result.Add(new Node(argName, comparisonValue));
             return ++levelNo;
         }
 
@@ -222,10 +222,8 @@ namespace magic.data.common.helpers
             string columnName, 
             params object[] values)
         {
-            builder.Append(
-                EscapeChar +
-                columnName.Replace(EscapeChar, EscapeChar + EscapeChar) +
-                EscapeChar + " in ");
+            builder.Append(EscapeColumnName(columnName));
+            builder.Append(" in ");
             builder.Append("(");
             var firstInValue = true;
             foreach (var idx in values)
