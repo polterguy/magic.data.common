@@ -220,9 +220,9 @@ Combining this with the join features from this project, allows you to create an
 
 ### Joins
 
-The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments. If you
-have created the Sakila example database from Oracle, you can execute the following MySQL join SQL statement
-to see a recursive join.
+The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments, beneath your
+**[table]** argument. If you have created the Sakila example database from Oracle, you can execute the following MySQL
+join SQL statement to see a recursive join.
 
 ```
 mysql.connect:sakila
@@ -237,12 +237,12 @@ mysql.connect:sakila
             type:inner
             on
                and
-                  film_id:film_id
+                  film.film_id:film_actor.film_id
             join:actor
                type:inner
                on
                   and
-                     actor_id:actor_id
+                     film_actor.actor_id:actor.actor_id
 ```
 
 **Notice** - The above lambda assumes you've got Oracle's Sakila database in your MySQL instance. If you only wish to see
