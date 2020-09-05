@@ -90,18 +90,7 @@ namespace magic.data.common.helpers
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
                 throw new ArgumentException($"No table name supplied to '{GetType().FullName}'");
-
-            /*
-             * Notice, if table name contains ".", we assume these are namespace qualifiers
-             * (MS SQL server type of namespaces).
-             */
-            var idxNo = 0;
-            foreach (var idx in tableName.Split('.'))
-            {
-                if (idxNo++ > 0)
-                    builder.Append(".");
-                builder.Append(EscapeColumnName(idx));
-            }
+            GetSingleTableName(builder, tableName);
         }
 
         /// <summary>
@@ -114,6 +103,26 @@ namespace magic.data.common.helpers
             return EscapeChar + 
                 column.Replace(EscapeChar, EscapeChar + EscapeChar) +
                 EscapeChar;
+        }
+
+        /// <summary>
+        /// Escapes a single table name, and appends to builder.
+        /// </summary>
+        /// <param name="builder">Where to append table name.</param>
+        /// <param name="tableName">Name of table.</param>
+        protected void GetSingleTableName(StringBuilder builder, string tableName)
+        {
+            /*
+             * Notice, if table name contains ".", we assume these are namespace qualifiers
+             * (MS SQL server type of namespaces).
+             */
+            var idxNo = 0;
+            foreach (var idx in tableName.Split('.'))
+            {
+                if (idxNo++ > 0)
+                    builder.Append(".");
+                builder.Append(EscapeColumnName(idx));
+            }
         }
 
         #endregion

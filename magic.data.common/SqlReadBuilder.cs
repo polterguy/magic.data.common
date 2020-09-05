@@ -58,7 +58,20 @@ namespace magic.data.common
             return result;
         }
 
-        #region [ -- Protected and virtual methods -- ]
+        #region [ -- Protected, overridden, and virtual methods -- ]
+
+        protected override void GetTableName(StringBuilder builder)
+        {
+            var tableNode = Root.Children.FirstOrDefault(x => x.Name == "table") ??
+                throw new ArgumentException($"No [table] argument supplied to {GetType().FullName}");
+            if (!tableNode.Children.Any())
+            {
+                // No joins here, hence simply invoking base class implementation, and returning early.
+                base.GetTableName(builder);
+                return;
+            }
+            GetTableName(builder, tableNode);
+        }
 
         /// <summary>
         /// Adds limit and offset parts to your SQL if requested by caller.
@@ -184,6 +197,48 @@ namespace magic.data.common
                     builder.Append(idx.Name); // Aggregate column, avoid escaping.
                 else
                     builder.Append(EscapeColumnName(idx.Name));
+            }
+        }
+
+        /*
+         * Joins multiple tables into builder.
+         */
+        void GetTableName(StringBuilder builder, Node tableNode)
+        {
+            var tableName = tableNode.GetEx<string>();
+            var idxNo = 0;
+            foreach (var idx in tableName.Split('.'))
+            {
+                if (idxNo++ > 0)
+                    builder.Append(".");
+                builder.Append(EscapeColumnName(idx));
+            }
+            if (tableNode.Children.Any(x => x.Name != "join"))
+                throw new ArgumentException($"I don't understand anything but [join] as arguments to your [table] nodes");
+            foreach (var idx in tableNode.Children)
+            {
+                var type = idx.Children
+                    .FirstOrDefault(x => x.Name == "type")?
+                    .GetEx<string>() ?? "inner";
+                builder.Append(" ")
+                    .Append(type)
+                    .Append(" join ");
+                GetSingleTableName(builder, idx.GetEx<string>());
+                builder.Append(" on ");
+
+                // Figuring out "on" parts.
+                var onNodes = idx.Children.FirstOrDefault(x => x.Name == "on") ??
+                    throw new ArgumentException("No [on] arguments supplied to [join]");
+                foreach (var idxOn in onNodes.Children)
+                {
+                    GetSingleTableName(builder, tableName);
+                    builder.Append(".")
+                        .Append(EscapeColumnName(idxOn.Name));
+                    builder.Append(" = "); // TODO: Implement multiple operators.
+                    GetSingleTableName(builder, idx.GetEx<string>());
+                    builder.Append(".")
+                        .Append(EscapeColumnName(idxOn.GetEx<string>()));
+                }
             }
         }
 
