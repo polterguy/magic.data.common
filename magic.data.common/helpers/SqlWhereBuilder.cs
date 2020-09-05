@@ -52,12 +52,26 @@ namespace magic.data.common.helpers
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
 
+            AppendWhereLevel(result, builder, whereNodes.First());
+        }
+
+        /// <summary>
+        /// Appends a single [where] level.
+        /// </summary>
+        /// <param name="result">Where to append arguments, if requested by caller.</param>
+        /// <param name="builder">Where to append SQL.</param>
+        /// <param name="whereNodes">Where nodes for current level.</param>
+        protected void AppendWhereLevel(
+            Node result,
+            StringBuilder builder,
+            Node whereNode)
+        {
             /*
              * Recursively looping through each level, and appending its parts
              * as a "name/value" collection, making sure we add each value as an
              * SQL parameter.
              */
-            foreach (var idx in whereNodes.First().Children)
+            foreach (var idx in whereNode.Children)
             {
                 switch (idx.Name)
                 {
@@ -158,7 +172,6 @@ namespace magic.data.common.helpers
             // Field comparison of some sort.
             var comparisonValue = idxCol.GetEx<object>();
             var currentOperator = "=";
-            var argName = "@" + levelNo;
             var columnName = idxCol.Name;
             if (columnName.StartsWith("\\"))
             {
@@ -238,9 +251,25 @@ namespace magic.data.common.helpers
             builder.Append(columnName)
                 .Append(" ")
                 .Append(currentOperator)
-                .Append(" ")
-                .Append(argName);
-            result.Add(new Node(argName, comparisonValue));
+                .Append(" ");
+
+            // If this is a [join] invocation, then result will be null.
+            if (result != null)
+            {
+                var argName = "@" + levelNo;
+                builder.Append(argName);
+                result.Add(new Node(argName, comparisonValue));
+            }
+            else
+            {
+                // Join invocation.
+                var rhs = string.Join(
+                    ".",
+                    idxCol.GetEx<string>()
+                        .Split('.')
+                        .Select(x => EscapeColumnName(x)));
+                builder.Append(rhs);
+            }
         }
 
         /*

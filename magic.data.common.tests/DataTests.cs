@@ -232,7 +232,9 @@ namespace magic.data.common.tests
             var join1 = new Node("join", "table2");
             join1.Add(new Node("type", "inner"));
             var on1 = new Node("on");
-            on1.Add(new Node("fk1", "pk1"));
+            var and1 = new Node("and");
+            and1.Add(new Node("table1.fk1", "table2.pk1"));
+            on1.Add(and1);
             join1.Add(on1);
             table1.Add(join1);
             node.Add(table1);
@@ -253,7 +255,9 @@ namespace magic.data.common.tests
             var join1 = new Node("join", "table2");
             join1.Add(new Node("type", "innerXX"));
             var on1 = new Node("on");
-            on1.Add(new Node("fk1", "pk1"));
+            var and1 = new Node("and");
+            and1.Add(new Node("fk1", "pk1"));
+            on1.Add(and1);
             join1.Add(on1);
             table1.Add(join1);
             node.Add(table1);
@@ -272,11 +276,15 @@ namespace magic.data.common.tests
             var join1 = new Node("join", "table2");
             join1.Add(new Node("type", "inner"));
             var on1 = new Node("on");
-            on1.Add(new Node("fk1", "pk1"));
+            var and1 = new Node("and");
+            and1.Add(new Node("table1.fk1", "table2.pk1"));
+            on1.Add(and1);
             join1.Add(on1);
             var join2 = new Node("join", "table3");
             var on2 = new Node("on");
-            on2.Add(new Node("fk2", "pk2"));
+            var and2 = new Node("and");
+            and2.Add(new Node("fk2", "pk2"));
+            on2.Add(and2);
             join2.Add(on2);
             join1.Add(join2);
             table1.Add(join1);
@@ -286,7 +294,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' inner join 'table3' on 'table2'.'fk2' = 'table3'.'pk2' limit 25", sql);
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' inner join 'table3' on 'fk2' = 'pk2' limit 25", sql);
         }
 
         [Fact]
@@ -298,9 +306,9 @@ namespace magic.data.common.tests
             var join1 = new Node("join", "table2");
             join1.Add(new Node("type", "inner"));
             var on1 = new Node("on");
-            var on1Crit = new Node("fk1", "pk1");
-            on1Crit.Add(new Node("operator", "!="));
-            on1.Add(on1Crit);
+            var and1 = new Node("and");
+            and1.Add(new Node("fk1.neq", "pk1"));
+            on1.Add(and1);
             join1.Add(on1);
             table1.Add(join1);
             node.Add(table1);
@@ -309,71 +317,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1' limit 25", sql);
-        }
-
-        [Fact]
-        public void ReadWithBogusJoinOperatorThrows_01()
-        {
-            // Creating node hierarchy.
-            var node = new Node();
-            var table1 = new Node("table", "table1");
-            var join1 = new Node("join", "table2");
-            join1.Add(new Node("type", "inner"));
-            var on1 = new Node("on");
-            var on1Crit = new Node("fk1", "pk1");
-            on1Crit.Add(new Node("operator", "!===="));
-            on1.Add(on1Crit);
-            join1.Add(on1);
-            table1.Add(join1);
-            node.Add(table1);
-            var builder = new SqlReadBuilder(node, "'");
-
-            // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
-        }
-
-        [Fact]
-        public void ReadWithBogusJoinOperatorThrows_02()
-        {
-            // Creating node hierarchy.
-            var node = new Node();
-            var table1 = new Node("table", "table1");
-            var join1 = new Node("join", "table2");
-            join1.Add(new Node("type", "inner"));
-            var on1 = new Node("on");
-            var on1Crit = new Node("fk1", "pk1");
-            on1Crit.Add(new Node("operatorXX", "!="));
-            on1.Add(on1Crit);
-            join1.Add(on1);
-            table1.Add(join1);
-            node.Add(table1);
-            var builder = new SqlReadBuilder(node, "'");
-
-            // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
-        }
-
-        [Fact]
-        public void ReadWithBogusJoinOperatorThrows_03()
-        {
-            // Creating node hierarchy.
-            var node = new Node();
-            var table1 = new Node("table", "table1");
-            var join1 = new Node("join", "table2");
-            join1.Add(new Node("type", "inner"));
-            var on1 = new Node("on");
-            var on1Crit = new Node("fk1", "pk1");
-            on1Crit.Add(new Node("operator", "!="));
-            on1Crit.Add(new Node("operator", "!="));
-            on1.Add(on1Crit);
-            join1.Add(on1);
-            table1.Add(join1);
-            node.Add(table1);
-            var builder = new SqlReadBuilder(node, "'");
-
-            // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'fk1' != 'pk1' limit 25", sql);
         }
 
         [Fact]
@@ -385,8 +329,10 @@ namespace magic.data.common.tests
             var join1 = new Node("join", "table2");
             join1.Add(new Node("type", "inner"));
             var on1 = new Node("on");
-            on1.Add(new Node("fk1", "pk1"));
-            on1.Add(new Node("fk2", "pk2"));
+            var and1 = new Node("and");
+            and1.Add(new Node("table1.fk1", "table2.pk1"));
+            and1.Add(new Node("table1.fk2", "table2.pk2"));
+            on1.Add(and1);
             join1.Add(on1);
             table1.Add(join1);
             node.Add(table1);
@@ -407,7 +353,9 @@ namespace magic.data.common.tests
             var join1 = new Node("join", "dbo.table2");
             join1.Add(new Node("type", "inner"));
             var on1 = new Node("on");
-            on1.Add(new Node("fk1", "pk1"));
+            var and1 = new Node("and");
+            and1.Add(new Node("dbo.table1.fk1", "dbo.table2.pk1"));
+            on1.Add(and1);
             join1.Add(on1);
             table1.Add(join1);
             node.Add(table1);
@@ -427,7 +375,9 @@ namespace magic.data.common.tests
             var table1 = new Node("table", "table1");
             var join1 = new Node("join", "table2");
             var on1 = new Node("on");
-            on1.Add(new Node("fk1", "pk1"));
+            var and1 = new Node("and");
+            and1.Add(new Node("table1.fk1", "table2.pk1"));
+            on1.Add(and1);
             join1.Add(on1);
             table1.Add(join1);
             node.Add(table1);
@@ -1484,8 +1434,9 @@ namespace magic.data.common.tests
       join:table2
          type:inner
          on
-            field1:field2");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2'", lambda.Children.First().Get<string>());
+            and
+               field1:field2");
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'field1' = 'field2'", lambda.Children.First().Get<string>());
         }
 
         [Fact]
@@ -1497,9 +1448,10 @@ namespace magic.data.common.tests
       join:table2
          type:inner
          on
-            field1:field2
-            field3:field4");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2' and 'table1'.'field3' = 'table2'.'field4'", lambda.Children.First().Get<string>());
+            and
+               field1:field2
+               field3:field4");
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'field1' = 'field2' and 'field3' = 'field4'", lambda.Children.First().Get<string>());
         }
 
         [Fact]
@@ -1511,12 +1463,14 @@ namespace magic.data.common.tests
       join:table2
          type:inner
          on
-            field1:field2
+            and
+               field1.eq:field2
          join:table3
             type:outer
             on
-               field3:field4");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2' outer join 'table3' on 'table2'.'field3' = 'table3'.'field4'", lambda.Children.First().Get<string>());
+               and
+                  field3.eq:field4");
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'field1' = 'field2' outer join 'table3' on 'field3' = 'field4'", lambda.Children.First().Get<string>());
         }
 
         [Fact]

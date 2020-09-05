@@ -236,11 +236,13 @@ mysql.connect:sakila
          join:film_actor
             type:inner
             on
-               film_id:film_id
+               and
+                  film_id:film_id
             join:actor
                type:inner
                on
-                  actor_id:actor_id
+                  and
+                     actor_id:actor_id
 ```
 
 **Notice** - The above lambda assumes you've got Oracle's Sakila database in your MySQL instance. If you only wish to see
@@ -268,8 +270,9 @@ sql.read
    table:table1
       join:table2
          on
-            fk1:pk1
-            fk2:pk2
+            and
+               fk1:pk1
+               fk2:pk2
 ```
 
 The above lambda will result in the following SQL being generated.
@@ -280,9 +283,9 @@ select * from 'table1'
       'table1'.'fk2' = 'table2'.'pk2'
 ```
 
-**Notice** - You can currently _only and_ join conditions together, and not use _"or"_ for your joining conditions.
-However, you _can_ use different operators for your anded join conditions, by appending an **[operator]** argument
-beneath your **[on]** conditions, such as the following illustrates.
+**Notice** - Joining tables works exactly the same way as using a **[where]** argument, allowing you
+to supply an operator for your join, such as we illustrate below, where we're using the _"!="_ operator,
+instead of the (default) equality comparison.
 
 ```
 sql.read
@@ -291,8 +294,8 @@ sql.read
       join:table2
          type:inner
          on
-            fk1:pk1
-               operator:!=
+            and
+               fk1.neq:pk1
 ```
 
 Resulting in the following SQL.

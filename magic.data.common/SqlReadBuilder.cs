@@ -286,66 +286,14 @@ namespace magic.data.common
             builder.Append(" on ");
 
             // Retrieving and appending all "on" criteria.
-            var onNodes = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
-                throw new ArgumentException("No [on] arguments supplied to [join]");
-            var idxNo = 0;
-            foreach (var idxOn in onNodes.Children)
-            {
-                // Making sure we separate multiple criteria by ",'.
-                if (idxNo++ > 0)
-                    builder.Append(" and ");
-
-                // Adding primary table's name, and column.
-                AppendSingleTableName(builder, primaryTableName);
-                builder.Append(".")
-                    .Append(EscapeColumnName(idxOn.Name));
-
-                // Adding comparison operator for join.
-                AppendJoinOperator(builder, idxOn);
-
-                // Adding secondary table's name and column.
-                AppendSingleTableName(builder, secondaryTableName);
-                builder.Append(".")
-                    .Append(EscapeColumnName(idxOn.GetEx<string>()));
-            }
+            var onNode = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
+                throw new ArgumentException("No [on] argument supplied to [join]");
+            AppendWhereLevel(null, builder, onNode);
 
             // Recursively iterating through all inner/inner joins
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
                 AppendJoinedTables(builder, secondaryTableName, idxInner);
-            }
-        }
-
-        /*
-         * Appends a join operator to builder.
-         */
-        void AppendJoinOperator(StringBuilder builder, Node node)
-        {
-            if (!node.Children.Any())
-            {
-                // Defaulting operator to "=".
-                builder.Append(" = ");
-                return;
-            }
-            if (node.Children.Any(x => x.Name != "operator"))
-                throw new ArgumentException("Only [operator] arguments can be supplied to your [on] criteria");
-            if (node.Children.Count() > 1)
-                throw new ArgumentException("Only one [operator] argument can be supplied to your [on] criteria");
-            var oper = node.Children.FirstOrDefault().GetEx<string>();
-            switch (oper)
-            {
-                case "=":
-                case "!=":
-                case ">":
-                case "<":
-                case ">=":
-                case "<=":
-                    builder.Append(" ")
-                        .Append(oper)
-                        .Append(" ");
-                    break;
-                default:
-                    throw new ArgumentException($"Operator '{oper}' is not a known operator for joins");
             }
         }
 
