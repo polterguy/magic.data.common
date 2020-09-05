@@ -234,18 +234,61 @@ namespace magic.data.common
                 builder.Append(" on ");
 
                 // Retrieving and appending all "on" criteria.
+                idxNo = 0;
                 var onNodes = idx.Children.FirstOrDefault(x => x.Name == "on") ??
                     throw new ArgumentException("No [on] arguments supplied to [join]");
                 foreach (var idxOn in onNodes.Children)
                 {
+                    // Making sure we separate multiple criteria by ",'.
+                    if (idxNo++ > 0)
+                        builder.Append(", ");
+
+                    // Adding primary table's name, and column.
                     GetSingleTableName(builder, primaryTableName);
                     builder.Append(".")
                         .Append(EscapeColumnName(idxOn.Name));
-                    builder.Append(" = "); // TODO: Implement multiple operators.
+
+                    // Adding comparison operator for join.
+                    AppendOperator(builder, idxOn);
+
+                    // Adding secondary table's name and column.
                     GetSingleTableName(builder, idx.GetEx<string>());
                     builder.Append(".")
                         .Append(EscapeColumnName(idxOn.GetEx<string>()));
                 }
+            }
+        }
+
+        /*
+         * Appends a join operator to builder.
+         */
+        void AppendOperator(StringBuilder builder, Node node)
+        {
+            if (!node.Children.Any())
+            {
+                // Defaulting operator to "=".
+                builder.Append(" = ");
+                return;
+            }
+            if (node.Children.Any(x => x.Name != "operator"))
+                throw new ArgumentException("Only [operator] arguments can be supplied to your [on] criteria");
+            if (node.Children.Count() > 1)
+                throw new ArgumentException("Only one [operator] argument can be supplied to your [on] criteria");
+            var oper = node.Children.FirstOrDefault().GetEx<string>();
+            switch (oper)
+            {
+                case "=":
+                case "!=":
+                case ">":
+                case "<":
+                case ">=":
+                case "<=":
+                    builder.Append(" ")
+                        .Append(oper)
+                        .Append(" ");
+                    break;
+                default:
+                    throw new ArgumentException($"Operator '{oper}' is not a known operator for joins");
             }
         }
 
