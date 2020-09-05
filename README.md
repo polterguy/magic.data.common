@@ -516,6 +516,38 @@ with, contrary to traditional languages, where you separate your conditions with
 This might seem a little bit backwards in the beginning, but this is a general rule with everything in
 Hyperlambda, and after a while will feel more natural than the alternatives.
 
+### Comparison operators
+
+The project supports the following comparison operators.
+
+* `eq` - Equality comparison, equivalent to `=`
+* `neq` - Not equality comparison, equivalent to `!=`
+* `mt` - More than comparison, equivalent to `>`
+* `lt` - Less than comparison, equivalent to `<`
+* `lteq` - Less than or equal comparison, equivalent to `<=`
+* `mteq` - More than or equal comparison, equivalent to `>=`
+* `like` - Like comparison, equivalent to SQL's `like` comparison
+
+Everywhere you need to compare one field with another, such as in **[where]** or **[join]**
+arguments, you can append a comparison operator to your left hand side column, such as the following
+illustrates.
+
+```
+sql.read
+   table:foo
+   where
+      and
+         field1.neq:field2
+```
+
+The above will produce the following SQL.
+
+```
+select * from 'foo' where 'field1' != 'field2'
+```
+
+Notice the above **[neq]**, which is substituted by the SQL generator to become a `!=` comparison operator.
+
 ## License
 
 Although most of Magic's source code is Open Source, you will need a license key to use it.
