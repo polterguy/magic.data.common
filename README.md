@@ -226,7 +226,7 @@ mysql.connect:sakila
                   actor_id:actor_id
 ```
 
-**Notice** - The above assumes you're got Oracle's Sakila database in your MySQL instance. If you only wish to see
+**Notice** - The above lambda assumes you're got Oracle's Sakila database in your MySQL instance. If you only wish to see
 its resulting SQL, add the **[generate]** argument to the above root invocation, and set its value to _"true"_.
 
 The above will result in the following SQL, which you can verify yourself, by parametrizing your **[mysql.read]** invocation
@@ -239,10 +239,11 @@ select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first
    limit 25
 ```
 
-The above first selects `title` and `description` from the `film` table, for then to join on `film_id` towards `film_actor`,
-and then finally joining from `film_actor` towards the `actor` table, and extracting also the `last_name` and `first_name`
-from the `actor` table. As you can see above, you can recursively join as many levels as you wish, in addition to also
-supplying multiple join conditions for the same join. An example of the latter can be found below.
+**Explanation** - The above first selects `title` and `description` from the `film` table, for then to join on `film_id`
+towards `film_actor`, and then finally joining from `film_actor` towards the `actor` table, and extracting also
+the `last_name` and `first_name` from the `actor` table. As you can see above, you can recursively join as many levels
+as you wish, in addition to also supplying multiple join conditions for the same join. An example of the latter can be
+found below.
 
 ```
 sql.read
@@ -259,6 +260,30 @@ The above lambda will result in the following SQL being generated.
 ```
 select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' and 'table1'.'fk2' = 'table2'.'pk2'
 ```
+
+**Notice** - You can currently _only and_ join conditions together, and not use _"or"_ for your joining conditions.
+However, you _can_ use different operators for your anded join conditions, by appending an **[operator]** argument
+beneath your **[on]** conditions, such as the following illustrates.
+
+```
+sql.read
+   limit:-1
+   table:table1
+      join:table2
+         type:inner
+         on
+            fk1:pk1
+               operator:!=
+```
+
+Resulting in the following SQL.
+
+```
+select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1'
+```
+
+The **[type]** argument to your **[join]** arguments, can only currently be _"inner"_ or _"outer"_, allowing
+only for inner joins and outer joins.
 
 #### 'Namespacing' columns
 
