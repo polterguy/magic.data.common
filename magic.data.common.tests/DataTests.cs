@@ -245,6 +245,24 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadMultipleColumnsThrows()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var columns = new Node("columns");
+            columns.Add(new Node("count(*)"));
+            node.Add(columns);
+            var columns2 = new Node("columns");
+            columns2.Add(new Node("count(*)"));
+            node.Add(columns2);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
         public void ReadWhereMultipleLevels_01()
         {
             // Creating node hierarchy.

@@ -155,26 +155,30 @@ namespace magic.data.common
 
         void GetColumns(StringBuilder builder)
         {
-            var columns = Root.Children.Where(x => x.Name == "columns");
-            if (columns.Any() && columns.First().Children.Any())
+            var columnsNodes = Root.Children.Where(x => x.Name == "columns");
+            if (!columnsNodes.Any())
             {
-                var first = true;
-                foreach (var idx in columns.First().Children)
-                {
-                    if (first)
-                        first = false;
-                    else
-                        builder.Append(",");
-
-                    if (idx.Name.Contains("(") && idx.Name.Contains(")"))
-                        builder.Append(idx.Name); // Aggregate column
-                    else
-                        builder.Append(EscapeColumnName(idx.Name));
-                }
-            }
-            else
-            {
+                // Caller did not explicitly declare columns, hence defaulting to all.
                 builder.Append("*");
+                return;
+            }
+
+            // Sanity checking invocation.
+            if (columnsNodes.Count() > 1)
+                throw new ArgumentException("You can only declare [columns] once in your lambda.");
+
+            // Adding all columns caller requested to SQL.
+            var columnNode = columnsNodes.First();
+            var idxNo = 0;
+            foreach (var idx in columnNode.Children)
+            {
+                if (idxNo++ > 0)
+                    builder.Append(",");
+
+                if (idx.Name.Contains("(") && idx.Name.Contains(")"))
+                    builder.Append(idx.Name); // Aggregate column, avoid escaping.
+                else
+                    builder.Append(EscapeColumnName(idx.Name));
             }
         }
 

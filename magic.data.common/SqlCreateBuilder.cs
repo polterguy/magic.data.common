@@ -53,7 +53,7 @@ namespace magic.data.common
             return result;
         }
 
-        #region [ -- Protected helper methods -- ]
+        #region [ -- Protected virtual helper methods -- ]
 
         /// <summary>
         /// Adds the 'values' parts of your SQL to the specified string builder.
@@ -63,62 +63,28 @@ namespace magic.data.common
         protected virtual void BuildValues(Node result, StringBuilder builder)
         {
             // Appending actual insertion values.
-            var values = Root.Children.Where(x => x.Name == "values");
+            var valuesNodes = Root.Children.Where(x => x.Name == "values");
 
             // Sanity checking, making sure there's exactly one [values] node.
-            if (values.Count() != 1)
+            if (valuesNodes.Count() != 1)
                 throw new ArgumentException($"Exactly one [values] needs to be provided to '{GetType().FullName}'");
 
+            // Extracting single values node, and sanity checking it.
+            var valuesNode = valuesNodes.First();
+
             // Sanity checking that we've actually got any values to insert.
-            if (!values.First().Children.Any())
+            if (!valuesNode.Children.Any())
                 throw new ArgumentException("No [values] found in lambda");
 
             // Appending column names.
-            builder.Append(" (");
-            var first = true;
-            foreach (var idx in values.First().Children)
-            {
-                if (first)
-                    first = false;
-                else
-                    builder.Append(", ");
-
-                builder.Append(EscapeColumnName(idx.Name));
-            }
-
-            // Appending actual values, as parameters.
-            builder.Append(")");
+            AppendColumnNames(builder, valuesNode);
 
             // In case derived class wants to inject something here ...
             GetInBetween(builder);
 
-            builder.Append(" values (");
-            var idxNo = 0;
-            foreach (var idx in values.First().Children)
-            {
-                if (idxNo > 0)
-                    builder.Append(", ");
-
-                if (idx.Value == null)
-                {
-                    builder.Append("null");
-                }
-                else
-                {
-                    builder.Append("@" + idxNo);
-                    result.Add(new Node("@" + idxNo, idx.GetEx<object>()));
-                    ++idxNo;
-                }
-            }
-            builder.Append(")");
+            // Appending arguments.
+            AppendAndAddArguments(builder, valuesNode, result);
         }
-
-        /// <summary>
-        /// Returns the tail for your SQL statement, which by default is none.
-        /// </summary>
-        /// <param name="builder">Where to put your tail.</param>
-        protected virtual void GetTail(StringBuilder builder)
-        { }
 
         /// <summary>
         /// Adds "in between" parts to your SQL, which might include specialized SQL text, depending upon your adapter.
@@ -127,6 +93,60 @@ namespace magic.data.common
         /// <param name="builder">Where to put the resulting in between parts.</param>
         protected virtual void GetInBetween(StringBuilder builder)
         { }
+
+        /// <summary>
+        /// Returns the tail for your SQL statement, which by default is none.
+        /// </summary>
+        /// <param name="builder">Where to put your tail.</param>
+        protected virtual void GetTail(StringBuilder builder)
+        { }
+
+        #endregion
+
+        #region [ -- Private helper methods -- ]
+
+        /*
+         * Appends names of all columns that should be updated to the resulting SQL.
+         */
+        void AppendColumnNames(StringBuilder builder, Node valuesNode)
+        {
+            builder.Append(" (");
+            var idxNo = 0;
+            foreach (var idx in valuesNode.Children)
+            {
+                if (idxNo++ > 0)
+                    builder.Append(", ");
+                builder.Append(EscapeColumnName(idx.Name));
+            }
+            builder.Append(")");
+        }
+
+        /*
+         * Appends names of all arguments, and adds all arguments to resulting lambda.
+         */
+        void AppendAndAddArguments(
+            StringBuilder builder,
+            Node valuesNode,
+            Node result)
+        {
+            builder.Append(" values (");
+            var idxNo = 0;
+            foreach (var idx in valuesNode.Children)
+            {
+                if (idxNo > 0)
+                    builder.Append(", ");
+
+                if (idx.Value == null)
+                {
+                    builder.Append("null");
+                    continue;
+                }
+                builder.Append("@" + idxNo);
+                result.Add(new Node("@" + idxNo, idx.GetEx<object>()));
+                ++idxNo;
+            }
+            builder.Append(")");
+        }
 
         #endregion
     }

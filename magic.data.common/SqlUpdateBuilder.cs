@@ -46,7 +46,7 @@ namespace magic.data.common
             builder.Append(" set ");
 
             // Adding [values].
-            GetValues(builder, result);
+            AppendValues(builder, result);
 
             // Getting [where] clause.
             BuildWhere(result, builder);
@@ -58,7 +58,7 @@ namespace magic.data.common
 
         #region [ -- Private helper methods -- ]
 
-        void GetValues(StringBuilder builder, Node result)
+        void AppendValues(StringBuilder builder, Node result)
         {
             var valuesNodes = Root.Children.Where(x => x.Name == "values");
             if (!valuesNodes.Any())
@@ -77,13 +77,11 @@ namespace magic.data.common
                 if (idxCol.Value == null)
                 {
                     builder.Append(" = null");
+                    continue;
                 }
-                else
-                {
-                    builder.Append(" = @v" + idxNo);
-                    result.Add(new Node("@v" + idxNo, idxCol.GetEx<object>()));
-                    ++idxNo;
-                }
+                builder.Append(" = @v" + idxNo);
+                result.Add(new Node("@v" + idxNo, idxCol.GetEx<object>()));
+                ++idxNo;
             }
         }
 
