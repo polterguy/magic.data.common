@@ -357,6 +357,9 @@ The above of course results in the following SQL.
 select count(*) from 'table1' group by 'table1'.'foo1','table1'.'foo2'
 ```
 
+You can of course combine your **[group]** arguments with **[where]** arguments, allowing you to create
+aggregate results, statistics, etc.
+
 See more about _"namespacing"_ columns below.
 
 #### 'Namespacing' columns
@@ -403,6 +406,9 @@ select
          inner join `actor` on `film_actor`.`actor_id` = `actor`.`actor_id`
    limit 25
 ```
+
+**Notice** - Spacing not applied to the actual SQL result, have been applied to some of the SQL results in this
+documentation, for clarity reasons.
 
 ## [sql.update]
 
