@@ -72,7 +72,7 @@ namespace magic.data.common
             // Then making sure we apply [join] tables, if there are any.
             foreach (var idxJoin in tableNode.Children)
             {
-                AppendJoinedTables(builder, tableNode.GetEx<string>(), idxJoin);
+                AppendJoinedTables(builder, idxJoin);
             }
         }
 
@@ -256,7 +256,6 @@ namespace magic.data.common
          */
         void AppendJoinedTables(
             StringBuilder builder,
-            string primaryTableName,
             Node joinNode)
         {
             // Sanity checking invocation.
@@ -293,7 +292,7 @@ namespace magic.data.common
             // Recursively iterating through all inner/inner joins
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
-                AppendJoinedTables(builder, secondaryTableName, idxInner);
+                AppendJoinedTables(builder, idxInner);
             }
         }
 

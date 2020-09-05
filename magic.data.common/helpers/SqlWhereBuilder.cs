@@ -60,7 +60,7 @@ namespace magic.data.common.helpers
         /// </summary>
         /// <param name="result">Where to append arguments, if requested by caller.</param>
         /// <param name="builder">Where to append SQL.</param>
-        /// <param name="whereNodes">Where nodes for current level.</param>
+        /// <param name="whereNode">Where node for current level.</param>
         protected void AppendWhereLevel(
             Node result,
             StringBuilder builder,
