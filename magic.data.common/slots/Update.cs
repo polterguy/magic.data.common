@@ -7,13 +7,13 @@ using System.Linq;
 using magic.node;
 using magic.signals.contracts;
 
-namespace magic.data.common.crud
+namespace magic.data.common.slots
 {
     /// <summary>
-    /// [mssql.delete] slot for deleting a record in some table.
+    /// [mssql.update] slot for updating a record in some table.
     /// </summary>
-    [Slot(Name = "sql.delete")]
-    public class Delete : ISlot
+    [Slot(Name = "sql.update")]
+    public class Update : ISlot
     {
         /// <summary>
         /// Implementation of your slot.
@@ -22,7 +22,7 @@ namespace magic.data.common.crud
         /// <param name="input">Arguments to your slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            var builder = new SqlDeleteBuilder(input, "'");
+            var builder = new SqlUpdateBuilder(input, "'");
             var result = builder.Build();
             input.Value = result.Value;
             input.Clear();

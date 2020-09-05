@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using magic.node;
 using magic.node.extensions;
+using magic.data.common.helpers;
 
 namespace magic.data.common
 {

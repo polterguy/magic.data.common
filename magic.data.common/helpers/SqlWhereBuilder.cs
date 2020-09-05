@@ -10,119 +10,44 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.data.common
+namespace magic.data.common.helpers
 {
     /// <summary>
-    /// Common base class for SQL generators, allowing you to generate SQL from a lambda object.
+    /// Common base class for SQL generators requiring q where clause.
     /// </summary>
-    public abstract class SqlBuilder
+    public abstract class SqlWhereBuilder : SqlBuilder
     {
         /// <summary>
         /// Creates a new SQL builder.
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        protected SqlBuilder(Node node, string escapeChar)
-        {
-            Root = node ?? throw new ArgumentNullException(nameof(node));
-            EscapeChar = escapeChar ?? throw new ArgumentNullException(nameof(escapeChar));
-        }
-
-        /// <summary>
-        /// Builds your SQL statement, and returns a structured SQL statement, plus any parameters.
-        /// </summary>
-        /// <returns>Node containing SQL as root node, and parameters as children.</returns>
-        public abstract Node Build();
-
-        /// <summary>
-        /// Signals to inherited class if this is a pure generate job, or if it should also evaluate the SQL command.
-        /// </summary>
-        public bool IsGenerateOnly => Root.Children.FirstOrDefault(x => x.Name == "generate")?.Get<bool>() ?? false;
-
-        /// <summary>
-        /// Returns the escape character, which is normally for instance " or `
-        /// </summary>
-        protected string EscapeChar { get; private set; }
-
-        /// <summary>
-        /// Generic helper method to create an SqlBuilder of type T, and use it to semantically
-        /// traverse a node hierarchy, to create the relevant SQL and its parameter collection.
-        /// </summary>
-        /// <typeparam name="T">Type of SQL builder to create.</typeparam>
-        /// <param name="signaler">Signaler for instance.</param>
-        /// <param name="input">Node to parser.</param>
-        /// <returns>If execution of node should be done, the method will return the node to execute.</returns>
-        public static Node Parse<T>(ISignaler signaler, Node input) where T : SqlBuilder
-        {
-            /*
-             * Unfortunately this is our only means to create an instance of type,
-             * since it requires arguments in its CTOR, and we can't create constraints
-             * for constructor arguments using generic constraints.
-             */
-            var builder = Activator.CreateInstance(typeof(T), new object[] { input, signaler }) as T;
-            var sqlNode = builder.Build();
-
-            // Checking if this is a "build only" invocation.
-            if (builder.IsGenerateOnly)
-            {
-                input.Value = sqlNode.Value;
-                input.Clear();
-                input.AddRange(sqlNode.Children.ToList());
-                return null ;
-            }
-            return sqlNode;
-        }
+        protected SqlWhereBuilder(Node node, string escapeChar)
+            : base(node, escapeChar)
+        { }
 
         #region [ -- Protected helper methods and properties -- ]
 
         /// <summary>
-        /// Root node from which the SQL generator is being evaluated towards.
-        /// </summary>
-        protected Node Root { get; private set; }
-
-        /// <summary>
-        /// Securely adds the table name into the specified builder.
-        /// </summary>
-        /// <param name="builder">StringBuilder to append the table name into.</param>
-        protected virtual void GetTableName(StringBuilder builder)
-        {
-            // Retrieving actual table name from [table] node.
-            var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
-            if (tableName == null)
-                throw new ArgumentException($"No table name supplied to '{GetType().FullName}'");
-
-            /*
-             * Notice, if table name contains ".", we assume these are namespace qualifiers
-             * (MS SQL server type of namespaces).
-             */
-            var first = true;
-            foreach (var idx in tableName.Split('.'))
-            {
-                if (first)
-                    first = false;
-                else
-                    builder.Append(".");
-                builder.Append(EscapeChar);
-                builder.Append(idx.Replace(EscapeChar, EscapeChar + EscapeChar));
-                builder.Append(EscapeChar);
-            }
-        }
-
-        /// <summary>
         /// Builds the 'where' parts of the SQL statement.
         /// </summary>
-        /// <param name="whereNode">Current input node from where to start looking for semantic where parts.</param>
+        /// <param name="result">Current input node from where to start looking for semantic where parts.</param>
         /// <param name="builder">String builder to put the results into.</param>
-        protected virtual void BuildWhere(Node whereNode, StringBuilder builder)
+        protected virtual void BuildWhere(Node result, StringBuilder builder)
         {
             // finding where node, if any, and doing some basic sanity checking.
-            var where = Root.Children.Where(x => x.Name == "where");
-            if (where.Count() > 1)
+            var whereNodes = Root.Children.Where(x => x.Name == "where");
+            if (whereNodes.Count() > 1)
                 throw new ArgumentException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
 
             // Checking that we actually have a [where] declaration at all.
-            if (!where.Any() || !where.First().Children.Any())
+            if (!whereNodes.Any())
                 return; // No where statement supplied, or not children in [where] argument.
+
+            // Extracting actual where node, and doing some more sanity checking.
+            var where = whereNodes.First();
+            if (!where.Children.Any())
+                return; // Empty [where] collection.
 
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
@@ -133,13 +58,13 @@ namespace magic.data.common
              * SQL parameter.
              */
             int levelNo = 0;
-            foreach (var idx in where.First().Children)
+            foreach (var idx in whereNodes.First().Children)
             {
                 switch (idx.Name)
                 {
                     case "or":
                     case "and":
-                        BuildWhereLevel(whereNode, builder, idx, idx.Name, ref levelNo);
+                        BuildWhereLevel(result, builder, idx, idx.Name, ref levelNo);
                         break;
 
                     default:

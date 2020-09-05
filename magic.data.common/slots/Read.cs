@@ -7,13 +7,13 @@ using System.Linq;
 using magic.node;
 using magic.signals.contracts;
 
-namespace magic.data.common.crud
+namespace magic.data.common.slots
 {
     /// <summary>
-    /// [mssql.update] slot for updating a record in some table.
+    /// [mssql.read] slot for selecting rows from some table.
     /// </summary>
-    [Slot(Name = "sql.update")]
-    public class Update : ISlot
+    [Slot(Name = "sql.read")]
+    public class Read : ISlot
     {
         /// <summary>
         /// Implementation of your slot.
@@ -22,7 +22,7 @@ namespace magic.data.common.crud
         /// <param name="input">Arguments to your slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            var builder = new SqlUpdateBuilder(input, "'");
+            var builder = new SqlReadBuilder(input, "'");
             var result = builder.Build();
             input.Value = result.Value;
             input.Clear();

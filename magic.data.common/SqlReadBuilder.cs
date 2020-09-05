@@ -8,13 +8,14 @@ using System.Linq;
 using System.Text;
 using magic.node;
 using magic.node.extensions;
+using magic.data.common.helpers;
 
 namespace magic.data.common
 {
     /// <summary>
     /// Specialised select SQL builder, to create a select SQL statement by semantically traversing an input node.
     /// </summary>
-    public class SqlReadBuilder : SqlBuilder
+    public class SqlReadBuilder : SqlWhereBuilder
     {
         /// <summary>
         /// Creates a select SQL statement

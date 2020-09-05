@@ -9,6 +9,7 @@ using Xunit;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
+using magic.data.common.helpers;
 
 namespace magic.data.common.tests
 {
@@ -400,6 +401,22 @@ namespace magic.data.common.tests
             var arg3 = result.Children.Skip(2).First();
             Assert.Equal("@2", arg3.Name);
             Assert.Equal(9L, arg3.Value);
+        }
+
+        [Fact]
+        public void ReadEmptyWhere()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' limit 25", sql);
         }
 
         [Fact]

@@ -5,6 +5,7 @@
 
 using System.Text;
 using magic.node;
+using magic.data.common.helpers;
 
 namespace magic.data.common
 {
@@ -12,7 +13,7 @@ namespace magic.data.common
     /// Specialised delete SQL builder, to create a delete SQL statement by
     /// semantically traversing an input node.
     /// </summary>
-    public class SqlDeleteBuilder : SqlBuilder
+    public class SqlDeleteBuilder : SqlWhereBuilder
     {
         /// <summary>
         /// Creates a delete SQL statement

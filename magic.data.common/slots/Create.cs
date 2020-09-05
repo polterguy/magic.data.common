@@ -7,7 +7,7 @@ using System.Linq;
 using magic.node;
 using magic.signals.contracts;
 
-namespace magic.data.common.crud
+namespace magic.data.common.slots
 {
     /// <summary>
     /// [sql.create] slot for creating an insert SQL, with parameters for you.
