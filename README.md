@@ -221,8 +221,9 @@ Combining this with the join features from this project, allows you to create an
 ### Joins
 
 The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments, beneath your
-**[table]** argument. If you have created the Sakila example database from Oracle, you can execute the following MySQL
-join SQL statement to see a recursive join.
+**[table]** argument. You can _only_ add **[join]** beneath **[table]** for **[sql.read]** invocations though.
+If you have created the Sakila example database from Oracle, you can execute the following MySQL join SQL statement
+to see a recursive join.
 
 ```
 mysql.connect:sakila
