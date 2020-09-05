@@ -547,7 +547,7 @@ select * from 'foo' where 'field1' != 'field2'
 ```
 
 Notice the above **[field1.neq]**, which is substituted by the SQL generator to become a `!=` comparison operator
-on the `field1` column.
+on the `field1` column versus the `field2` column.
 
 ## License
 
