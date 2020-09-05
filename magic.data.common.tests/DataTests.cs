@@ -245,6 +245,25 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithBogusJoinTypeThrows()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var table1 = new Node("table", "table1");
+            var join1 = new Node("join", "table2");
+            join1.Add(new Node("type", "innerXX"));
+            var on1 = new Node("on");
+            on1.Add(new Node("fk1", "pk1"));
+            join1.Add(on1);
+            table1.Add(join1);
+            node.Add(table1);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
         public void ReadWithRecursiveJoin()
         {
             // Creating node hierarchy.
@@ -291,6 +310,70 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1' limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadWithBogusJoinOperatorThrows_01()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var table1 = new Node("table", "table1");
+            var join1 = new Node("join", "table2");
+            join1.Add(new Node("type", "inner"));
+            var on1 = new Node("on");
+            var on1Crit = new Node("fk1", "pk1");
+            on1Crit.Add(new Node("operator", "!===="));
+            on1.Add(on1Crit);
+            join1.Add(on1);
+            table1.Add(join1);
+            node.Add(table1);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void ReadWithBogusJoinOperatorThrows_02()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var table1 = new Node("table", "table1");
+            var join1 = new Node("join", "table2");
+            join1.Add(new Node("type", "inner"));
+            var on1 = new Node("on");
+            var on1Crit = new Node("fk1", "pk1");
+            on1Crit.Add(new Node("operatorXX", "!="));
+            on1.Add(on1Crit);
+            join1.Add(on1);
+            table1.Add(join1);
+            node.Add(table1);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void ReadWithBogusJoinOperatorThrows_03()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var table1 = new Node("table", "table1");
+            var join1 = new Node("join", "table2");
+            join1.Add(new Node("type", "inner"));
+            var on1 = new Node("on");
+            var on1Crit = new Node("fk1", "pk1");
+            on1Crit.Add(new Node("operator", "!="));
+            on1Crit.Add(new Node("operator", "!="));
+            on1.Add(on1Crit);
+            join1.Add(on1);
+            table1.Add(join1);
+            node.Add(table1);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
         }
 
         [Fact]
