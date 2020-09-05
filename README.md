@@ -150,16 +150,16 @@ The above will return the following SQL `select * from 'table1' limit 10 offset 
 
 The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments. If you
 have created the Sakila example database from Oracle, you can execute the following MySQL join SQL statement
-to see a join.
+to see a recursive join.
 
 ```
 mysql.connect:sakila
    mysql.read
       columns
-         film.title
-         film.description
-         actor.last_name
-         actor.first_name
+         title
+         description
+         last_name
+         first_name
       table:film
          join:film_actor
             type:inner
@@ -184,6 +184,37 @@ select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first
 The above first selects `title` and `description` from the `film` table, for then to join on `film_id` towards `film_actor`,
 and then finally joining from `film_actor` towards the `actor` table, and extracting also the `last_name` and `first_name`
 from the `actor` table.
+
+#### Namespacing columns
+
+When you're joinging results from multiple tables, it's often required that you specify which table you want some resulting
+column to be fetched from, to avoid confusing your database as to which column you want to extract, in cases where the
+same column exists in multiple tables. For such cases, you can simply refer to your table first, and then the column
+from that table. You can see an example of this below.
+
+```
+mysql.connect:sakila
+   mysql.read
+      columns
+
+         /*
+          * Prefixing result columns with table names.
+          */
+         film.title
+         film.description
+         actor.last_name
+         actor.first_name
+
+      table:film
+         join:film_actor
+            type:inner
+            on
+               film_id:film_id
+            join:actor
+               type:inner
+               on
+                  actor_id:actor_id
+```
 
 ## [sql.update]
 

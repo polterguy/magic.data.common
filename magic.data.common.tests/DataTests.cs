@@ -1181,6 +1181,24 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithPrefixedColumnName()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var columns = new Node("columns");
+            columns.Add(new Node("bar.howdy", 5));
+            node.Add(columns);
+            System.Console.WriteLine(node.ToHyperlambda());
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select 'bar'.'howdy' from 'foo' limit 25", sql);
+        }
+
+        [Fact]
         public void Update()
         {
             // Creating node hierarchy.
