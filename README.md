@@ -583,7 +583,7 @@ sql.read
          \table1.foo:bar
 ```
 
-Notice how the above lambda is will interpret the `table1.foo` parts as a column name, and not as
+Notice how the above lambda will interpret the `table1.foo` parts as a column name, and not as
 column _"foo"_ on _"table1"_. You can see the resulting SQL below.
 
 ```
