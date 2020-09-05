@@ -449,7 +449,7 @@ sql.read
 The above would result in the following result.
 
 ```
-sql.read:select * from 'table1' where ('field1' = @0)
+sql.read:select * from 'table1' where 'field1' = @0
    @0:howdy
 ```
 
@@ -468,7 +468,7 @@ sql.read
 The above resulting in the following.
 
 ```
-sql.read:select * from 'table1' where ('field1' = @0 and 'field2' = @1)
+sql.read:select * from 'table1' where 'field1' = @0 and 'field2' = @1
    @0:howdy
    @1:world
 ```
@@ -489,7 +489,7 @@ sql.read
 The above results in the following result.
 
 ```
-sql.read:select * from 'table1' where ('field1' = @0 or 'field2' = @1)
+sql.read:select * from 'table1' where 'field1' = @0 or 'field2' = @1
     @0:howdy
     @1:world
 ```
@@ -512,7 +512,7 @@ sql.read
 Which of course results in the following result.
 
 ```
-sql.read:select * from 'table1' where ('field1' = @0 or ('field2' = @1 and 'field3' = @2))
+sql.read:select * from 'table1' where 'field1' = @0 or ('field2' = @1 and 'field3' = @2)
    @0:howdy
    @1:world
    @2:dudes

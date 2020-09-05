@@ -57,14 +57,19 @@ namespace magic.data.common.helpers
              * as a "name/value" collection, making sure we add each value as an
              * SQL parameter.
              */
-            int levelNo = 0;
             foreach (var idx in whereNodes.First().Children)
             {
                 switch (idx.Name)
                 {
                     case "or":
                     case "and":
-                        BuildWhereLevel(result, builder, idx, idx.Name, ref levelNo);
+                        BuildWhereLevel(
+                            result,
+                            builder,
+                            idx,
+                            idx.Name,
+                            0,
+                            false /* No outer most level paranthesis */);
                         break;
 
                     default:
@@ -82,13 +87,12 @@ namespace magic.data.common.helpers
          * and recursivelu adding a new level for each "and" and "or"
          * parts we can find in our level.
          */
-        void BuildWhereLevel(
+        int BuildWhereLevel(
             Node result,
             StringBuilder builder,
             Node level,
             string logicalOperator,
-            ref int levelNo,
-            string comparisonOperator = "=",
+            int levelNo,
             bool paranthesis = true)
         {
             if (paranthesis)
@@ -107,7 +111,12 @@ namespace magic.data.common.helpers
                     case "and":
                     case "or":
 
-                        BuildWhereLevel(result, builder, idxCol, idxCol.Name, ref levelNo);
+                        levelNo = BuildWhereLevel(
+                            result,
+                            builder,
+                            idxCol,
+                            idxCol.Name,
+                            levelNo);
                         break;
 
                     case "in":
@@ -122,33 +131,33 @@ namespace magic.data.common.helpers
 
                     default:
 
-                        levelNo = CreateCondition(
+                        CreateCondition(
                             result,
                             builder,
                             levelNo,
-                            comparisonOperator,
                             idxCol);
+                        levelNo += 1;
                         break;
                 }
             }
 
             if (paranthesis)
                 builder.Append(")");
+            return levelNo;
         }
 
         /*
          * Creates a single condition for where clause.
          */
-        int CreateCondition(
+        void CreateCondition(
             Node result,
             StringBuilder builder,
             int levelNo,
-            string comparisonOperator,
             Node idxCol)
         {
             // Field comparison of some sort.
             var comparisonValue = idxCol.GetEx<object>();
-            var currentOperator = comparisonOperator;
+            var currentOperator = "=";
             var argName = "@" + levelNo;
             var columnName = idxCol.Name;
             if (columnName.StartsWith("\\"))
@@ -218,7 +227,9 @@ namespace magic.data.common.helpers
                         }
                         break;
                 }
-                columnName = string.Join(".", entities.Select(x => EscapeColumnName(x)));
+                columnName = string.Join(
+                    ".",
+                    entities.Select(x => EscapeColumnName(x)));
             }
             else
             {
@@ -230,7 +241,6 @@ namespace magic.data.common.helpers
                 .Append(" ")
                 .Append(argName);
             result.Add(new Node(argName, comparisonValue));
-            return ++levelNo;
         }
 
         /*

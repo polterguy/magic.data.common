@@ -540,7 +540,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('foo1' = @0 and 'foo2' = @1 and ('foo3' = @2 or 'foo4' = @3)) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'foo1' = @0 and 'foo2' = @1 and ('foo3' = @2 or 'foo4' = @3) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -580,7 +580,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('foo1' = @0 or 'foo2' = @1 or ('foo3' = @2 and 'foo4' = @3)) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'foo1' = @0 or 'foo2' = @1 or ('foo3' = @2 and 'foo4' = @3) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -622,7 +622,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('foo1' = @0 or 'foo2' = @1 or 'field1' in (@2,@3)) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'foo1' = @0 or 'foo2' = @1 or 'field1' in (@2,@3) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -663,7 +663,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' in (@0,@1,@2)) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -716,7 +716,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' in (@0,@1,@2)) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' in (@0,@1,@2) limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -930,7 +930,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' = @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' = @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -954,7 +954,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' != @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' != @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -978,7 +978,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' > @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' > @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1002,7 +1002,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' < @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' < @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1026,7 +1026,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' >= @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' >= @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1050,7 +1050,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' <= @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' <= @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1074,7 +1074,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1.lteq' = @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1.lteq' = @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1098,7 +1098,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1'.'bogus' = @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1'.'bogus' = @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1122,7 +1122,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1'.'lteq' = @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1'.'lteq' = @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1146,7 +1146,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1' like @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1' like @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1170,7 +1170,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' where ('field1.lteq' = @0) limit 25", sql);
+            Assert.Equal("select * from 'foo' where 'field1.lteq' = @0 limit 25", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
@@ -1245,7 +1245,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("update 'foo' set 'field1' = @v0 where ('field2' = @0)", sql);
+            Assert.Equal("update 'foo' set 'field1' = @v0 where 'field2' = @0", sql);
             var arg1 = result.Children.First();
             Assert.Equal("@v0", arg1.Name);
             Assert.Equal("howdy", arg1.Get<string>());
@@ -1274,7 +1274,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("update 'foo' set 'field1' = @v0, 'field2' = @v1 where ('field2' = @0)", sql);
+            Assert.Equal("update 'foo' set 'field1' = @v0, 'field2' = @v1 where 'field2' = @0", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@v0", arg1.Name);
@@ -1309,7 +1309,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("update 'foo' set 'field1' = @v0, 'field2' = null where ('field2' = @0)", sql);
+            Assert.Equal("update 'foo' set 'field1' = @v0, 'field2' = null where 'field2' = @0", sql);
 
             var arg1 = result.Children.First();
             Assert.Equal("@v0", arg1.Name);
@@ -1372,7 +1372,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("delete from 'foo' where ('field1' = @0)", sql);
+            Assert.Equal("delete from 'foo' where 'field1' = @0", sql);
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
             Assert.Equal("value1", arg1.Get<string>());
@@ -1426,7 +1426,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("delete from 'foo' where ('field1' = @0 or 'field2' = @1)", sql);
+            Assert.Equal("delete from 'foo' where 'field1' = @0 or 'field2' = @1", sql);
             var arg1 = result.Children.First();
             Assert.Equal("@0", arg1.Name);
             Assert.Equal("value1", arg1.Get<string>());
