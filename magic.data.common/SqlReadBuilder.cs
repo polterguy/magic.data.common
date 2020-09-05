@@ -213,7 +213,7 @@ namespace magic.data.common
                         foreach (var idxEntity in entities)
                         {
                             if (idxNo2++ > 0)
-                                builder.Append(".");
+                                throw new ArgumentException($"I don't understand how to create a query traversing more than two entities in [{idx.Name}]");
                             builder.Append(EscapeColumnName(idxEntity));
                         }
                     }

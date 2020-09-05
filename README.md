@@ -148,9 +148,9 @@ The above will return the following SQL `select * from 'table1' limit 10 offset 
 
 ### Joins
 
-The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments, if you
-have created the Sakila database which is distributed with Magic out of the box, you can execute the following
-MySQL join SQL statement.
+The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments. If you
+have created the Sakila example database from Oracle, you can execute the following MySQL join SQL statement
+to see a join.
 
 ```
 mysql.connect:sakila
@@ -181,9 +181,9 @@ select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first
    limit 25
 ```
 
-The above first selects title and description from the film table, for then to join on film_id towards film_actor,
-and then finally joining from film_actor into the actor table, and extracting also the last_name and first_name
-from the actor table.
+The above first selects `title` and `description` from the `film` table, for then to join on `film_id` towards `film_actor`,
+and then finally joining from `film_actor` towards the `actor` table, and extracting also the `last_name` and `first_name`
+from the `actor` table.
 
 ## [sql.update]
 
