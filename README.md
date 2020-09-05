@@ -316,6 +316,49 @@ only for inner joins and outer joins.
 The primary table's column is always assumed to be the name of the node, and the secondary (joined table's) column
 is always assumed to be the value of the node.
 
+### Group by
+
+You can also provide a **[group]** argument to your lambda, resulting in a _"group by"_ statement injected
+into the resulting SQL. Below is an example.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      foo1
+```
+
+The above will result in the following SQL.
+
+```
+select count(*) from 'table1' group by 'foo1'
+```
+
+You can supply multiple group by columns, in addition to _"namespacing"_ your columns, with your table names,
+such as we illustrate below.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      table1.foo1
+      table1.foo2
+```
+
+The above of course results in the following SQL.
+
+```
+select count(*) from 'table1' group by 'table1'.'foo1','table1'.'foo2'
+```
+
+See more about _"namespacing"_ columns below.
+
 #### 'Namespacing' columns
 
 When you're joining results from multiple tables, it's often required that you specify which table you want some resulting
@@ -345,6 +388,20 @@ mysql.connect:sakila
                type:inner
                on
                   actor_id:actor_id
+```
+
+The above will result in the following SQL, if you append the **[generate]** argument, and set its value to _"true"_.
+
+```
+select
+   `film`.`title`,
+   `film`.`description`,
+   `actor`.`last_name`,
+   `actor`.`first_name`
+   from `film`
+      inner join `film_actor` on `film`.`film_id` = `film_actor`.`film_id`
+         inner join `actor` on `film_actor`.`actor_id` = `actor`.`actor_id`
+   limit 25
 ```
 
 ## [sql.update]
