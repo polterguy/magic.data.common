@@ -584,7 +584,11 @@ sql.read
 ```
 
 Notice how the above lambda is will interpret the `table1.foo` parts as a column name, and not as
-column _"foo"_ on _"table1"_.
+column _"foo"_ on _"table1"_. You can see the resulting SQL below.
+
+```
+select * from 'table1' where 'table1.foo' = @0 limit 25
+```
 
 ## License
 
