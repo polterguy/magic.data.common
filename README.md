@@ -378,11 +378,13 @@ mysql.connect:sakila
          join:film_actor
             type:inner
             on
-               film_id:film_id
+               and
+                  film.film_id:film_actor.film_id
             join:actor
                type:inner
                on
-                  actor_id:actor_id
+                  and
+                     film_actor.actor_id:actor.actor_id
 ```
 
 The above will result in the following SQL, if you append the **[generate]** argument, and set its value to _"true"_.
@@ -426,7 +428,7 @@ sql.update:update 'table1' set 'field1' = @v0
 ## The [where] argument
 
 This argument is common for both **[sql.update]**, **[sql.delete]** and **[sql.read]**, in addition
-to that a **[join]** will also be logically parsed the same way as a **[where]** argument. The where
+to that a **[join]** will also be logically parsed much the same way as a **[where]** argument. The where
 argument follows a recursive structure, allowing you to supply multiple layers of `where` criteria,
 being applied recursively, using some sort of grouping operator. Its most basic usage is as follows.
 
@@ -548,6 +550,27 @@ select * from 'foo' where 'field1' != 'field2'
 
 Notice the above **[field1.neq]**, which is substituted by the SQL generator to become a `!=` comparison operator
 on the `field1` column versus the `field2` column.
+
+### Escaping character
+
+If you by some freak accident happen to have a column in one of your table that is name for instance `neq`,
+you can escape your column name, by prepending a `\` to it. See an example below.
+
+```
+sql.read
+   table:table1
+   where
+      and
+         table1.\neq:foo
+```
+
+Notice how the `\` character above results in the following SQL.
+
+```
+select * from 'table1' where 'table1'.'neq' = @0 limit 25
+```
+
+As you can see, the `\neq` is interpreted as a column name, and not a `neq` operator.
 
 ## License
 
