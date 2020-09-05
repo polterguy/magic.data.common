@@ -146,6 +146,28 @@ sql.read
 
 The above will return the following SQL `select * from 'table1' limit 10 offset 5`.
 
+### Aliasing column results
+
+You can also extract columns with an alias, _"renaming"_ the column in its result, such as the following illustrates.
+
+```
+sql.read
+   table:table1
+   columns
+      table1.foo1
+         as:howdy
+      table1.foo2
+         as:world
+```
+
+The above Hyperlambda will result in the following SQL.
+
+```
+select 'table1'.'foo1' as 'howdy','table1'.'foo2' as 'world' from 'table1' limit 25
+```
+
+Effectively resulting in that you'll have two columns returned after executing the above SQL, which are `howdy` and `world`.
+
 ### Joins
 
 The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments. If you
@@ -185,9 +207,9 @@ The above first selects `title` and `description` from the `film` table, for the
 and then finally joining from `film_actor` towards the `actor` table, and extracting also the `last_name` and `first_name`
 from the `actor` table.
 
-#### Namespacing columns
+#### 'Namespacing' columns
 
-When you're joinging results from multiple tables, it's often required that you specify which table you want some resulting
+When you're joining results from multiple tables, it's often required that you specify which table you want some resulting
 column to be fetched from, to avoid confusing your database as to which column you want to extract, in cases where the
 same column exists in multiple tables. For such cases, you can simply refer to your table first, and then the column
 from that table. You can see an example of this below.
