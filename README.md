@@ -426,6 +426,28 @@ sql.update:update 'table1' set 'field1' = @v0
    @v0:howdy
 ```
 
+## [sql.delete]
+
+This slot works similar to the **[sql.select]** slot, except (ofc) it doesn't allow for **[join]**, and is for
+deleting records. But its where arguments are applied in a similar fashion. You can find an example below.
+
+```
+sql.delete
+   table:table1
+   where
+      and
+         field1:value1
+         field2:value2
+```
+
+The above of course will produce the following results.
+
+```
+sql.delete:delete from 'table1' where 'field1' = @0 and 'field2' = @1
+   @0:value1
+   @1:value2
+```
+
 ## The [where] argument
 
 This argument is common for both **[sql.update]**, **[sql.delete]** and **[sql.read]**, in addition
