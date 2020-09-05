@@ -395,7 +395,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1', 'table1'.'fk2' = 'table2'.'pk2' limit 25", sql);
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' and 'table1'.'fk2' = 'table2'.'pk2' limit 25", sql);
         }
 
         [Fact]
@@ -1499,7 +1499,7 @@ namespace magic.data.common.tests
          on
             field1:field2
             field3:field4");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2', 'table1'.'field3' = 'table2'.'field4'", lambda.Children.First().Get<string>());
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2' and 'table1'.'field3' = 'table2'.'field4'", lambda.Children.First().Get<string>());
         }
 
         [Fact]

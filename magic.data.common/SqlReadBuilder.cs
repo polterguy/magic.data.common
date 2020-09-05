@@ -263,7 +263,8 @@ namespace magic.data.common
             // Appending join and its type, making sure we sanity check invocation first.
             var joinType = joinNode.Children
                 .FirstOrDefault(x => x.Name == "type")?
-                .GetEx<string>() ?? "inner";
+                .GetEx<string>() ??
+                "inner";
             switch (joinType)
             {
                 case "outer":
@@ -289,7 +290,7 @@ namespace magic.data.common
             {
                 // Making sure we separate multiple criteria by ",'.
                 if (idxNo++ > 0)
-                    builder.Append(", ");
+                    builder.Append(" and ");
 
                 // Adding primary table's name, and column.
                 AppendSingleTableName(builder, primaryTableName);

@@ -115,8 +115,29 @@ This will result in the following SQL returned.
 select 'field1','field2' from 'table1' order by 'field3' desc limit 25
 ```
 
-**Notice**, you can also create aggregate results, by simply adding your aggregate as your column, such as the
-following illustrates.
+**Notice** - The **[direction]** argument can _only_ be either _"asc"_ or _"desc"_, implying ascending or descending.
+
+You can also supply multiple ordering columns, by separating them by _","_. See an example below, which also specifies
+what table to use while ordering your results.
+
+```
+sql.read
+   table:table1
+   order:table1.field1, table1.field2
+```
+
+The above will result in the following SQL.
+
+```
+select * from 'table1' order by 'table1'.'field1','table1'.'field2' limit 25
+```
+
+### Aggregate results
+
+You can also create aggregate results, by simply adding your aggregate as your column, such as the
+following illustrates. The reasons why this works, is because if the SQL generator finds a paranthesis in your
+column declaration, it will simply ignore parsing that column altogether, and directly inject it into the
+resulting SQL's columns declaration.
 
 ```
 sql.read
@@ -132,13 +153,20 @@ The above will result in the following SQL.
 select count(*) from 'table1'
 ```
 
-**Notice**, by setting **[limit]** to _"-1"_, we avoid adding the limit parts to our SQL. Unless you explicitly
-specify a limit, the default value will always be 25, to avoid accidentally exhausting your database, and/or
-web server, by selecting all records from a table with millions of records.
+**Notice**, by setting **[limit]** to _"-1"_, like we do above, we avoid adding the limit parts to our SQL. Unless
+you explicitly specify a limit, the default value will always be 25, to avoid accidentally exhausting your database,
+and/or web server, by selecting all records from a table with millions of records.
 
 ### Paging
 
 To page your **[sql.read]** results, use **[limit]** and **[offset]**, such as the following illustrates.
+Notice, even though we use _"limit"_ and _"offset"_ - The correct syntax will be applied for your database type,
+depending upon which database type you're using - Implying for Microsoft SQL Server, it will inject MS SQL dialect,
+and not MySQL dialect. But the syntax for your lambda object still remains the same, making it simpler to create
+SQL syntax valid for your specific database type.
+
+The whole intention with the project, is to provide a uniform common syntax, for creating SQL, that can be executed
+towards any database type.
 
 ```
 sql.read
@@ -147,7 +175,8 @@ sql.read
    limit:10
 ```
 
-The above will return the following SQL `select * from 'table1' limit 10 offset 5`.
+The above will return the following SQL `select * from 'table1' limit 10 offset 5`. If you run the above lambda
+towards Microsoft SQL server, SQL specific for MS SQL will be generated.
 
 ### Aliasing column results
 
@@ -170,6 +199,7 @@ select 'table1'.'foo1' as 'howdy','table1'.'foo2' as 'world' from 'table1' limit
 ```
 
 Effectively resulting in that you'll have two columns returned after executing the above SQL, which are `howdy` and `world`.
+Combining this with the join features from this project, allows you to create any type of tabular _"projections"_ you wish.
 
 ### Joins
 
@@ -196,8 +226,11 @@ mysql.connect:sakila
                   actor_id:actor_id
 ```
 
+**Notice** - The above assumes you're got Oracle's Sakila database in your MySQL instance. If you only wish to see
+its resulting SQL, add the **[generate]** argument to the above root invocation, and set its value to _"true"_.
+
 The above will result in the following SQL, which you can verify yourself, by parametrizing your **[mysql.read]** invocation
-with a **[generate]** argument, and set its value to boolean _"true"_.
+with a **[generate]** argument, and set its value to boolean _"true"_ to see it MySQL SQL syntax.
 
 ```
 select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first_name` from `film`
@@ -208,7 +241,24 @@ select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first
 
 The above first selects `title` and `description` from the `film` table, for then to join on `film_id` towards `film_actor`,
 and then finally joining from `film_actor` towards the `actor` table, and extracting also the `last_name` and `first_name`
-from the `actor` table.
+from the `actor` table. As you can see above, you can recursively join as many levels as you wish, in addition to also
+supplying multiple join conditions for the same join. An example of the latter can be found below.
+
+```
+sql.read
+   limit:-1
+   table:table1
+      join:table2
+         on
+            fk1:pk1
+            fk2:pk2
+```
+
+The above lambda will result in the following SQL being generated.
+
+```
+select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' and 'table1'.'fk2' = 'table2'.'pk2'
+```
 
 #### 'Namespacing' columns
 
