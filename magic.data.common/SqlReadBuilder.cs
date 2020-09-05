@@ -82,6 +82,9 @@ namespace magic.data.common
         /// <param name="builder">Where to put the resulting SQL into.</param>
         protected virtual void GetTail(StringBuilder builder)
         {
+            // Getting [group].
+            GetGroupBy(builder);
+
             // Getting [order].
             GetOrderBy(builder);
 
@@ -298,7 +301,7 @@ namespace magic.data.common
                     .Append(EscapeColumnName(idxOn.Name));
 
                 // Adding comparison operator for join.
-                AppendOperator(builder, idxOn);
+                AppendJoinOperator(builder, idxOn);
 
                 // Adding secondary table's name and column.
                 AppendSingleTableName(builder, secondaryTableName);
@@ -316,7 +319,7 @@ namespace magic.data.common
         /*
          * Appends a join operator to builder.
          */
-        void AppendOperator(StringBuilder builder, Node node)
+        void AppendJoinOperator(StringBuilder builder, Node node)
         {
             if (!node.Children.Any())
             {
@@ -343,6 +346,36 @@ namespace magic.data.common
                     break;
                 default:
                     throw new ArgumentException($"Operator '{oper}' is not a known operator for joins");
+            }
+        }
+
+        /*
+         * Appends any [group] (by) arguments, if given.
+         */
+        void GetGroupBy(StringBuilder builder)
+        {
+            // Checking if we have a [group] argument.
+            var groupByNodes = Root.Children.Where(x => x.Name == "group");
+            if (!groupByNodes.Any())
+                return;
+
+            // Sanity checking that we only have one [group] argument.
+            if (groupByNodes.Count() > 1)
+                throw new ArgumentException("I can only handle one [group] argument.");
+
+            // Appending group by stamenent into builder.
+            builder.Append(" group by ");
+
+            var groupByNode = groupByNodes.First();
+            var idxNode = 0;
+            foreach (var idx in groupByNode.Children)
+            {
+                if (idxNode++ > 0)
+                    builder.Append(",");
+
+                // Making sure we de-reference any tables, and escape column names correctly.
+                var entities = idx.Name.Split('.');
+                builder.Append(string.Join(".", entities.Select(x => EscapeColumnName(x))));
             }
         }
 

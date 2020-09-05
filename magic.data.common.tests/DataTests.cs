@@ -1531,5 +1531,59 @@ namespace magic.data.common.tests
          as:world");
             Assert.Equal("select 'table1'.'foo1' as 'howdy','table1'.'foo2' as 'world' from 'table1' limit 25", lambda.Children.First().Get<string>());
         }
+
+        [Fact]
+        public void ReadSlotGroupBy()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      foo1");
+            Assert.Equal("select count(*) from 'table1' group by 'foo1'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadSlotMultipleGroupBy()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      foo1
+      foo2");
+            Assert.Equal("select count(*) from 'table1' group by 'foo1','foo2'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadSlotGroupByTableName()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      table1.foo1");
+            Assert.Equal("select count(*) from 'table1' group by 'table1'.'foo1'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadSlotGroupByThrows()
+        {
+            Assert.Throws<ArgumentException>(() => Common.Evaluate(@"sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      foo1
+   group
+      foo2"));
+        }
     }
 }
