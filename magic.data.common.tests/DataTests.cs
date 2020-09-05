@@ -213,6 +213,17 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadNoTable()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            Assert.Throws<ArgumentException>(() => builder.Build());
+        }
+
+        [Fact]
         public void ReadWithJoin()
         {
             // Creating node hierarchy.
@@ -231,6 +242,27 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadWithJoinNamespaced()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var table1 = new Node("table", "dbo.table1");
+            var join1 = new Node("join", "dbo.table2");
+            join1.Add(new Node("type", "inner"));
+            var on1 = new Node("on");
+            on1.Add(new Node("fk1", "pk1"));
+            join1.Add(on1);
+            table1.Add(join1);
+            node.Add(table1);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'dbo'.'table1' inner join 'dbo'.'table2' on 'dbo'.'table1'.'fk1' = 'dbo'.'table2'.'pk1' limit 25", sql);
         }
 
         [Fact]
