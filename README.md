@@ -243,7 +243,7 @@ mysql.connect:sakila
                   actor_id:actor_id
 ```
 
-**Notice** - The above lambda assumes you're got Oracle's Sakila database in your MySQL instance. If you only wish to see
+**Notice** - The above lambda assumes you've got Oracle's Sakila database in your MySQL instance. If you only wish to see
 its resulting SQL, add the **[generate]** argument to the above root invocation, and set its value to _"true"_.
 
 The above will result in the following SQL, which you can verify yourself, by parametrizing your **[mysql.read]** invocation
