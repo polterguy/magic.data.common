@@ -129,7 +129,12 @@ namespace magic.data.common
                 if (orderNodes.Count() > 1)
                     throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [order] nodes");
 
-                var orderColumn = EscapeColumnName(orderNodes.First().GetEx<string>());
+                var orderColumn = string.Join(
+                    ",",
+                    orderNodes.First()
+                        .GetEx<string>()
+                        .Split(',')
+                        .Select(x => string.Join(".", x.Trim().Split('.').Select(y => EscapeColumnName(y)))));
                 builder.Append(" order by " + orderColumn);
 
                 // Checking if [direction] node exists.

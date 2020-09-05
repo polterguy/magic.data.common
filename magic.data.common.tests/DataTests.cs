@@ -825,6 +825,36 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithOrderAndTableName()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "foo.fieldOrder"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' order by 'foo'.'fieldOrder' limit 25", sql);
+        }
+
+        [Fact]
+        public void ReadWithMultipleOrderAndTableName()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            node.Add(new Node("order", "foo.fieldOrder1, foo.fieldOrder2"));
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' order by 'foo'.'fieldOrder1','foo'.'fieldOrder2' limit 25", sql);
+        }
+
+        [Fact]
         public void ReadWithOrderThrows_01()
         {
             // Creating node hierarchy.
