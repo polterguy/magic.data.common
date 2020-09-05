@@ -214,13 +214,21 @@ namespace magic.data.common
             if (joinNode.Name != "join")
                 throw new ArgumentException($"I don't understand [{joinNode.Name}], only [join] arguments here.");
 
-            // Appending join and its type.
+            // Appending join and its type, making sure we sanity check invocation first.
             var joinType = joinNode.Children
                 .FirstOrDefault(x => x.Name == "type")?
                 .GetEx<string>() ?? "inner";
-            builder.Append(" ")
-                .Append(joinType)
-                .Append(" join ");
+            switch (joinType)
+            {
+                case "outer":
+                case "inner":
+                    builder.Append(" ")
+                        .Append(joinType)
+                        .Append(" join ");
+                    break;
+                default:
+                    throw new ArgumentException($"I don't understand '{joinType}' here, only [outer] or [inner]");
+            }
 
             // Appending secondary table name, and its "on" parts.
             var secondaryTableName = joinNode.GetEx<string>();
