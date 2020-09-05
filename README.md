@@ -553,7 +553,7 @@ on the `field1` column versus the `field2` column.
 
 ### Escaping character
 
-If you by some freak accident happen to have a column in one of your table that is name for instance `neq`,
+If you by some freak accident happen to have a column in one of your tables that is name for instance `neq`,
 you can escape your column name, by prepending a `\` to it. See an example below.
 
 ```
@@ -571,6 +571,20 @@ select * from 'table1' where 'table1'.'neq' = @0 limit 25
 ```
 
 As you can see, the `\neq` is interpreted as a column name, and not a `neq` operator.
+
+You can also escape column entirely, if you for instance have a column that contains a `.` in its name,
+such as we illustrate below.
+
+```
+sql.read
+   table:table1
+   where
+      and
+         \table1.foo:bar
+```
+
+Notice how the above lambda is will interpret the `table1.foo` parts as a column name, and not as
+column _"foo"_ on _"table1"_.
 
 ## License
 
