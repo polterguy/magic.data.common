@@ -205,33 +205,40 @@ namespace magic.data.common
          */
         void GetTableName(StringBuilder builder, Node tableNode)
         {
-            var tableName = tableNode.GetEx<string>();
+            var primaryTableName = tableNode.GetEx<string>();
             var idxNo = 0;
-            foreach (var idx in tableName.Split('.'))
+            foreach (var idx in primaryTableName.Split('.'))
             {
                 if (idxNo++ > 0)
                     builder.Append(".");
                 builder.Append(EscapeColumnName(idx));
             }
+
+            // Sanity checking invocation.
             if (tableNode.Children.Any(x => x.Name != "join"))
                 throw new ArgumentException($"I don't understand anything but [join] as arguments to your [table] nodes");
+
+            // Iterating through all [join] arguments specified.
             foreach (var idx in tableNode.Children)
             {
-                var type = idx.Children
+                // Appending join and its type.
+                var joinType = idx.Children
                     .FirstOrDefault(x => x.Name == "type")?
                     .GetEx<string>() ?? "inner";
                 builder.Append(" ")
-                    .Append(type)
+                    .Append(joinType)
                     .Append(" join ");
+
+                // Appending secondary table name, and its "on" parts.
                 GetSingleTableName(builder, idx.GetEx<string>());
                 builder.Append(" on ");
 
-                // Figuring out "on" parts.
+                // Retrieving and appending all "on" criteria.
                 var onNodes = idx.Children.FirstOrDefault(x => x.Name == "on") ??
                     throw new ArgumentException("No [on] arguments supplied to [join]");
                 foreach (var idxOn in onNodes.Children)
                 {
-                    GetSingleTableName(builder, tableName);
+                    GetSingleTableName(builder, primaryTableName);
                     builder.Append(".")
                         .Append(EscapeColumnName(idxOn.Name));
                     builder.Append(" = "); // TODO: Implement multiple operators.
