@@ -42,11 +42,12 @@ to execute towards.
 This is true due to that all generic examples in this page, can exchange their invocation to **[sql.read]**
 for instance, with your specific database adapter, such as **[mysql.read]** or **[mssql.read]**, and have
 it work perfectly across multiple database providers, assuming your tables and columns exists in the database
-you provide.
+type you provide.
 
 This allows you to polymorphistically create a lambda structure, for 80% of your cases, that you can execute
-towards any database type - Completely de-coupling your database vendor's specific dialects, from your DAL
-or Database Access Layer.
+towards any database type - Completely de-coupling your database vendor's specific dialect, from your 
+application's DAL, or _"Database Access Layer"_, and have this project, combined with its specialized
+implementations, take care of automatically generating the dialect your particular database type requires.
 
 ## SQL injection attacks
 
