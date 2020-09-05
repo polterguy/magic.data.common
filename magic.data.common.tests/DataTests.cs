@@ -13,7 +13,7 @@ using magic.data.common.helpers;
 
 namespace magic.data.common.tests
 {
-    public class LoggingTests
+    public class DataTests
     {
         [Fact]
         public void Create()
@@ -286,7 +286,7 @@ namespace magic.data.common.tests
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1', inner join 'table3' on 'table2'.'fk2' = 'table3'.'pk2' limit 25", sql);
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' inner join 'table3' on 'table2'.'fk2' = 'table3'.'pk2' limit 25", sql);
         }
 
         [Fact]
@@ -1066,11 +1066,41 @@ namespace magic.data.common.tests
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1'.'bogus' = @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
         }
 
         [Fact]
         public void ReadWithOperators_09()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            node.Add(new Node("table", "foo"));
+            var where = new Node("where");
+            var and1 = new Node("and");
+            var cond1 = new Node("field1.\\lteq", 5);
+            and1.Add(cond1);
+            where.Add(and1);
+            node.Add(where);
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where ('field1'.'lteq' = @0) limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal(5, arg1.Value);
+        }
+
+        [Fact]
+        public void ReadWithOperators_10()
         {
             // Creating node hierarchy.
             var node = new Node();
@@ -1383,7 +1413,7 @@ namespace magic.data.common.tests
             type:outer
             on
                field3:field4");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2', outer join 'table3' on 'table2'.'field3' = 'table3'.'field4'", lambda.Children.First().Get<string>());
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2' outer join 'table3' on 'table2'.'field3' = 'table3'.'field4'", lambda.Children.First().Get<string>());
         }
     }
 }

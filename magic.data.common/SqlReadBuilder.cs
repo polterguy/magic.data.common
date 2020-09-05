@@ -196,9 +196,28 @@ namespace magic.data.common
                     builder.Append(",");
 
                 if (idx.Name.Contains("(") && idx.Name.Contains(")"))
+                {
                     builder.Append(idx.Name); // Aggregate column, avoid escaping.
+                }
                 else
-                    builder.Append(EscapeColumnName(idx.Name));
+                {
+                    // Checking if column name is escaped.
+                    if (idx.Name.StartsWith("\\"))
+                    {
+                        builder.Append(EscapeColumnName(idx.Name.Substring(1)));
+                    }
+                    else
+                    {
+                        var entities = idx.Name.Split('.');
+                        var idxNo2 = 0;
+                        foreach (var idxEntity in entities)
+                        {
+                            if (idxNo2++ > 0)
+                                builder.Append(".");
+                            builder.Append(EscapeColumnName(idxEntity));
+                        }
+                    }
+                }
             }
         }
 
@@ -262,7 +281,6 @@ namespace magic.data.common
             // Recursively iterating through all inner/inner joins
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
-                builder.Append(",");
                 AppendJoinedTables(builder, secondaryTableName, idxInner);
             }
         }

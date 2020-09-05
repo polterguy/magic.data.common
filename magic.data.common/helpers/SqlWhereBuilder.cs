@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using magic.node;
 using magic.node.extensions;
 
@@ -153,7 +154,7 @@ namespace magic.data.common.helpers
             if (columnName.StartsWith("\\"))
             {
                 // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
-                columnName = columnName.Substring(1);
+                columnName = EscapeColumnName(columnName.Substring(1));
             }
             else if (columnName.Contains("."))
             {
@@ -165,44 +166,65 @@ namespace magic.data.common.helpers
                  * 
                  * Assuming first part is our operator.
                  */
-                var entities = columnName.Split('.').Reverse();
-                var keyword = entities.First();
+                var entities = columnName.Split('.');
+                var keyword = entities.Last();
                 switch (keyword)
                 {
                     case "like":
                         currentOperator = "like";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     case "mt":
                         currentOperator = ">";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     case "lt":
                         currentOperator = "<";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     case "mteq":
                         currentOperator = ">=";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     case "lteq":
                         currentOperator = "<=";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     case "neq":
                         currentOperator = "!=";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     case "eq":
                         currentOperator = "=";
+                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
                     default:
-                        throw new ArgumentException($"'{keyword}' is not understood by the SQL generator, did you intend to supply '.{columnName}'?");
+
+                        // Checking if last entity is escaped.
+                        var tmp = new List<string>();
+                        if (keyword.StartsWith("\\"))
+                        {
+                            keyword = keyword.Substring(1);
+                            tmp.AddRange(entities.Reverse().Skip(1).Reverse());
+                            tmp.Add(keyword);
+                            entities = tmp.ToArray();
+                        }
+                        break;
                 }
-                columnName = string.Join(".", entities.Skip(1).Reverse());
+                columnName = string.Join(".", entities.Select(x => EscapeColumnName(x)));
             }
-            builder.Append(EscapeColumnName(columnName))
+            else
+            {
+                columnName = EscapeColumnName(columnName);
+            }
+            builder.Append(columnName)
                 .Append(" ")
                 .Append(currentOperator)
                 .Append(" ")

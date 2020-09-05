@@ -29,8 +29,8 @@ the process for you. The project exposes the following slots.
 * __[sql.delete]__ - Creates a delete SQL for you, using the generic syntax for SQL.
 
 All of the above slots require you to pass in **[table]** as a mandatory argument, declaring which
-table you intend to create your SQL towards. You can only supply _one_ table. The project does
-not support joins. The project is intended to create CRUD wrappers for your underlaying database provider.
+table you intend to create your SQL towards. You can only supply _one_ table. The project is intended
+to create CRUD wrappers for your underlaying database provider.
 
 ## SQL injection attacks
 
@@ -145,6 +145,45 @@ sql.read
 ```
 
 The above will return the following SQL `select * from 'table1' limit 10 offset 5`.
+
+### Joins
+
+The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments, if you
+have created the Sakila database which is distributed with Magic out of the box, you can execute the following
+MySQL join SQL statement.
+
+```
+mysql.connect:sakila
+   mysql.read
+      columns
+         film.title
+         film.description
+         actor.last_name
+         actor.first_name
+      table:film
+         join:film_actor
+            type:inner
+            on
+               film_id:film_id
+            join:actor
+               type:inner
+               on
+                  actor_id:actor_id
+```
+
+The above will result in the following SQL, which you can verify yourself, by parametrizing your **[mysql.read]** invocation
+with a **[generate]** argument, and set its value to boolean _"true"_.
+
+```
+select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first_name` from `film`
+   inner join `film_actor` on `film`.`film_id` = `film_actor`.`film_id`
+      inner join `actor` on `film_actor`.`actor_id` = `actor`.`actor_id`
+   limit 25
+```
+
+The above first selects title and description from the film table, for then to join on film_id towards film_actor,
+and then finally joining from film_actor into the actor table, and extracting also the last_name and first_name
+from the actor table.
 
 ## [sql.update]
 
