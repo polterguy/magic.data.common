@@ -1171,7 +1171,6 @@ namespace magic.data.common.tests
             var columns = new Node("columns");
             columns.Add(new Node("\\foo.bar.howdy", 5));
             node.Add(columns);
-            System.Console.WriteLine(node.ToHyperlambda());
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
@@ -1189,7 +1188,6 @@ namespace magic.data.common.tests
             var columns = new Node("columns");
             columns.Add(new Node("bar.howdy", 5));
             node.Add(columns);
-            System.Console.WriteLine(node.ToHyperlambda());
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
@@ -1489,6 +1487,19 @@ namespace magic.data.common.tests
             on
                field3:field4");
             Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'field1' = 'table2'.'field2' outer join 'table3' on 'table2'.'field3' = 'table3'.'field4'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadSlotColumnsAs()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   table:table1
+   columns
+      table1.foo1
+         as:howdy
+      table1.foo2
+         as:world");
+            Assert.Equal("select 'table1'.'foo1' as 'howdy','table1'.'foo2' as 'world' from 'table1' limit 25", lambda.Children.First().Get<string>());
         }
     }
 }

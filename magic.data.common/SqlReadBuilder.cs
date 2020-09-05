@@ -233,6 +233,14 @@ namespace magic.data.common
                     }
                 }
             }
+
+            // Checking if caller supplied an alias for column.
+            var alias = columnNode.Children.FirstOrDefault(x => x.Name == "as")?.GetEx<string>();
+            if (!string.IsNullOrEmpty(alias))
+            {
+                builder.Append(" as ")
+                    .Append(EscapeColumnName(alias));
+            }
         }
 
         /*
