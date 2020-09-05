@@ -261,9 +261,9 @@ select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first
 
 **Explanation** - The above first selects `title` and `description` from the `film` table, for then to join on `film_id`
 towards `film_actor`, and then finally joining from `film_actor` towards the `actor` table, and extracting also
-the `last_name` and `first_name` from the `actor` table. As you can see above, you can recursively join as many levels
-as you wish, in addition to also supplying multiple join conditions for the same join. An example of the latter can be
-found below.
+the `last_name` and `first_name` from the `actor` table, using `inner join` for both join operations. As you can see
+above, you can recursively join as many levels as you wish, in addition to also supplying multiple join conditions for
+the same join. An example of the latter can be found below.
 
 ```
 sql.read
@@ -286,7 +286,7 @@ select * from 'table1'
 
 **Notice** - Joining tables works exactly the same way as using a **[where]** argument, allowing you
 to supply an operator for your join, such as we illustrate below, where we're using the _"!="_ operator,
-instead of the (default) equality comparison.
+instead of the (default) equality comparison. See the **[where]** criteria for details about operators.
 
 ```
 sql.read
@@ -305,20 +305,8 @@ Resulting in the following SQL.
 select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1'
 ```
 
-You can use the following operators in your joins.
-
-* `=`
-* `!=`
-* `>`
-* `<`
-* `>=`
-* `<=`
-
-The **[type]** argument to your **[join]** arguments, can only currently be _"inner"_ or _"outer"_, allowing
+The **[type]** argument to your **[join]** arguments, can currently _only_ be _"inner"_ or _"outer"_, allowing
 only for inner joins and outer joins.
-
-The primary table's column is always assumed to be the name of the node, and the secondary (joined table's) column
-is always assumed to be the value of the node.
 
 ### Group by
 
@@ -361,12 +349,12 @@ The above of course results in the following SQL.
 select count(*) from 'table1' group by 'table1'.'foo1','table1'.'foo2'
 ```
 
-You can of course combine your **[group]** arguments with **[where]** arguments, allowing you to create
-aggregate results, statistics, etc.
+You can of course combine your **[group]** arguments with **[where]** arguments, and **[join]** arguments,
+allowing you to create complex aggregate results, statistics, joining multiple tables, etc.
 
 See more about _"namespacing"_ columns below.
 
-#### 'Namespacing' columns
+### 'Namespacing' columns
 
 When you're joining results from multiple tables, it's often required that you specify which table you want some resulting
 column to be fetched from, to avoid confusing your database as to which column you want to extract, in cases where the
