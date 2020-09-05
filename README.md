@@ -359,7 +359,7 @@ See more about _"namespacing"_ columns below.
 When you're joining results from multiple tables, it's often required that you specify which table you want some resulting
 column to be fetched from, to avoid confusing your database as to which column you want to extract, in cases where the
 same column exists in multiple tables. For such cases, you can simply refer to your table first, and then the column
-from that table. You can see an example of this below.
+from that table, and separate your entities by a _"."_. You can see an example of this below.
 
 ```
 mysql.connect:sakila
@@ -399,8 +399,8 @@ select
    limit 25
 ```
 
-**Notice** - Spacing not applied to the actual SQL result, have been applied to some of the SQL results in this
-documentation, for clarity reasons.
+**Notice** - Spacing is not applied to the actual generated SQL result, but have been applied to some of the SQL
+examples in this documentation, to make the SQL more readable.
 
 ## [sql.update]
 
@@ -425,9 +425,10 @@ sql.update:update 'table1' set 'field1' = @v0
 
 ## The [where] argument
 
-This argument is common for both **[sql.update]**, **[sql.delete]** and **[sql.read]**, and it follows
-a recursive structure, allowing you to supply multiple layers of `where` criteria, being applied
-recursively, using some sort of grouping operator. Its most basic usage is as follows.
+This argument is common for both **[sql.update]**, **[sql.delete]** and **[sql.read]**, in addition
+to that a **[join]** will also be logically parsed the same way as a **[where]** argument. The where
+argument follows a recursive structure, allowing you to supply multiple layers of `where` criteria,
+being applied recursively, using some sort of grouping operator. Its most basic usage is as follows.
 
 ```
 sql.read
