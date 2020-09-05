@@ -95,12 +95,10 @@ namespace magic.data.common.helpers
              * Notice, if table name contains ".", we assume these are namespace qualifiers
              * (MS SQL server type of namespaces).
              */
-            var first = true;
+            var idxNo = 0;
             foreach (var idx in tableName.Split('.'))
             {
-                if (first)
-                    first = false;
-                else
+                if (idxNo++ > 0)
                     builder.Append(".");
                 builder.Append(EscapeColumnName(idx));
             }
