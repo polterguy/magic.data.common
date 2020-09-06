@@ -112,12 +112,10 @@ namespace magic.data.common.helpers
             if (paranthesis)
                 builder.Append("(");
 
-            bool first = true;
+            var idxNo = 0;
             foreach (var idxCol in level.Children)
             {
-                if (first)
-                    first = false;
-                else
+                if (idxNo++ > 0)
                     builder.Append(" " + logicalOperator + " ");
 
                 switch (idxCol.Name)
@@ -125,6 +123,7 @@ namespace magic.data.common.helpers
                     case "and":
                     case "or":
 
+                        // Recursively invoking self.
                         levelNo = BuildWhereLevel(
                             result,
                             builder,
@@ -150,7 +149,7 @@ namespace magic.data.common.helpers
         }
 
         /*
-         * Creates a single condition for where clause.
+         * Creates a single condition for a where clause.
          */
         int CreateCondition(
             Node result,
@@ -217,6 +216,8 @@ namespace magic.data.common.helpers
                         break;
 
                     case "in":
+
+                        // Notice, returning early to avoid executing common logic.
                         return CreateInCriteria(
                             result,
                             builder,
@@ -252,14 +253,7 @@ namespace magic.data.common.helpers
                 .Append(currentOperator)
                 .Append(" ");
 
-            // If this is a [join] invocation, then result will be null.
-            if (result != null)
-            {
-                var argName = "@" + levelNo;
-                builder.Append(argName);
-                result.Add(new Node(argName, comparisonValue));
-            }
-            else
+            if (result == null)
             {
                 // Join invocation.
                 var rhs = string.Join(
@@ -268,12 +262,19 @@ namespace magic.data.common.helpers
                         .Split('.')
                         .Select(x => EscapeColumnName(x)));
                 builder.Append(rhs);
+                return levelNo;
             }
-            return ++levelNo;
+            else
+            {
+                var argName = "@" + levelNo;
+                builder.Append(argName);
+                result.Add(new Node(argName, comparisonValue));
+                return ++levelNo;
+            }
         }
 
         /*
-         * Creates an "in" SQL criteria.
+         * Creates an "in" SQL condition.
          */
         int CreateInCriteria(
             Node result, 
@@ -285,12 +286,10 @@ namespace magic.data.common.helpers
             builder.Append(columnName);
             builder.Append(" in ");
             builder.Append("(");
-            var firstInValue = true;
+            var idxNo = 0;
             foreach (var idx in values)
             {
-                if (firstInValue)
-                    firstInValue = false;
-                else
+                if (idxNo++ > 0)
                     builder.Append(",");
                 builder.Append("@" + levelNo);
                 result.Add(new Node("@" + levelNo, idx));
