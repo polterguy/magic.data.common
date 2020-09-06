@@ -552,6 +552,7 @@ The project supports the following comparison operators.
 * `lteq` - Less than or equal comparison, equivalent to `<=`
 * `mteq` - More than or equal comparison, equivalent to `>=`
 * `like` - Like comparison, equivalent to SQL's `like` comparison
+* `in` - Special comparison operator, since it requires a _list_ of values, generating an _"in"_ SQL condition
 
 Everywhere you need to compare one field with another, such as in **[where]** or **[join]**
 arguments, you can append a comparison operator to your left hand side column, such as the following
@@ -573,6 +574,29 @@ select * from 'foo' where 'field1' != 'field2'
 
 Notice the above **[field1.neq]**, which is substituted by the SQL generator to become a `!=` comparison operator
 on the `field1` column versus the `field2` column.
+
+#### The [in] comparison operator
+
+This operator is special, in that it doesn't require the caller to supply _one_ value, but rather a _list_ of values,
+from where the column you compare towards, must have a value matching at least _one_ of these values. An example can
+be found below.
+
+```
+sql.read
+   table:table1
+   where
+      and
+         table1.field1.in
+            :long:5
+            :long:7
+            :long:9
+```
+
+The above will generate the following SQL, in addition to returning 3 parameters to the caller.
+
+```
+select * from 'table1' where 'table1'.'field1' in (@0,@1,@2) limit 25
+```
 
 ### Escaping character
 

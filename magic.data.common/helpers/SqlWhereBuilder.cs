@@ -133,24 +133,13 @@ namespace magic.data.common.helpers
                             levelNo);
                         break;
 
-                    case "in":
-
-                        levelNo = CreateInCriteria(
-                            result, 
-                            builder, 
-                            levelNo, 
-                            idxCol.Children.First().Name, 
-                            idxCol.Children.First().Children.Select(x => x.Value).ToArray());
-                        break;
-
                     default:
 
-                        CreateCondition(
+                        levelNo = CreateCondition(
                             result,
                             builder,
                             levelNo,
                             idxCol);
-                        levelNo += 1;
                         break;
                 }
             }
@@ -163,7 +152,7 @@ namespace magic.data.common.helpers
         /*
          * Creates a single condition for where clause.
          */
-        void CreateCondition(
+        int CreateCondition(
             Node result,
             StringBuilder builder,
             int levelNo,
@@ -227,6 +216,16 @@ namespace magic.data.common.helpers
                         entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
                         break;
 
+                    case "in":
+                        return CreateInCriteria(
+                            result,
+                            builder,
+                            levelNo,
+                            string.Join(
+                                ".",
+                                entities.Reverse().Skip(1).Reverse().Select(x => EscapeColumnName(x))),
+                            idxCol.Children.Select(x => x.GetEx<object>()).ToArray());
+
                     default:
 
                         // Checking if last entity is escaped.
@@ -270,6 +269,7 @@ namespace magic.data.common.helpers
                         .Select(x => EscapeColumnName(x)));
                 builder.Append(rhs);
             }
+            return ++levelNo;
         }
 
         /*
@@ -282,7 +282,7 @@ namespace magic.data.common.helpers
             string columnName, 
             params object[] values)
         {
-            builder.Append(EscapeColumnName(columnName));
+            builder.Append(columnName);
             builder.Append(" in ");
             builder.Append("(");
             var firstInValue = true;
