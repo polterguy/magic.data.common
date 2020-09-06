@@ -9,10 +9,8 @@
     <Copyright>Thomas Hansen, thomas@gaiasoul.com</Copyright>
     <Description>Commonalities for the magic.mysql and magic.mssql data adapters in magic.</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.data.common</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/polterguy/magic.data.common/master/LICENSE</PackageLicenseUrl>
-    <PackageIconUrl>https://polterguy.github.io/favicon.ico</PackageIconUrl>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>8.1.9</PackageVersion>
+    <PackageVersion>8.1.10</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.data.common.git</RepositoryUrl>
@@ -20,7 +18,17 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageIcon>ico.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../ico.png" Pack="true" PackagePath="$(PackageIcon)"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
@@ -31,8 +39,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="magic.node.extensions" Version="8.1.9" />
-    <PackageReference Include="magic.signals.contracts" Version="8.1.9" />
+    <PackageReference Include="magic.node.extensions" Version="8.1.*" />
+    <PackageReference Include="magic.signals.contracts" Version="8.1.*" />
   </ItemGroup>
 
 </Project>
