@@ -182,37 +182,37 @@ namespace magic.data.common.helpers
                 {
                     case "like":
                         currentOperator = "like";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "mt":
                         currentOperator = ">";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "lt":
                         currentOperator = "<";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "mteq":
                         currentOperator = ">=";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "lteq":
                         currentOperator = "<=";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "neq":
                         currentOperator = "!=";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "eq":
                         currentOperator = "=";
-                        entities = entities.Reverse().Skip(1).Reverse().ToArray(); // Removing comparison operator.
+                        entities = entities.Take(entities.Count() - 1).ToArray();
                         break;
 
                     case "in":
@@ -224,7 +224,7 @@ namespace magic.data.common.helpers
                             levelNo,
                             string.Join(
                                 ".",
-                                entities.Reverse().Skip(1).Reverse().Select(x => EscapeColumnName(x))),
+                                entities.Take(entities.Count() - 1).Select(x => EscapeColumnName(x))),
                             idxCol.Children.Select(x => x.GetEx<object>()).ToArray());
 
                     default:
@@ -234,7 +234,7 @@ namespace magic.data.common.helpers
                         if (keyword.StartsWith("\\"))
                         {
                             keyword = keyword.Substring(1);
-                            tmp.AddRange(entities.Reverse().Skip(1).Reverse());
+                            tmp.AddRange(entities.Take(entities.Count() - 1));
                             tmp.Add(keyword);
                             entities = tmp.ToArray();
                         }
