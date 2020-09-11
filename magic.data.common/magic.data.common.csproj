@@ -7,14 +7,14 @@
     <Authors>Thomas Hansen</Authors>
     <Company>Thomas Hansen</Company>
     <Copyright>Thomas Hansen, thomas@gaiasoul.com</Copyright>
-    <Description>Commonalities for the magic.mysql and magic.mssql data adapters in magic.</Description>
+    <Description>A generic and dynamic SQL data adapter, allowing you to generate SQL dialects, specific to your database type, such as MySQL or SQL Server. This is the core base class data adapter for Magic</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.data.common</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>8.1.10</PackageVersion>
+    <PackageVersion>8.1.11</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.data.common.git</RepositoryUrl>
-    <PackageTags>sql, generator, data, db</PackageTags>
+    <PackageTags>sql, generator, data, db, mysql, mssql, sql server, dal</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
