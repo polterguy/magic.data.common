@@ -11,7 +11,7 @@ using magic.node.extensions;
 using magic.signals.contracts;
 using magic.data.common.helpers;
 
-namespace magic.data.common.tests
+namespace magic.data.common.tests.tests
 {
     public class CreateTests
     {

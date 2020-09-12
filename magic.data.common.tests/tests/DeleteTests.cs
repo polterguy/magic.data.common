@@ -9,7 +9,7 @@ using Xunit;
 using magic.node;
 using magic.node.extensions;
 
-namespace magic.data.common.tests
+namespace magic.data.common.tests.tests
 {
     public class DeleteTests
     {

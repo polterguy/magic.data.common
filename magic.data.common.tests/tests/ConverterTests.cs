@@ -6,7 +6,7 @@
 using System;
 using Xunit;
 
-namespace magic.data.common.tests
+namespace magic.data.common.tests.tests
 {
     public class ConverterTests
     {
