@@ -23,76 +23,69 @@ namespace magic.data.common.helpers
          * These are the default built in comparison operators, resolving to a function that
          * is responsible for handling a particular comparison operators for you.
          */
-        readonly static Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>> _comparisonOperators =
-            new Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>>
+        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string>> _comparisonOperators =
+            new Dictionary<string, Action<StringBuilder, Node, Node, string>>
         {
-            {"eq", (builder, args, colNode, escapeChar, level) => 
+            {"eq", (builder, args, colNode, escapeChar) => 
                 DefaultOperator(
                     "=",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
-            {"neq", (builder, args, colNode, escapeChar, level) =>
+            {"neq", (builder, args, colNode, escapeChar) =>
                 DefaultOperator(
                     "!=",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
-            {"mt", (builder, args, colNode, escapeChar, level) =>
+            {"mt", (builder, args, colNode, escapeChar) =>
                 DefaultOperator(
                     ">",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
-            {"mteq", (builder, args, colNode, escapeChar, level) =>
+            {"mteq", (builder, args, colNode, escapeChar) =>
                 DefaultOperator(
                     ">=",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
-            {"lt", (builder, args, colNode, escapeChar, level) =>
+            {"lt", (builder, args, colNode, escapeChar) =>
                 DefaultOperator(
                     "<",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
-            {"lteq", (builder, args, colNode, escapeChar, level) =>
+            {"lteq", (builder, args, colNode, escapeChar) =>
                 DefaultOperator(
                     "<=",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
-            {"like", (builder, args, colNode, escapeChar, level) =>
+            {"like", (builder, args, colNode, escapeChar) =>
                 DefaultOperator(
                     "like",
                     builder,
                     args,
                     colNode,
-                    escapeChar,
-                    level)
+                    escapeChar)
             },
 
             // Notice, resolves to custom implementation method.
-            {"in", (builder, args, colNode, escapeChar, level) =>
-                InOperator(builder, args, colNode, level)
+            {"in", (builder, args, colNode, escapeChar) =>
+                InOperator(builder, args, colNode)
             },
         };
 
@@ -117,46 +110,44 @@ namespace magic.data.common.helpers
         /// <param name="functor">Function to invoke once comparison operator is encountered.</param>
         public static void AddComparisonOperator(
             string key,
-            Func<StringBuilder, Node, Node, string, int, int> functor)
+            Action<StringBuilder, Node, Node, string> functor)
         {
             _comparisonOperators[key] = functor;
         }
 
         /// <summary>
-        /// Appends arguments into builder if we are supposed to do that.
+        /// Appends arguments into builder if args is not null, and references argument
+        /// in SQL - Otherwise assuming we are to append the value of the colummn node
+        /// as the right hand side of the comparison, which might be true for joins
+        /// for instance.
         /// </summary>
-        /// <param name="args">Arguments node.</param>
+        /// <param name="args">Arguments node, if this is null, no arguments will be appended into args node.</param>
         /// <param name="colNode">Column node, containing actual comparison condition.</param>
         /// <param name="builder">Where to append the resulting SQL.</param>
-        /// <param name="level">What argument number we are currently at.</param>
         /// <param name="escapeChar">Escape character for table names.</param>
-        /// <returns>How many arguments have in total been appended to the args node.</returns>
-        public static int AppendArgs(
+        public static void AppendArgs(
             Node args,
             Node colNode,
             StringBuilder builder,
-            int level,
             string escapeChar)
         {
             if (args == null)
             {
-                // Join invocation.
+                // No args node given, assuming direct comparison.
                 var rhs = string.Join(
                     ".",
                     colNode.GetEx<string>()
                         .Split('.')
                         .Select(x => EscapeColumnName(x, escapeChar)));
                 builder.Append(rhs);
-                return level;
+                return;
             }
-            else
-            {
-                // Normal argument.
-                var argName = "@" + level;
-                builder.Append(argName);
-                args.Add(new Node(argName, colNode.GetEx<object>()));
-                return ++level;
-            }
+
+            // Plain argument, referencing it in SQL, and adding to args collection.
+            var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
+            var argName = "@" + level;
+            builder.Append(argName);
+            args.Add(new Node(argName, colNode.GetEx<object>()));
         }
 
         #endregion
@@ -166,9 +157,9 @@ namespace magic.data.common.helpers
         /// <summary>
         /// Builds the 'where' parts of the SQL statement.
         /// </summary>
-        /// <param name="args">Where to put arguments created during parsing.</param>
         /// <param name="builder">String builder to put the results into.</param>
-        protected virtual void BuildWhere(Node args, StringBuilder builder)
+        /// <param name="args">Where to put arguments created during parsing.</param>
+        protected virtual void BuildWhere(StringBuilder builder, Node args)
         {
             // Finding where node, if any, and doing some basic sanity checking.
             var whereNodes = Root.Children.Where(x => x.Name == "where");
@@ -218,8 +209,6 @@ namespace magic.data.common.helpers
                             args,
                             builder,
                             idx,
-                            idx.Name,
-                            0,
                             false /* No outer most level paranthesis */);
                         break;
 
@@ -238,60 +227,53 @@ namespace magic.data.common.helpers
          * and recursivelu adding a new level for each "and" and "or"
          * parts we can find in our level.
          */
-        int BuildWhereLevel(
+        void BuildWhereLevel(
             Node args,
             StringBuilder builder,
-            Node level,
-            string logicalOperator,
-            int levelNo,
+            Node booleanNode,
             bool paranthesis = true)
         {
             if (paranthesis)
                 builder.Append("(");
 
-            var idxNo = 0;
-            foreach (var idxCol in level.Children)
+            var no = 0;
+            foreach (var idx in booleanNode.Children)
             {
-                if (idxNo++ > 0)
-                    builder.Append(" " + logicalOperator + " ");
+                if (no++ > 0)
+                    builder.Append(" " + booleanNode.Name + " ");
 
-                switch (idxCol.Name)
+                switch (idx.Name)
                 {
                     case "and":
                     case "or":
 
                         // Recursively invoking self.
-                        levelNo = BuildWhereLevel(
+                        BuildWhereLevel(
                             args,
                             builder,
-                            idxCol,
-                            idxCol.Name,
-                            levelNo);
+                            idx);
                         break;
 
                     default:
 
-                        levelNo = CreateCondition(
+                        CreateCondition(
                             args,
                             builder,
-                            levelNo,
-                            idxCol);
+                            idx);
                         break;
                 }
             }
 
             if (paranthesis)
                 builder.Append(")");
-            return levelNo;
         }
 
         /*
          * Creates a single condition for a where clause.
          */
-        int CreateCondition(
+        void CreateCondition(
             Node args,
             StringBuilder builder,
-            int level,
             Node comparison)
         {
             // Field comparison of some sort.
@@ -314,7 +296,8 @@ namespace magic.data.common.helpers
                             .Take(entities.Count() - 1)
                             .Select(x => EscapeColumnName(x)));
                     builder.Append(columnName);
-                    return _comparisonOperators[keyword](builder, args, comparison, EscapeChar, level);
+                    _comparisonOperators[keyword](builder, args, comparison, EscapeChar);
+                    return;
                 }
 
                 // Checking if last entity is escaped.
@@ -338,45 +321,43 @@ namespace magic.data.common.helpers
             // This is the default logic to apply, if no operators was specified.
             builder.Append(columnName)
                 .Append(" = ");
-            return AppendArgs(args, comparison, builder, level, EscapeChar);
+            AppendArgs(args, comparison, builder, EscapeChar);
         }
 
         /*
          * Default operator comparison implementation.
          */
-        static int DefaultOperator(
+        static void DefaultOperator(
             string oper,
             StringBuilder builder,
             Node args,
             Node colNode,
-            string escapeChar,
-            int level)
+            string escapeChar)
         {
             builder.Append($" {oper} ");
-            return AppendArgs(args, colNode, builder, level, escapeChar);
+            AppendArgs(args, colNode, builder, escapeChar);
         }
 
         /*
          * In operator implementation.
          */
-        static int InOperator(
+        static void InOperator(
             StringBuilder builder,
-            Node result,
-            Node colNode,
-            int level)
+            Node args,
+            Node colNode)
         {
             builder.Append(" in (");
             var idxNo = 0;
+            var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
             foreach (var idx in colNode.Children.Select(x => x.GetEx<object>()).ToArray())
             {
                 if (idxNo++ > 0)
                     builder.Append(",");
                 builder.Append("@" + level);
-                result.Add(new Node("@" + level, idx));
+                args.Add(new Node("@" + level, idx));
                 ++level;
             }
             builder.Append(")");
-            return level;
         }
 
         /*

@@ -40,10 +40,10 @@ namespace magic.data.common
             builder.Append("insert into ");
 
             // Getting table name from base class.
-            GetTableName(builder);
+            AppendTableName(builder);
 
             // Building insertion [values].
-            BuildValues(result, builder);
+            AppendValues(builder, result);
 
             // In case derived class wants to inject something here ...
             GetTail(builder);
@@ -58,9 +58,9 @@ namespace magic.data.common
         /// <summary>
         /// Adds the 'values' parts of your SQL to the specified string builder.
         /// </summary>
-        /// <param name="result">Current input node from where to start looking for semantic values parts.</param>
         /// <param name="builder">String builder to put the results into.</param>
-        protected virtual void BuildValues(Node result, StringBuilder builder)
+        /// <param name="args">Current input node from where to start looking for semantic values parts.</param>
+        protected virtual void AppendValues(StringBuilder builder, Node args)
         {
             // Appending actual insertion values.
             var valuesNodes = Root.Children.Where(x => x.Name == "values");
@@ -83,7 +83,7 @@ namespace magic.data.common
             GetInBetween(builder);
 
             // Appending arguments.
-            AppendAndAddArguments(builder, valuesNode, result);
+            AppendAndAddArguments(builder, valuesNode, args);
         }
 
         /// <summary>
@@ -108,11 +108,13 @@ namespace magic.data.common
         /*
          * Appends names of all columns that should be updated to the resulting SQL.
          */
-        void AppendColumnNames(StringBuilder builder, Node valuesNode)
+        void AppendColumnNames(
+            StringBuilder builder,
+            Node values)
         {
             builder.Append(" (");
             var idxNo = 0;
-            foreach (var idx in valuesNode.Children)
+            foreach (var idx in values.Children)
             {
                 if (idxNo++ > 0)
                     builder.Append(", ");
@@ -126,12 +128,12 @@ namespace magic.data.common
          */
         void AppendAndAddArguments(
             StringBuilder builder,
-            Node valuesNode,
-            Node result)
+            Node values,
+            Node args)
         {
             builder.Append(" values (");
             var idxNo = 0;
-            foreach (var idx in valuesNode.Children)
+            foreach (var idx in values.Children)
             {
                 if (idxNo > 0)
                     builder.Append(", ");
@@ -142,7 +144,7 @@ namespace magic.data.common
                     continue;
                 }
                 builder.Append("@" + idxNo);
-                result.Add(new Node("@" + idxNo, idx.GetEx<object>()));
+                args.Add(new Node("@" + idxNo, idx.GetEx<object>()));
                 ++idxNo;
             }
             builder.Append(")");

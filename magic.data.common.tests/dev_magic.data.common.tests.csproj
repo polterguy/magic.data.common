@@ -21,9 +21,4 @@
     <ProjectReference Include="..\..\magic.lambda\magic.lambda\dev_magic.lambda.csproj" />
     <ProjectReference Include="..\magic.data.common\dev_magic.data.common.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration">
-    </Reference>
-  </ItemGroup>
 </Project>

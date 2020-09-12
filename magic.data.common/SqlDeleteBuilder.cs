@@ -38,10 +38,10 @@ namespace magic.data.common
             builder.Append("delete from ");
 
             // Getting table name from base class.
-            GetTableName(builder);
+            AppendTableName(builder);
 
             // Getting [where] clause.
-            BuildWhere(result, builder);
+            BuildWhere(builder, result);
 
             // Returning result to caller.
             result.Value = builder.ToString();

@@ -84,13 +84,13 @@ namespace magic.data.common.helpers
         /// Securely adds the table name into the specified builder.
         /// </summary>
         /// <param name="builder">StringBuilder to append the table name into.</param>
-        protected virtual void GetTableName(StringBuilder builder)
+        protected virtual void AppendTableName(StringBuilder builder)
         {
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
                 throw new ArgumentException($"No [table[ supplied to '{GetType().FullName}'");
-            AppendSingleTableName(builder, tableName);
+            builder.Append(EscapeTypeName(tableName));
         }
 
         /// <summary>
@@ -106,23 +106,16 @@ namespace magic.data.common.helpers
         }
 
         /// <summary>
-        /// Escapes a single table name, and appends to builder.
+        /// Escapes a single table or column name, and appends to builder.
         /// </summary>
-        /// <param name="builder">Where to append table name.</param>
-        /// <param name="tableName">Name of table.</param>
-        protected void AppendSingleTableName(StringBuilder builder, string tableName)
+        /// <param name="typeName">Name of table.</param>
+        protected string EscapeTypeName(string typeName)
         {
-            /*
-             * Notice, if table name contains ".", we assume these are namespace qualifiers
-             * (MS SQL server type of namespaces).
-             */
-            var idxNo = 0;
-            foreach (var idx in tableName.Split('.'))
-            {
-                if (idxNo++ > 0)
-                    builder.Append(".");
-                builder.Append(EscapeColumnName(idx));
-            }
+            return string.Join(
+                ".",
+                typeName
+                    .Split('.')
+                    .Select(x => EscapeColumnName(x)));
         }
 
         #endregion

@@ -259,9 +259,9 @@ namespace magic.data.common.tests
             node.Add(new Node("table", "foo"));
 
             // Adding our custom operator.
-            SqlWhereBuilder.AddComparisonOperator("qwerty", (builder, args, colNode, escapeChar, level) => {
+            SqlWhereBuilder.AddComparisonOperator("qwerty", (builder, args, colNode, escapeChar) => {
                 builder.Append(" <> ");
-                return SqlWhereBuilder.AppendArgs(args, colNode, builder, level, escapeChar);
+                SqlWhereBuilder.AppendArgs(args, colNode, builder, escapeChar);
             });
 
             var builder = new SqlReadBuilder(node, "'");
@@ -417,21 +417,6 @@ namespace magic.data.common.tests
             var result = builder.Build();
             var sql = result.Get<string>();
             Assert.Equal("select * from 'table1' inner join 'table2' on 'table1'.'fk1' = 'table2'.'pk1' limit 25", sql);
-        }
-
-        [Fact]
-        public void ReadWithJoinThrows_01()
-        {
-            // Creating node hierarchy.
-            var node = new Node();
-            var table1 = new Node("table", "table1");
-            var join1 = new Node("joinXX", "table2");
-            table1.Add(join1);
-            node.Add(table1);
-            var builder = new SqlReadBuilder(node, "'");
-
-            // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
         }
 
         [Fact]

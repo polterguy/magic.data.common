@@ -38,19 +38,10 @@ namespace magic.data.common
             // Starting build process.
             var builder = new StringBuilder();
             builder.Append("select ");
-
-            // Getting columns.
             GetColumns(builder);
-
             builder.Append(" from ");
-
-            // Getting table name from base class.
-            GetTableName(builder);
-
-            // Getting [where] clause.
-            BuildWhere(result, builder);
-
-            // Adding tail.
+            AppendTableName(builder);
+            BuildWhere(builder, result);
             GetTail(builder);
 
             // Returning result to caller.
@@ -61,16 +52,15 @@ namespace magic.data.common
         #region [ -- Protected, overridden, and virtual methods -- ]
 
         /// <inheritdoc />
-        protected override void GetTableName(StringBuilder builder)
+        protected override void AppendTableName(StringBuilder builder)
         {
             var tableNode = Root.Children.FirstOrDefault(x => x.Name == "table") ??
                 throw new ArgumentException($"No [table] argument supplied to {GetType().FullName}");
 
-            // Appending base table first.
-            base.GetTableName(builder);
+            builder.Append(EscapeTypeName(tableNode.GetEx<string>()));
 
             // Then making sure we apply [join] tables, if there are any.
-            foreach (var idxJoin in tableNode.Children)
+            foreach (var idxJoin in tableNode.Children.Where(x => x.Name == "join"))
             {
                 AppendJoinedTables(builder, idxJoin);
             }
@@ -82,48 +72,18 @@ namespace magic.data.common
         /// <param name="builder">Where to put the resulting SQL into.</param>
         protected virtual void GetTail(StringBuilder builder)
         {
-            // Getting [group].
+            // Order counts!
             GetGroupBy(builder);
-
-            // Getting [order].
-            GetOrderBy(builder);
-
-            // Getting [limit].
-            var limitNodes = Root.Children.Where(x => x.Name == "limit");
-            if (limitNodes.Any())
-            {
-                // Sanity checking.
-                if (limitNodes.Count() > 1)
-                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
-
-                var limitValue = limitNodes.First().GetEx<long>();
-                if (limitValue > -1)
-                    builder.Append(" limit " + limitValue);
-            }
-            else
-            {
-                // Defaulting to 25 records, unless [limit] was explicitly given.
-                builder.Append(" limit 25");
-            }
-
-            // Getting [offset].
-            var offsetNodes = Root.Children.Where(x => x.Name == "offset");
-            if (offsetNodes.Any())
-            {
-                // Sanity checking.
-                if (offsetNodes.Count() > 1)
-                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
-
-                var offsetValue = offsetNodes.First().GetEx<long>();
-                builder.Append(" offset " + offsetValue);
-            }
+            AppendOrderBy(builder);
+            AppendLimit(builder);
+            AppendOffset(builder);
         }
 
         /// <summary>
         /// Appends the order by clause into builder.
         /// </summary>
         /// <param name="builder">Builder where clause should be appended.</param>
-        protected virtual void GetOrderBy(StringBuilder builder)
+        protected virtual void AppendOrderBy(StringBuilder builder)
         {
             var orderNodes = Root.Children.Where(x => x.Name == "order");
             if (orderNodes.Any())
@@ -132,33 +92,14 @@ namespace magic.data.common
                 if (orderNodes.Count() > 1)
                     throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [order] nodes");
 
-                var orderColumn = string.Join(
+                var orderValue = string.Join(
                     ",",
                     orderNodes.First()
                         .GetEx<string>()
                         .Split(',')
-                        .Select(x => string.Join(".", x.Trim().Split('.').Select(y => EscapeColumnName(y)))));
-                builder.Append(" order by " + orderColumn);
-
-                // Checking if [direction] node exists.
-                var direction = Root.Children.Where(x => x.Name == "direction");
-                if (direction.Any())
-                {
-                    // Sanity checking.
-                    if (direction.Count() > 1)
-                        throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [direction] nodes");
-
-                    var dir = direction.First().GetEx<string>();
-                    switch (dir)
-                    {
-                        case "asc":
-                        case "desc":
-                            builder.Append(" ").Append(dir);
-                            break;
-                        default:
-                            throw new ArgumentException($"I don't know how to sort according to the '{dir}' [direction], only 'asc' and 'desc'");
-                    }
-                }
+                        .Select(x => EscapeTypeName(x.Trim())));
+                builder.Append(" order by " + orderValue);
+                AppendDirection(builder);
             }
             else
             {
@@ -213,22 +154,22 @@ namespace magic.data.common
         /*
          * Appends a single column name into resulting builder.
          */
-        void AppendSingleColumn(StringBuilder builder, Node columnNode)
+        void AppendSingleColumn(StringBuilder builder, Node columns)
         {
-            if (columnNode.Name.Contains("(") && columnNode.Name.Contains(")"))
+            if (columns.Name.Contains("(") && columns.Name.Contains(")"))
             {
-                builder.Append(columnNode.Name); // Aggregate column, avoid escaping.
+                builder.Append(columns.Name); // Aggregate column, avoid escaping.
             }
             else
             {
                 // Checking if column name is escaped.
-                if (columnNode.Name.StartsWith("\\"))
+                if (columns.Name.StartsWith("\\"))
                 {
-                    builder.Append(EscapeColumnName(columnNode.Name.Substring(1)));
+                    builder.Append(EscapeColumnName(columns.Name.Substring(1)));
                 }
                 else
                 {
-                    var entities = columnNode.Name.Split('.');
+                    var entities = columns.Name.Split('.');
                     var idxNo2 = 0;
                     foreach (var idxEntity in entities)
                     {
@@ -236,14 +177,14 @@ namespace magic.data.common
                         if (idxNo2 == 2)
                             builder.Append(".");
                         else if (idxNo2 > 2)
-                            throw new ArgumentException($"I don't understand how to create a query traversing more than two entities for [{columnNode.Name}]");
+                            throw new ArgumentException($"I don't understand how to create a query traversing more than two entities for [{columns.Name}]");
                         builder.Append(EscapeColumnName(idxEntity));
                     }
                 }
             }
 
             // Checking if caller supplied an alias for column.
-            var alias = columnNode.Children.FirstOrDefault(x => x.Name == "as")?.GetEx<string>();
+            var alias = columns.Children.FirstOrDefault(x => x.Name == "as")?.GetEx<string>();
             if (!string.IsNullOrEmpty(alias))
             {
                 builder.Append(" as ")
@@ -258,10 +199,6 @@ namespace magic.data.common
             StringBuilder builder,
             Node joinNode)
         {
-            // Sanity checking invocation.
-            if (joinNode.Name != "join")
-                throw new ArgumentException($"I don't understand [{joinNode.Name}], only [join] arguments here.");
-
             // Appending join and its type, making sure we sanity check invocation first.
             var joinType = joinNode.Children
                 .FirstOrDefault(x => x.Name == "type")?
@@ -281,7 +218,7 @@ namespace magic.data.common
 
             // Appending secondary table name, and its "on" parts.
             var secondaryTableName = joinNode.GetEx<string>();
-            AppendSingleTableName(builder, secondaryTableName);
+            builder.Append(EscapeTypeName(secondaryTableName));
             builder.Append(" on ");
 
             // Retrieving and appending all "on" criteria.
@@ -323,6 +260,72 @@ namespace magic.data.common
                 // Making sure we de-reference any tables, and escape column names correctly.
                 var entities = idx.Name.Split('.');
                 builder.Append(string.Join(".", entities.Select(x => EscapeColumnName(x))));
+            }
+        }
+
+        /*
+         * Appends direction for order operation, asc/desc, if it exists.
+         */
+        void AppendDirection(StringBuilder builder)
+        {
+            // Checking if [direction] node exists.
+            var direction = Root.Children.Where(x => x.Name == "direction");
+            if (direction.Any())
+            {
+                // Sanity checking.
+                if (direction.Count() > 1)
+                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [direction] nodes");
+
+                var dir = direction.First().GetEx<string>();
+                switch (dir)
+                {
+                    case "asc":
+                    case "desc":
+                        builder.Append(" ").Append(dir);
+                        break;
+                    default:
+                        throw new ArgumentException($"I don't know how to sort according to the '{dir}' [direction], only 'asc' and 'desc'");
+                }
+            }
+        }
+
+        /*
+         * Appends limit parts, if existing.
+         */
+        void AppendLimit(StringBuilder builder)
+        {
+            var limitNodes = Root.Children.Where(x => x.Name == "limit");
+            if (limitNodes.Any())
+            {
+                // Sanity checking.
+                if (limitNodes.Count() > 1)
+                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
+
+                var limitValue = limitNodes.First().GetEx<long>();
+                if (limitValue > -1)
+                    builder.Append(" limit " + limitValue);
+            }
+            else
+            {
+                // Defaulting to 25 records, unless [limit] was explicitly given.
+                builder.Append(" limit 25");
+            }
+        }
+
+        /*
+         * Appends limit parts, if existing.
+         */
+        void AppendOffset(StringBuilder builder)
+        {
+            var offsetNodes = Root.Children.Where(x => x.Name == "offset");
+            if (offsetNodes.Any())
+            {
+                // Sanity checking.
+                if (offsetNodes.Count() > 1)
+                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
+
+                var offsetValue = offsetNodes.First().GetEx<long>();
+                builder.Append(" offset " + offsetValue);
             }
         }
 

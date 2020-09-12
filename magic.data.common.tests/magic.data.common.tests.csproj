@@ -24,9 +24,4 @@
   <ItemGroup>
     <ProjectReference Include="..\magic.data.common\magic.data.common.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration">
-    </Reference>
-  </ItemGroup>
 </Project>

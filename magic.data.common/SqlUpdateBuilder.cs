@@ -40,7 +40,7 @@ namespace magic.data.common
             builder.Append("update ");
 
             // Getting table name from base class.
-            GetTableName(builder);
+            AppendTableName(builder);
 
             // Adding set
             builder.Append(" set ");
@@ -49,7 +49,7 @@ namespace magic.data.common
             AppendValues(builder, result);
 
             // Getting [where] clause.
-            BuildWhere(result, builder);
+            BuildWhere(builder, result);
 
             // Returning result to caller.
             result.Value = builder.ToString();
@@ -58,7 +58,7 @@ namespace magic.data.common
 
         #region [ -- Private helper methods -- ]
 
-        void AppendValues(StringBuilder builder, Node result)
+        void AppendValues(StringBuilder builder, Node args)
         {
             var valuesNodes = Root.Children.Where(x => x.Name == "values");
             if (!valuesNodes.Any())
@@ -80,7 +80,7 @@ namespace magic.data.common
                     continue;
                 }
                 builder.Append(" = @v" + idxNo);
-                result.Add(new Node("@v" + idxNo, idxCol.GetEx<object>()));
+                args.Add(new Node("@v" + idxNo, idxCol.GetEx<object>()));
                 ++idxNo;
             }
         }
