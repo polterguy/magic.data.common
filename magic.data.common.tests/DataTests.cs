@@ -247,6 +247,36 @@ namespace magic.data.common.tests
         }
 
         [Fact]
+        public void ReadWithCustomComparisonOperator()
+        {
+            // Creating node hierarchy.
+            var node = new Node();
+            var where = new Node("where");
+            var and1 = new Node("and");
+            and1.Add(new Node("foo1.qwerty", "howdy"));
+            where.Add(and1);
+            node.Add(where);
+            node.Add(new Node("table", "foo"));
+
+            // Adding our custom operator.
+            SqlWhereBuilder.AddComparisonOperator("qwerty", (builder, args, colNode, escapeChar, level) => {
+                builder.Append(" <> ");
+                return SqlWhereBuilder.AppendArgs(args, colNode, builder, level, escapeChar);
+            });
+
+            var builder = new SqlReadBuilder(node, "'");
+
+            // Extracting SQL + params, and asserting correctness.
+            var result = builder.Build();
+            var sql = result.Get<string>();
+            Assert.Equal("select * from 'foo' where 'foo1' <> @0 limit 25", sql);
+
+            var arg1 = result.Children.First();
+            Assert.Equal("@0", arg1.Name);
+            Assert.Equal("howdy", arg1.Value);
+        }
+
+        [Fact]
         public void ReadWithBogusJoinTypeThrows()
         {
             // Creating node hierarchy.

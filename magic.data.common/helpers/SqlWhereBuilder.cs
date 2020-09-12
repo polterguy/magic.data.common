@@ -23,7 +23,7 @@ namespace magic.data.common.helpers
          * These are the default built in comparison operators, resolving to a function that
          * is responsible for handling a particular comparison operators for you.
          */
-        readonly static Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>> _operators =
+        readonly static Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>> _comparisonOperators =
             new Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>>
         {
             {"eq", (builder, args, colNode, escapeChar, level) => 
@@ -106,6 +106,60 @@ namespace magic.data.common.helpers
         protected SqlWhereBuilder(Node node, string escapeChar)
             : base(node, escapeChar)
         { }
+
+        #region [ -- Public static methods -- ]
+
+        /// <summary>
+        /// Adds a new comparison operator into the resolver, allowing you to
+        /// use a custom comparison operator.
+        /// </summary>
+        /// <param name="key">Key for your operator.</param>
+        /// <param name="functor">Function to invoke once comparison operator is encountered.</param>
+        public static void AddComparisonOperator(
+            string key,
+            Func<StringBuilder, Node, Node, string, int, int> functor)
+        {
+            _comparisonOperators[key] = functor;
+        }
+
+        /// <summary>
+        /// Appends arguments into builder if we are supposed to do that.
+        /// </summary>
+        /// <param name="args">Arguments node.</param>
+        /// <param name="colNode">Column node, containing actual comparison condition.</param>
+        /// <param name="builder">Where to append the resulting SQL.</param>
+        /// <param name="level">What argument number we are currently at.</param>
+        /// <param name="escapeChar">Escape character for table names.</param>
+        /// <returns>How many arguments have in total been appended to the args node.</returns>
+        public static int AppendArgs(
+            Node args,
+            Node colNode,
+            StringBuilder builder,
+            int level,
+            string escapeChar)
+        {
+            if (args == null)
+            {
+                // Join invocation.
+                var rhs = string.Join(
+                    ".",
+                    colNode.GetEx<string>()
+                        .Split('.')
+                        .Select(x => EscapeColumnName(x, escapeChar)));
+                builder.Append(rhs);
+                return level;
+            }
+            else
+            {
+                // Normal argument.
+                var argName = "@" + level;
+                builder.Append(argName);
+                args.Add(new Node(argName, colNode.GetEx<object>()));
+                return ++level;
+            }
+        }
+
+        #endregion
 
         #region [ -- Protected helper methods and properties -- ]
 
@@ -252,7 +306,7 @@ namespace magic.data.common.helpers
                 // Possibly an oeprator, hence checking operator dictionary for a match.
                 var entities = columnName.Split('.');
                 var keyword = entities.Last();
-                if (_operators.ContainsKey(keyword))
+                if (_comparisonOperators.ContainsKey(keyword))
                 {
                     columnName = string.Join(
                         ".",
@@ -260,7 +314,7 @@ namespace magic.data.common.helpers
                             .Take(entities.Count() - 1)
                             .Select(x => EscapeColumnName(x)));
                     builder.Append(columnName);
-                    return _operators[keyword](builder, args, comparison, EscapeChar, level);
+                    return _comparisonOperators[keyword](builder, args, comparison, EscapeChar, level);
                 }
 
                 // Checking if last entity is escaped.
@@ -285,36 +339,6 @@ namespace magic.data.common.helpers
             builder.Append(columnName)
                 .Append(" = ");
             return AppendArgs(args, comparison, builder, level, EscapeChar);
-        }
-
-        /*
-         * Appends arguments into builder if we are supposed to do that.
-         */
-        static int AppendArgs(
-            Node args,
-            Node idxCol,
-            StringBuilder builder,
-            int level,
-            string escapeChar)
-        {
-            if (args == null)
-            {
-                // Join invocation.
-                var rhs = string.Join(
-                    ".",
-                    idxCol.GetEx<string>()
-                        .Split('.')
-                        .Select(x => EscapeColumnName(x, escapeChar)));
-                builder.Append(rhs);
-                return level;
-            }
-            else
-            {
-                var argName = "@" + level;
-                builder.Append(argName);
-                args.Add(new Node(argName, idxCol.GetEx<object>()));
-                return ++level;
-            }
         }
 
         /*
