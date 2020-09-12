@@ -31,7 +31,8 @@ the process for you. The project contains the following slots.
 
 All of the above slots require you to pass in **[table]** as a mandatory argument, declaring which
 table you intend to create your SQL towards. You can only supply _one_ table, but you can create joins on that
-single table, allowing you to create inner and outer joins, extracting data from multiple tables in a single SQL.
+single table, allowing you to create left, right, inner and full joins, extracting data from multiple tables in
+a single SQL.
 
 ## Project's intentions
 
@@ -306,8 +307,7 @@ Resulting in the following SQL.
 select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1'
 ```
 
-The **[type]** argument to your **[join]** arguments, can currently _only_ be _"inner"_ or _"outer"_, allowing
-only for inner joins and outer joins.
+The **[type]** argument to your **[join]** arguments, can be _"inner"_, _"full"_, _"left"_ or _"right"_.
 
 ### Group by
 
@@ -651,12 +651,3 @@ column _"foo"_ on _"table1"_. You can see the resulting SQL below.
 ```
 select * from 'table1' where 'table1.foo' = @0 limit 25
 ```
-
-## License
-
-Although most of Magic's source code is Open Source, you will need a license key to use it.
-[You can obtain a license key here](https://servergardens.com/buy/).
-Notice, 7 days after you put Magic into production, it will stop working, unless you have a valid
-license for it.
-
-* [Get licensed](https://servergardens.com/buy/)
