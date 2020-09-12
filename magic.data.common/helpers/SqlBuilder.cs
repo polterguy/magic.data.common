@@ -97,7 +97,7 @@ namespace magic.data.common.helpers
         /// Escapes a column name, and returns to caller.
         /// </summary>
         /// <param name="column">Name of column as supplied by lambda object.</param>
-        /// <returns></returns>
+        /// <returns>The escaped column's name.</returns>
         protected virtual string EscapeColumnName(string column)
         {
             return EscapeChar + 

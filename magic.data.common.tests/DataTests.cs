@@ -516,14 +516,14 @@ namespace magic.data.common.tests
             var node = new Node();
             node.Add(new Node("table", "foo"));
             var where = new Node("where");
-            var and1 = new Node("or");
-            and1.Add(new Node("foo1", 5));
-            and1.Add(new Node("foo2", "howdy"));
-            var or1 = new Node("and");
-            or1.Add(new Node("foo3", "jalla"));
-            or1.Add(new Node("foo4", "balla"));
-            and1.Add(or1);
-            where.Add(and1);
+            var or1 = new Node("or");
+            or1.Add(new Node("foo1", 5));
+            or1.Add(new Node("foo2", "howdy"));
+            var and2 = new Node("and");
+            and2.Add(new Node("foo3", "jalla"));
+            and2.Add(new Node("foo4", "balla"));
+            or1.Add(and2);
+            where.Add(or1);
             node.Add(where);
             var builder = new SqlReadBuilder(node, "'");
 

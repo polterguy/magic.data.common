@@ -17,6 +17,81 @@ namespace magic.data.common.helpers
     /// </summary>
     public abstract class SqlWhereBuilder : SqlBuilder
     {
+        #region [ -- Comparison operator resolver -- ]
+
+        readonly static Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>> _operators =
+            new Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>>
+        {
+            {"eq", (builder, result, colNode, escapeChar, level) => 
+                DefaultOperator(
+                    "=",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"neq", (builder, result, colNode, escapeChar, level) =>
+                DefaultOperator(
+                    "!=",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"mt", (builder, result, colNode, escapeChar, level) =>
+                DefaultOperator(
+                    ">",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"mteq", (builder, result, colNode, escapeChar, level) =>
+                DefaultOperator(
+                    ">=",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"lt", (builder, result, colNode, escapeChar, level) =>
+                DefaultOperator(
+                    "<",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"lteq", (builder, result, colNode, escapeChar, level) =>
+                DefaultOperator(
+                    "<=",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"like", (builder, result, colNode, escapeChar, level) =>
+                DefaultOperator(
+                    "like",
+                    builder,
+                    result,
+                    colNode,
+                    escapeChar,
+                    level)
+            },
+            {"in", (builder, result, colNode, escapeChar, level) =>
+                InOperator(builder, result, colNode, level)
+            },
+        };
+
+        #endregion
+
         /// <summary>
         /// Creates a new SQL builder.
         /// </summary>
@@ -51,7 +126,6 @@ namespace magic.data.common.helpers
 
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
-
             AppendWhereLevel(result, builder, whereNodes.First());
         }
 
@@ -149,6 +223,71 @@ namespace magic.data.common.helpers
         }
 
         /*
+         * Default operator comparison implementation.
+         */
+        static int DefaultOperator(
+            string oper,
+            StringBuilder builder,
+            Node result,
+            Node colNode,
+            string escapeChar,
+            int level)
+        {
+            builder.Append($" {oper} ");
+            if (result == null)
+            {
+                // Join invocation.
+                var rhs = string.Join(
+                    ".",
+                    colNode.GetEx<string>()
+                        .Split('.')
+                        .Select(x => EscapeColumnName(x, escapeChar)));
+                builder.Append(rhs);
+                return level;
+            }
+            else
+            {
+                var argName = "@" + level;
+                builder.Append(argName);
+                result.Add(new Node(argName, colNode.GetEx<object>()));
+                return ++level;
+            }
+        }
+
+        /*
+         * In operator implementation.
+         */
+        static int InOperator(
+            StringBuilder builder,
+            Node result,
+            Node colNode,
+            int level)
+        {
+            builder.Append(" in (");
+            var idxNo = 0;
+            foreach (var idx in colNode.Children.Select(x => x.GetEx<object>()).ToArray())
+            {
+                if (idxNo++ > 0)
+                    builder.Append(",");
+                builder.Append("@" + level);
+                result.Add(new Node("@" + level, idx));
+                ++level;
+            }
+            builder.Append(")");
+            return level;
+        }
+
+        /*
+         * Helper method to escape column names in static methods.
+         */
+        static string EscapeColumnName(string column, string escapeChar)
+        {
+            return escapeChar + 
+                column.Replace(escapeChar, escapeChar + escapeChar) +
+                escapeChar;
+        }
+
+        /*
          * Creates a single condition for a where clause.
          */
         int CreateCondition(
@@ -158,8 +297,6 @@ namespace magic.data.common.helpers
             Node idxCol)
         {
             // Field comparison of some sort.
-            var comparisonValue = idxCol.GetEx<object>();
-            var currentOperator = "=";
             var columnName = idxCol.Name;
             if (columnName.StartsWith("\\"))
             {
@@ -178,67 +315,23 @@ namespace magic.data.common.helpers
                  */
                 var entities = columnName.Split('.');
                 var keyword = entities.Last();
-                switch (keyword)
+                if (_operators.ContainsKey(keyword))
                 {
-                    case "like":
-                        currentOperator = "like";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
+                    columnName = string.Join(
+                        ".",
+                        entities.Take(entities.Count() - 1).Select(x => EscapeColumnName(x)));
+                    builder.Append(columnName);
+                    return _operators[keyword](builder, result, idxCol, EscapeChar, levelNo);
+                }
 
-                    case "mt":
-                        currentOperator = ">";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
-
-                    case "lt":
-                        currentOperator = "<";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
-
-                    case "mteq":
-                        currentOperator = ">=";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
-
-                    case "lteq":
-                        currentOperator = "<=";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
-
-                    case "neq":
-                        currentOperator = "!=";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
-
-                    case "eq":
-                        currentOperator = "=";
-                        entities = entities.Take(entities.Count() - 1).ToArray();
-                        break;
-
-                    case "in":
-
-                        // Notice, returning early to avoid executing common logic.
-                        return CreateInCriteria(
-                            result,
-                            builder,
-                            levelNo,
-                            string.Join(
-                                ".",
-                                entities.Take(entities.Count() - 1).Select(x => EscapeColumnName(x))),
-                            idxCol.Children.Select(x => x.GetEx<object>()).ToArray());
-
-                    default:
-
-                        // Checking if last entity is escaped.
-                        var tmp = new List<string>();
-                        if (keyword.StartsWith("\\"))
-                        {
-                            keyword = keyword.Substring(1);
-                            tmp.AddRange(entities.Take(entities.Count() - 1));
-                            tmp.Add(keyword);
-                            entities = tmp.ToArray();
-                        }
-                        break;
+                // Checking if last entity is escaped.
+                var tmp = new List<string>();
+                if (keyword.StartsWith("\\"))
+                {
+                    keyword = keyword.Substring(1);
+                    tmp.AddRange(entities.Take(entities.Count() - 1));
+                    tmp.Add(keyword);
+                    entities = tmp.ToArray();
                 }
                 columnName = string.Join(
                     ".",
@@ -249,10 +342,7 @@ namespace magic.data.common.helpers
                 columnName = EscapeColumnName(columnName);
             }
             builder.Append(columnName)
-                .Append(" ")
-                .Append(currentOperator)
-                .Append(" ");
-
+                .Append(" = ");
             if (result == null)
             {
                 // Join invocation.
@@ -268,35 +358,9 @@ namespace magic.data.common.helpers
             {
                 var argName = "@" + levelNo;
                 builder.Append(argName);
-                result.Add(new Node(argName, comparisonValue));
+                result.Add(new Node(argName, idxCol.GetEx<object>()));
                 return ++levelNo;
             }
-        }
-
-        /*
-         * Creates an "in" SQL condition.
-         */
-        int CreateInCriteria(
-            Node result, 
-            StringBuilder builder, 
-            int levelNo, 
-            string columnName, 
-            params object[] values)
-        {
-            builder.Append(columnName);
-            builder.Append(" in ");
-            builder.Append("(");
-            var idxNo = 0;
-            foreach (var idx in values)
-            {
-                if (idxNo++ > 0)
-                    builder.Append(",");
-                builder.Append("@" + levelNo);
-                result.Add(new Node("@" + levelNo, idx));
-                ++levelNo;
-            }
-            builder.Append(")");
-            return levelNo;
         }
 
         #endregion
