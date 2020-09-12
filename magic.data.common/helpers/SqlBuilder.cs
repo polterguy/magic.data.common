@@ -51,7 +51,7 @@ namespace magic.data.common.helpers
         /// <typeparam name="T">Type of SQL builder to create.</typeparam>
         /// <param name="signaler">Signaler for instance.</param>
         /// <param name="input">Node to parser.</param>
-        /// <returns>If execution of node should be done, the method will return the node to execute.</returns>
+        /// <returns>If execution of node should be done, the method will return the node to execute, otherwise null will be returned.</returns>
         public static Node Parse<T>(ISignaler signaler, Node input) where T : SqlBuilder
         {
             /*
