@@ -36,20 +36,12 @@ namespace magic.data.common
             var result = new Node("sql");
             var builder = new StringBuilder();
 
-            // Building SQL text and parameter collection.
+            // Starting build process.
             builder.Append("update ");
-
-            // Getting table name from base class.
             AppendTableName(builder);
-
-            // Adding set
             builder.Append(" set ");
-
-            // Adding [values].
             AppendValues(builder, result);
-
-            // Getting [where] clause.
-            BuildWhere(builder, result);
+            AppendWhere(builder, result);
 
             // Returning result to caller.
             result.Value = builder.ToString();
@@ -58,6 +50,9 @@ namespace magic.data.common
 
         #region [ -- Private helper methods -- ]
 
+        /*
+         * Appends values, and adds values into argument node.
+         */
         void AppendValues(StringBuilder builder, Node args)
         {
             var valuesNodes = Root.Children.Where(x => x.Name == "values");

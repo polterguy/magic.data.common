@@ -108,14 +108,11 @@ namespace magic.data.common.helpers
         /// <summary>
         /// Escapes a single table or column name, and appends to builder.
         /// </summary>
-        /// <param name="typeName">Name of table.</param>
-        protected string EscapeTypeName(string typeName)
+        /// <param name="typeName">Actual typename.</param>
+        /// <returns>The escaped typename.</returns>
+        protected virtual string EscapeTypeName(string typeName)
         {
-            return string.Join(
-                ".",
-                typeName
-                    .Split('.')
-                    .Select(x => EscapeColumnName(x)));
+            return string.Join(".", typeName.Split('.').Select(x => EscapeColumnName(x)));
         }
 
         #endregion

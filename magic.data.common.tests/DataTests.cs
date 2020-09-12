@@ -1224,21 +1224,6 @@ namespace magic.data.common.tests
         }
 
         [Fact]
-        public void ReadWithBogusColumnName()
-        {
-            // Creating node hierarchy.
-            var node = new Node();
-            node.Add(new Node("table", "foo"));
-            var columns = new Node("columns");
-            columns.Add(new Node("foo.bar.howdy", 5));
-            node.Add(columns);
-            var builder = new SqlReadBuilder(node, "'");
-
-            // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
-        }
-
-        [Fact]
         public void ReadWithEscapedColumnName()
         {
             // Creating node hierarchy.
@@ -1562,11 +1547,30 @@ namespace magic.data.common.tests
             and
                field1.eq:field2
          join:table3
-            type:outer
+            type:right
             on
                and
                   field3.eq:field4");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'field1' = 'field2' outer join 'table3' on 'field3' = 'field4'", lambda.Children.First().Get<string>());
+            Assert.Equal("select * from 'table1' inner join 'table2' on 'field1' = 'field2' right join 'table3' on 'field3' = 'field4'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadSlotJoin_04()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   limit:-1
+   table:table1
+      join:table2
+         type:full
+         on
+            and
+               field1.eq:field2
+         join:table3
+            type:left
+            on
+               and
+                  field3.eq:field4");
+            Assert.Equal("select * from 'table1' full join 'table2' on 'field1' = 'field2' left join 'table3' on 'field3' = 'field4'", lambda.Children.First().Get<string>());
         }
 
         [Fact]

@@ -34,14 +34,10 @@ namespace magic.data.common
             var result = new Node("sql");
             var builder = new StringBuilder();
 
-            // Building SQL text and parameter collection.
+            // Starting build process.
             builder.Append("delete from ");
-
-            // Getting table name from base class.
             AppendTableName(builder);
-
-            // Getting [where] clause.
-            BuildWhere(builder, result);
+            AppendWhere(builder, result);
 
             // Returning result to caller.
             result.Value = builder.ToString();

@@ -38,15 +38,9 @@ namespace magic.data.common
 
             // Starting build process.
             builder.Append("insert into ");
-
-            // Getting table name from base class.
             AppendTableName(builder);
-
-            // Building insertion [values].
             AppendValues(builder, result);
-
-            // In case derived class wants to inject something here ...
-            GetTail(builder);
+            AppendTail(builder);
 
             // Returning result to caller.
             result.Value = builder.ToString();
@@ -80,25 +74,28 @@ namespace magic.data.common
             AppendColumnNames(builder, valuesNode);
 
             // In case derived class wants to inject something here ...
-            GetInBetween(builder);
+            AppendInBetween(builder);
 
             // Appending arguments.
             AppendAndAddArguments(builder, valuesNode, args);
         }
 
         /// <summary>
-        /// Adds "in between" parts to your SQL, which might include specialized SQL text, depending upon your adapter.
-        /// Default implementation adds nothing.
+        /// Adds "in between" parts to your SQL, which might include specialized SQL text,
+        /// depending upon your adapter.
+        /// Default implementation does nothing.
         /// </summary>
         /// <param name="builder">Where to put the resulting in between parts.</param>
-        protected virtual void GetInBetween(StringBuilder builder)
+        protected virtual void AppendInBetween(StringBuilder builder)
         { }
 
         /// <summary>
-        /// Returns the tail for your SQL statement, which by default is none.
+        /// Appends the tail for your SQL statement, which by default is none.
+        /// This is useful for situations where you'll need to for instance explicitly
+        /// return the ID of a newly created item.
         /// </summary>
         /// <param name="builder">Where to put your tail.</param>
-        protected virtual void GetTail(StringBuilder builder)
+        protected virtual void AppendTail(StringBuilder builder)
         { }
 
         #endregion

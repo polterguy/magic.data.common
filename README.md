@@ -598,6 +598,21 @@ The above will generate the following SQL, in addition to returning 3 parameters
 select * from 'table1' where 'table1'.'field1' in (@0,@1,@2) limit 25
 ```
 
+#### Extension comparison operators
+
+You can also extend the existing comparison operators with your own, such as for instance having `ltmt`
+implying `<>`. To do this, you'll have to register your comparison operator using the static `AddComparisonOperator`
+method on the `SqlWhereBuilder` class. Below is an example.
+
+```csharp
+SqlWhereBuilder.AddComparisonOperator("ltmt", (builder, args, colNode, escapeChar) => {
+    builder.Append(" <> ");
+    SqlWhereBuilder.AppendArgs(args, colNode, builder, escapeChar);
+});
+```
+
+The above will give you access to use `ltmt` as a comparison operator, resolving to `<>` in your SQL.
+
 ### Escaping character
 
 If you by some freak accident happen to have a column in one of your tables that is name for instance `neq`,

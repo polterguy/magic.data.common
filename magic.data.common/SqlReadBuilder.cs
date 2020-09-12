@@ -38,11 +38,11 @@ namespace magic.data.common
             // Starting build process.
             var builder = new StringBuilder();
             builder.Append("select ");
-            GetColumns(builder);
+            AppendColumns(builder);
             builder.Append(" from ");
             AppendTableName(builder);
-            BuildWhere(builder, result);
-            GetTail(builder);
+            AppendWhere(builder, result);
+            AppendTail(builder);
 
             // Returning result to caller.
             result.Value = builder.ToString();
@@ -70,10 +70,10 @@ namespace magic.data.common
         /// Adds limit and offset parts to your SQL if requested by caller.
         /// </summary>
         /// <param name="builder">Where to put the resulting SQL into.</param>
-        protected virtual void GetTail(StringBuilder builder)
+        protected virtual void AppendTail(StringBuilder builder)
         {
             // Order counts!
-            GetGroupBy(builder);
+            AppendGroupBy(builder);
             AppendOrderBy(builder);
             AppendLimit(builder);
             AppendOffset(builder);
@@ -108,15 +108,17 @@ namespace magic.data.common
                  * for instance MS SQL Server does in cases where we have defined a
                  * "limit" and "offset".
                  */
-                GetDefaultOrderBy(builder);
+                AppendDefaultOrderBy(builder);
             }
         }
 
         /// <summary>
-        /// Adds the default order by clause for queries.
+        /// Adds the default order by clause for queries, in cases where no explicit
+        /// order by was added. Some databse vendors, such as MS SQL requires this
+        /// given some specific conditions.
         /// </summary>
         /// <param name="builder">Where to put the default order by clause.</param>
-        protected virtual void GetDefaultOrderBy(StringBuilder builder)
+        protected virtual void AppendDefaultOrderBy(StringBuilder builder)
         { }
 
         #endregion
@@ -126,7 +128,7 @@ namespace magic.data.common
         /*
          * Appends all requested columns into resulting builder.
          */
-        void GetColumns(StringBuilder builder)
+        void AppendColumns(StringBuilder builder)
         {
             var columnsNodes = Root.Children.Where(x => x.Name == "columns");
             if (!columnsNodes.Any())
@@ -141,59 +143,41 @@ namespace magic.data.common
                 throw new ArgumentException("You can only declare [columns] once in your lambda.");
 
             // Adding all columns caller requested to SQL.
-            var columnNode = columnsNodes.First();
-            var idxNo = 0;
-            foreach (var idx in columnNode.Children)
-            {
-                if (idxNo++ > 0)
-                    builder.Append(",");
-                AppendSingleColumn(builder, idx);
-            }
+            builder.Append(string.Join(",", columnsNodes
+                .First()
+                .Children
+                .Select(x => GetSingleColumn(x))));
         }
 
         /*
          * Appends a single column name into resulting builder.
          */
-        void AppendSingleColumn(StringBuilder builder, Node columns)
+        string GetSingleColumn(Node column)
         {
-            if (columns.Name.Contains("(") && columns.Name.Contains(")"))
+            var builder = new StringBuilder();
+            if (column.Name.Contains("(") && column.Name.Contains(")"))
             {
-                builder.Append(columns.Name); // Aggregate column, avoid escaping.
+                builder.Append(column.Name); // Aggregate column, avoid escaping.
             }
             else
             {
                 // Checking if column name is escaped.
-                if (columns.Name.StartsWith("\\"))
-                {
-                    builder.Append(EscapeColumnName(columns.Name.Substring(1)));
-                }
+                if (column.Name.StartsWith("\\"))
+                    builder.Append(EscapeColumnName(column.Name.Substring(1)));
                 else
-                {
-                    var entities = columns.Name.Split('.');
-                    var idxNo2 = 0;
-                    foreach (var idxEntity in entities)
-                    {
-                        idxNo2 += 1;
-                        if (idxNo2 == 2)
-                            builder.Append(".");
-                        else if (idxNo2 > 2)
-                            throw new ArgumentException($"I don't understand how to create a query traversing more than two entities for [{columns.Name}]");
-                        builder.Append(EscapeColumnName(idxEntity));
-                    }
-                }
+                    builder.Append(EscapeTypeName(column.Name));
             }
 
             // Checking if caller supplied an alias for column.
-            var alias = columns.Children.FirstOrDefault(x => x.Name == "as")?.GetEx<string>();
+            var alias = column.Children.FirstOrDefault(x => x.Name == "as")?.GetEx<string>();
             if (!string.IsNullOrEmpty(alias))
-            {
-                builder.Append(" as ")
-                    .Append(EscapeColumnName(alias));
-            }
+                builder.Append(" as ").Append(EscapeColumnName(alias));
+
+            return builder.ToString();
         }
 
         /*
-         * Joins multiple tables into builder.
+         * Appends joined tables into builder.
          */
         void AppendJoinedTables(
             StringBuilder builder,
@@ -206,8 +190,10 @@ namespace magic.data.common
                 "inner";
             switch (joinType)
             {
-                case "outer":
+                case "left":
+                case "right":
                 case "inner":
+                case "full":
                     builder.Append(" ")
                         .Append(joinType)
                         .Append(" join ");
@@ -217,16 +203,14 @@ namespace magic.data.common
             }
 
             // Appending secondary table name, and its "on" parts.
-            var secondaryTableName = joinNode.GetEx<string>();
-            builder.Append(EscapeTypeName(secondaryTableName));
-            builder.Append(" on ");
+            builder.Append(EscapeTypeName(joinNode.GetEx<string>())).Append(" on ");
 
             // Retrieving and appending all "on" criteria.
             var onNode = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
                 throw new ArgumentException("No [on] argument supplied to [join]");
             AppendBooleanLevel(onNode, null, builder);
 
-            // Recursively iterating through all inner/inner joins
+            // Recursively iterating through all nested joins.
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
                 AppendJoinedTables(builder, idxInner);
@@ -236,7 +220,7 @@ namespace magic.data.common
         /*
          * Appends any [group] (by) arguments, if given.
          */
-        void GetGroupBy(StringBuilder builder)
+        void AppendGroupBy(StringBuilder builder)
         {
             // Checking if we have a [group] argument.
             var groupByNodes = Root.Children.Where(x => x.Name == "group");
@@ -251,16 +235,7 @@ namespace magic.data.common
             builder.Append(" group by ");
 
             var groupByNode = groupByNodes.First();
-            var idxNode = 0;
-            foreach (var idx in groupByNode.Children)
-            {
-                if (idxNode++ > 0)
-                    builder.Append(",");
-
-                // Making sure we de-reference any tables, and escape column names correctly.
-                var entities = idx.Name.Split('.');
-                builder.Append(string.Join(".", entities.Select(x => EscapeColumnName(x))));
-            }
+            builder.Append(string.Join(",", groupByNode.Children.Select(x => EscapeTypeName(x.Name))));
         }
 
         /*
@@ -313,7 +288,7 @@ namespace magic.data.common
         }
 
         /*
-         * Appends limit parts, if existing.
+         * Appends offset parts, if existing.
          */
         void AppendOffset(StringBuilder builder)
         {

@@ -159,7 +159,7 @@ namespace magic.data.common.helpers
         /// </summary>
         /// <param name="builder">String builder to put the results into.</param>
         /// <param name="args">Where to put arguments created during parsing.</param>
-        protected virtual void BuildWhere(StringBuilder builder, Node args)
+        protected virtual void AppendWhere(StringBuilder builder, Node args)
         {
             // Finding where node, if any, and doing some basic sanity checking.
             var whereNodes = Root.Children.Where(x => x.Name == "where");
