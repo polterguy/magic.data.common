@@ -287,7 +287,7 @@ namespace magic.data.common
             // Retrieving and appending all "on" criteria.
             var onNode = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
                 throw new ArgumentException("No [on] argument supplied to [join]");
-            AppendWhereLevel(null, builder, onNode);
+            AppendBooleanLevel(onNode, null, builder);
 
             // Recursively iterating through all inner/inner joins
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))

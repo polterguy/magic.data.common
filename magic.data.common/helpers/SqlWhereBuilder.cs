@@ -19,74 +19,80 @@ namespace magic.data.common.helpers
     {
         #region [ -- Comparison operator resolver -- ]
 
+        /*
+         * These are the default built in comparison operators, resolving to a function that
+         * is responsible for handling a particular comparison operators for you.
+         */
         readonly static Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>> _operators =
             new Dictionary<string, Func<StringBuilder, Node, Node, string, int, int>>
         {
-            {"eq", (builder, result, colNode, escapeChar, level) => 
+            {"eq", (builder, args, colNode, escapeChar, level) => 
                 DefaultOperator(
                     "=",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"neq", (builder, result, colNode, escapeChar, level) =>
+            {"neq", (builder, args, colNode, escapeChar, level) =>
                 DefaultOperator(
                     "!=",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"mt", (builder, result, colNode, escapeChar, level) =>
+            {"mt", (builder, args, colNode, escapeChar, level) =>
                 DefaultOperator(
                     ">",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"mteq", (builder, result, colNode, escapeChar, level) =>
+            {"mteq", (builder, args, colNode, escapeChar, level) =>
                 DefaultOperator(
                     ">=",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"lt", (builder, result, colNode, escapeChar, level) =>
+            {"lt", (builder, args, colNode, escapeChar, level) =>
                 DefaultOperator(
                     "<",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"lteq", (builder, result, colNode, escapeChar, level) =>
+            {"lteq", (builder, args, colNode, escapeChar, level) =>
                 DefaultOperator(
                     "<=",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"like", (builder, result, colNode, escapeChar, level) =>
+            {"like", (builder, args, colNode, escapeChar, level) =>
                 DefaultOperator(
                     "like",
                     builder,
-                    result,
+                    args,
                     colNode,
                     escapeChar,
                     level)
             },
-            {"in", (builder, result, colNode, escapeChar, level) =>
-                InOperator(builder, result, colNode, level)
+
+            // Notice, resolves to custom implementation method.
+            {"in", (builder, args, colNode, escapeChar, level) =>
+                InOperator(builder, args, colNode, level)
             },
         };
 
@@ -106,11 +112,11 @@ namespace magic.data.common.helpers
         /// <summary>
         /// Builds the 'where' parts of the SQL statement.
         /// </summary>
-        /// <param name="result">Current input node from where to start looking for semantic where parts.</param>
+        /// <param name="args">Where to put arguments created during parsing.</param>
         /// <param name="builder">String builder to put the results into.</param>
-        protected virtual void BuildWhere(Node result, StringBuilder builder)
+        protected virtual void BuildWhere(Node args, StringBuilder builder)
         {
-            // finding where node, if any, and doing some basic sanity checking.
+            // Finding where node, if any, and doing some basic sanity checking.
             var whereNodes = Root.Children.Where(x => x.Name == "where");
             if (whereNodes.Count() > 1)
                 throw new ArgumentException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
@@ -126,33 +132,36 @@ namespace magic.data.common.helpers
 
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
-            AppendWhereLevel(result, builder, whereNodes.First());
+            AppendBooleanLevel(where, args, builder);
         }
 
         /// <summary>
-        /// Appends a single [where] level.
+        /// Iterates through all children of specified node, and building one [or]/[and]
+        /// level for each of its children.
         /// </summary>
-        /// <param name="result">Where to append arguments, if requested by caller.</param>
+        /// <param name="args">Where to append arguments, if requested by caller. Notice,
+        /// the args node might be null in cases we are for instance invoking this method for
+        /// a [join] invocation.</param>
         /// <param name="builder">Where to append SQL.</param>
-        /// <param name="whereNode">Where node for current level.</param>
-        protected void AppendWhereLevel(
-            Node result,
-            StringBuilder builder,
-            Node whereNode)
+        /// <param name="conditionLevel">Where node for current level.</param>
+        protected void AppendBooleanLevel(
+            Node conditionLevel,
+            Node args,
+            StringBuilder builder)
         {
             /*
              * Recursively looping through each level, and appending its parts
              * as a "name/value" collection, making sure we add each value as an
              * SQL parameter.
              */
-            foreach (var idx in whereNode.Children)
+            foreach (var idx in conditionLevel.Children)
             {
                 switch (idx.Name)
                 {
                     case "or":
                     case "and":
                         BuildWhereLevel(
-                            result,
+                            args,
                             builder,
                             idx,
                             idx.Name,
@@ -161,7 +170,7 @@ namespace magic.data.common.helpers
                         break;
 
                     default:
-                        throw new ArgumentException($"I don't understand '{idx.Name}' as a where clause while trying to build SQL");
+                        throw new ArgumentException($"I don't understand '{idx.Name}' as a boolean operator, only [or] and [and] at this level");
                 }
             }
         }
@@ -176,7 +185,7 @@ namespace magic.data.common.helpers
          * parts we can find in our level.
          */
         int BuildWhereLevel(
-            Node result,
+            Node args,
             StringBuilder builder,
             Node level,
             string logicalOperator,
@@ -199,7 +208,7 @@ namespace magic.data.common.helpers
 
                         // Recursively invoking self.
                         levelNo = BuildWhereLevel(
-                            result,
+                            args,
                             builder,
                             idxCol,
                             idxCol.Name,
@@ -209,7 +218,7 @@ namespace magic.data.common.helpers
                     default:
 
                         levelNo = CreateCondition(
-                            result,
+                            args,
                             builder,
                             levelNo,
                             idxCol);
@@ -223,23 +232,77 @@ namespace magic.data.common.helpers
         }
 
         /*
-         * Default operator comparison implementation.
+         * Creates a single condition for a where clause.
          */
-        static int DefaultOperator(
-            string oper,
+        int CreateCondition(
+            Node args,
             StringBuilder builder,
-            Node result,
-            Node colNode,
-            string escapeChar,
-            int level)
+            int level,
+            Node comparison)
         {
-            builder.Append($" {oper} ");
-            if (result == null)
+            // Field comparison of some sort.
+            var columnName = comparison.Name;
+            if (columnName.StartsWith("\\"))
+            {
+                // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
+                columnName = EscapeColumnName(columnName.Substring(1));
+            }
+            else if (columnName.Contains("."))
+            {
+                // Possibly an oeprator, hence checking operator dictionary for a match.
+                var entities = columnName.Split('.');
+                var keyword = entities.Last();
+                if (_operators.ContainsKey(keyword))
+                {
+                    columnName = string.Join(
+                        ".",
+                        entities
+                            .Take(entities.Count() - 1)
+                            .Select(x => EscapeColumnName(x)));
+                    builder.Append(columnName);
+                    return _operators[keyword](builder, args, comparison, EscapeChar, level);
+                }
+
+                // Checking if last entity is escaped.
+                var tmp = new List<string>();
+                if (keyword.StartsWith("\\"))
+                {
+                    keyword = keyword.Substring(1);
+                    tmp.AddRange(entities.Take(entities.Count() - 1));
+                    tmp.Add(keyword);
+                    entities = tmp.ToArray();
+                }
+                columnName = string.Join(
+                    ".",
+                    entities.Select(x => EscapeColumnName(x)));
+            }
+            else
+            {
+                columnName = EscapeColumnName(columnName);
+            }
+
+            // This is the default logic to apply, if no operators was specified.
+            builder.Append(columnName)
+                .Append(" = ");
+            return AppendArgs(args, comparison, builder, level, EscapeChar);
+        }
+
+        /*
+         * Appends arguments into builder if we are supposed to do that.
+         */
+        static int AppendArgs(
+            Node args,
+            Node idxCol,
+            StringBuilder builder,
+            int level,
+            string escapeChar)
+        {
+            if (args == null)
             {
                 // Join invocation.
                 var rhs = string.Join(
                     ".",
-                    colNode.GetEx<string>()
+                    idxCol.GetEx<string>()
                         .Split('.')
                         .Select(x => EscapeColumnName(x, escapeChar)));
                 builder.Append(rhs);
@@ -249,9 +312,24 @@ namespace magic.data.common.helpers
             {
                 var argName = "@" + level;
                 builder.Append(argName);
-                result.Add(new Node(argName, colNode.GetEx<object>()));
+                args.Add(new Node(argName, idxCol.GetEx<object>()));
                 return ++level;
             }
+        }
+
+        /*
+         * Default operator comparison implementation.
+         */
+        static int DefaultOperator(
+            string oper,
+            StringBuilder builder,
+            Node args,
+            Node colNode,
+            string escapeChar,
+            int level)
+        {
+            builder.Append($" {oper} ");
+            return AppendArgs(args, colNode, builder, level, escapeChar);
         }
 
         /*
@@ -285,82 +363,6 @@ namespace magic.data.common.helpers
             return escapeChar + 
                 column.Replace(escapeChar, escapeChar + escapeChar) +
                 escapeChar;
-        }
-
-        /*
-         * Creates a single condition for a where clause.
-         */
-        int CreateCondition(
-            Node result,
-            StringBuilder builder,
-            int levelNo,
-            Node idxCol)
-        {
-            // Field comparison of some sort.
-            var columnName = idxCol.Name;
-            if (columnName.StartsWith("\\"))
-            {
-                // Allowing for escaped column names, to suppor columns containing "." as a part of their names.
-                columnName = EscapeColumnName(columnName.Substring(1));
-            }
-            else if (columnName.Contains("."))
-            {
-                /*
-                 * Notice, for simplicity reasons, and to allow passing in operators
-                 * as a single level hierarchy, we allow for an additional method to supply the comparison
-                 * operator, which is having the operator to the right of a ".", where the column name is
-                 * the first parts.
-                 * 
-                 * Assuming first part is our operator.
-                 */
-                var entities = columnName.Split('.');
-                var keyword = entities.Last();
-                if (_operators.ContainsKey(keyword))
-                {
-                    columnName = string.Join(
-                        ".",
-                        entities.Take(entities.Count() - 1).Select(x => EscapeColumnName(x)));
-                    builder.Append(columnName);
-                    return _operators[keyword](builder, result, idxCol, EscapeChar, levelNo);
-                }
-
-                // Checking if last entity is escaped.
-                var tmp = new List<string>();
-                if (keyword.StartsWith("\\"))
-                {
-                    keyword = keyword.Substring(1);
-                    tmp.AddRange(entities.Take(entities.Count() - 1));
-                    tmp.Add(keyword);
-                    entities = tmp.ToArray();
-                }
-                columnName = string.Join(
-                    ".",
-                    entities.Select(x => EscapeColumnName(x)));
-            }
-            else
-            {
-                columnName = EscapeColumnName(columnName);
-            }
-            builder.Append(columnName)
-                .Append(" = ");
-            if (result == null)
-            {
-                // Join invocation.
-                var rhs = string.Join(
-                    ".",
-                    idxCol.GetEx<string>()
-                        .Split('.')
-                        .Select(x => EscapeColumnName(x)));
-                builder.Append(rhs);
-                return levelNo;
-            }
-            else
-            {
-                var argName = "@" + levelNo;
-                builder.Append(argName);
-                result.Add(new Node(argName, idxCol.GetEx<object>()));
-                return ++levelNo;
-            }
         }
 
         #endregion
