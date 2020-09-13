@@ -22,6 +22,13 @@ namespace magic.data.common
         {
             if (value == null || value is DBNull)
                 return null;
+
+            /*
+             * Notice, internally we always treat everything as UTC,
+             * and we assume everything we get from database is always UTC.
+             */
+            if (value is DateTime dt)
+                return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
             return value;
         }
     }
