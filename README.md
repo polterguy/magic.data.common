@@ -651,3 +651,18 @@ column _"foo"_ on _"table1"_. You can see the resulting SQL below.
 ```
 select * from 'table1' where 'table1.foo' = @0 limit 25
 ```
+
+## Quality gates
+
+- [![Build status](https://travis-ci.com/polterguy/magic.data.common.svg?master)](https://travis-ci.com/polterguy/magic.data.common)
+- [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=alert_status)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=bugs)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=code_smells)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=coverage)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=ncloc)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=security_rating)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=sqale_index)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
+- [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=polterguy_magic.data.common&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=polterguy_magic.data.common)
