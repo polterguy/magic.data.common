@@ -252,8 +252,7 @@ namespace magic.data.common.helpers
             }
 
             // This is the default logic to apply, if no operators was specified.
-            builder.Append(columnName)
-                .Append(" = ");
+            builder.Append(columnName).Append(" = ");
             AppendArgs(args, comparison, builder, EscapeChar);
         }
 
