@@ -289,16 +289,12 @@ namespace magic.data.common.helpers
             }
             result["in"] = (builder, args, colNode, escapeChar) => {
                 builder.Append(" in (");
-                var idxNo = 0;
                 var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
-                foreach (var idx in colNode.Children.Select(x => x.GetEx<object>()).ToArray())
+                builder.Append(string.Join(",", colNode.Children.Select(x =>
                 {
-                    if (idxNo++ > 0)
-                        builder.Append(",");
-                    builder.Append("@" + level);
-                    args.Add(new Node("@" + level++, idx));
-                }
-                builder.Append(")");
+                    args.Add(new Node("@" + level, x.GetEx<object>()));
+                    return "@" + level++;
+                }))).Append(")");
             };
             return result;
         }
