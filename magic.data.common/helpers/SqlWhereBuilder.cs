@@ -77,8 +77,8 @@ namespace magic.data.common.helpers
             }
 
             // Plain argument, referencing it in SQL, and adding to args collection.
-            var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
-            var argName = "@" + level;
+            var argNo = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
+            var argName = "@" + argNo;
             builder.Append(argName);
             args.Add(new Node(argName, colNode.GetEx<object>()));
         }
@@ -273,6 +273,8 @@ namespace magic.data.common.helpers
         static Dictionary<string, Action<StringBuilder, Node, Node, string>> CreateDefaultComparisonOperators()
         {
             var result = new Dictionary<string, Action<StringBuilder, Node, Node, string>>();
+
+            // Plain default comparison operators.
             foreach (var idx in new (string, string) [] {
                 ("eq", "="),
                 ("neq", "!="),
@@ -287,13 +289,15 @@ namespace magic.data.common.helpers
                     AppendArgs(args, colNode, builder, escapeChar);
                 };
             }
+
+            // Special case for "in" comparison operator.
             result["in"] = (builder, args, colNode, escapeChar) => {
                 builder.Append(" in (");
-                var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
+                var argNo = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
                 builder.Append(string.Join(",", colNode.Children.Select(x =>
                 {
-                    args.Add(new Node("@" + level, x.GetEx<object>()));
-                    return "@" + level++;
+                    args.Add(new Node("@" + argNo, x.GetEx<object>()));
+                    return "@" + argNo++;
                 }))).Append(")");
             };
             return result;
