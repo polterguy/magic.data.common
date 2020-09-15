@@ -650,6 +650,15 @@ column _"foo"_ on _"table1"_. You can see the resulting SQL below.
 select * from 'table1' where 'table1.foo' = @0 limit 25
 ```
 
+## Meta data access
+
+One of the really cool things with this structured approach to generating SQL (pun!), is that it
+allows you to retrieve meta data from your Hyperlambda snippets, asking questions such as for instance
+_"find all files that somehow selects columns from the 'xxx' table"_ - And for that matter, even
+dynamically change the table name, using refactoring and replacement concepts. Once you've crossed
+the initial step into _meta data traversal_ in Hyperlambda, things like this, which is impossible
+to achieve in traditional programming languages, becomes a commodity with Hyperlambda.
+
 ## Quality gates
 
 - [![Build status](https://travis-ci.com/polterguy/magic.data.common.svg?master)](https://travis-ci.com/polterguy/magic.data.common)
