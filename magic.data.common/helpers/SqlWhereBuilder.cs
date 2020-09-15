@@ -13,41 +13,15 @@ using magic.node.extensions;
 namespace magic.data.common.helpers
 {
     /// <summary>
-    /// Common base class for SQL generators requiring q where clause.
+    /// Common base class for SQL generators requiring a where clause.
     /// </summary>
     public abstract class SqlWhereBuilder : SqlBuilder
     {
-        #region [ -- Default comparison operator resolvers, and initialization of it -- ]
-
         /*
          * These are the default built in comparison operators, resolving to a function that
          * is responsible for handling a particular comparison operators for you.
          */
-        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string>> _comparisonOperators;
-
-        /*
-         * Static constructor to create our default comparison operator resolvers.
-         */
-        static SqlWhereBuilder()
-        {
-            _comparisonOperators = new Dictionary<string, Action<StringBuilder, Node, Node, string>>();
-            foreach (var idx in new (string, string) [] {
-                ("eq", "="),
-                ("neq", "!="),
-                ("mt", ">"),
-                ("mteq", ">="),
-                ("lt", "<"),
-                ("lteq", "<="),
-                ("like", "like")})
-            {
-                _comparisonOperators[idx.Item1] = (builder, args, colNode, escapeChar) =>
-                    DefaultOperator(idx.Item2, builder, args, colNode, escapeChar);
-            }
-            _comparisonOperators["in"] = (builder, args, colNode, escapeChar) =>
-                InOperator(builder, args, colNode);
-        }
-
-        #endregion
+        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string>> _comparisonOperators = CreateDefaultComparisonOperators();
 
         /// <summary>
         /// Creates a new SQL builder.
@@ -61,8 +35,9 @@ namespace magic.data.common.helpers
         #region [ -- Public static methods -- ]
 
         /// <summary>
-        /// Adds a new comparison operator into the resolver, allowing you to
-        /// use a custom comparison operator.
+        /// Adds a new comparison operator into the comparison operator resolver,
+        /// allowing you to use a custom comparison operator, resolving to some function,
+        /// responsible for injecting SQL into your resulting SQL somehow.
         /// </summary>
         /// <param name="key">Key for your operator.</param>
         /// <param name="functor">Function to invoke once comparison operator is encountered.</param>
@@ -283,42 +258,6 @@ namespace magic.data.common.helpers
         }
 
         /*
-         * Default operator comparison implementation.
-         */
-        static void DefaultOperator(
-            string oper,
-            StringBuilder builder,
-            Node args,
-            Node colNode,
-            string escapeChar)
-        {
-            builder.Append($" {oper} ");
-            AppendArgs(args, colNode, builder, escapeChar);
-        }
-
-        /*
-         * In operator implementation.
-         */
-        static void InOperator(
-            StringBuilder builder,
-            Node args,
-            Node colNode)
-        {
-            builder.Append(" in (");
-            var idxNo = 0;
-            var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
-            foreach (var idx in colNode.Children.Select(x => x.GetEx<object>()).ToArray())
-            {
-                if (idxNo++ > 0)
-                    builder.Append(",");
-                builder.Append("@" + level);
-                args.Add(new Node("@" + level, idx));
-                ++level;
-            }
-            builder.Append(")");
-        }
-
-        /*
          * Helper method to escape column names in static methods.
          */
         static string EscapeColumnName(string column, string escapeChar)
@@ -326,6 +265,42 @@ namespace magic.data.common.helpers
             return escapeChar + 
                 column.Replace(escapeChar, escapeChar + escapeChar) +
                 escapeChar;
+        }
+
+        /*
+         * Creates our default built in comparison operators.
+         */
+        static Dictionary<string, Action<StringBuilder, Node, Node, string>> CreateDefaultComparisonOperators()
+        {
+            var result = new Dictionary<string, Action<StringBuilder, Node, Node, string>>();
+            foreach (var idx in new (string, string) [] {
+                ("eq", "="),
+                ("neq", "!="),
+                ("mt", ">"),
+                ("mteq", ">="),
+                ("lt", "<"),
+                ("lteq", "<="),
+                ("like", "like")})
+            {
+                result[idx.Item1] = (builder, args, colNode, escapeChar) => {
+                    builder.Append($" {idx.Item2} ");
+                    AppendArgs(args, colNode, builder, escapeChar);
+                };
+            }
+            result["in"] = (builder, args, colNode, escapeChar) => {
+                builder.Append(" in (");
+                var idxNo = 0;
+                var level = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
+                foreach (var idx in colNode.Children.Select(x => x.GetEx<object>()).ToArray())
+                {
+                    if (idxNo++ > 0)
+                        builder.Append(",");
+                    builder.Append("@" + level);
+                    args.Add(new Node("@" + level++, idx));
+                }
+                builder.Append(")");
+            };
+            return result;
         }
 
         #endregion
