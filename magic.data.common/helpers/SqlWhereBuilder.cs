@@ -17,77 +17,35 @@ namespace magic.data.common.helpers
     /// </summary>
     public abstract class SqlWhereBuilder : SqlBuilder
     {
-        #region [ -- Comparison operator resolver -- ]
+        #region [ -- Default comparison operator resolvers, and initialization of it -- ]
 
         /*
          * These are the default built in comparison operators, resolving to a function that
          * is responsible for handling a particular comparison operators for you.
          */
-        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string>> _comparisonOperators =
-            new Dictionary<string, Action<StringBuilder, Node, Node, string>>
-        {
-            {"eq", (builder, args, colNode, escapeChar) => 
-                DefaultOperator(
-                    "=",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
-            {"neq", (builder, args, colNode, escapeChar) =>
-                DefaultOperator(
-                    "!=",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
-            {"mt", (builder, args, colNode, escapeChar) =>
-                DefaultOperator(
-                    ">",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
-            {"mteq", (builder, args, colNode, escapeChar) =>
-                DefaultOperator(
-                    ">=",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
-            {"lt", (builder, args, colNode, escapeChar) =>
-                DefaultOperator(
-                    "<",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
-            {"lteq", (builder, args, colNode, escapeChar) =>
-                DefaultOperator(
-                    "<=",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
-            {"like", (builder, args, colNode, escapeChar) =>
-                DefaultOperator(
-                    "like",
-                    builder,
-                    args,
-                    colNode,
-                    escapeChar)
-            },
+        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string>> _comparisonOperators;
 
-            // Notice, resolves to custom implementation method.
-            {"in", (builder, args, colNode, escapeChar) =>
-                InOperator(builder, args, colNode)
-            },
-        };
+        /*
+         * Static constructor to create our default comparison operator resolvers.
+         */
+        static SqlWhereBuilder()
+        {
+            _comparisonOperators = new Dictionary<string, Action<StringBuilder, Node, Node, string>>();
+            foreach (var idx in new (string, string) [] {
+                ("eq", "="),
+                ("neq", "!="),
+                ("mt", ">"),
+                ("mteq", ">="),
+                ("lt", "<"),
+                ("lteq", "<="),
+                ("like", "like")})
+            {
+                _comparisonOperators[idx.Item1] = (builder, args, colNode, escapeChar) =>
+                    DefaultOperator(idx.Item2, builder, args, colNode, escapeChar);
+            }
+            _comparisonOperators["in"] = (builder, args, colNode, escapeChar) =>
+                InOperator(builder, args, colNode);
+        }
 
         #endregion
 
