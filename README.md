@@ -16,7 +16,7 @@ If you create your own database implementation, you'll need to inherit from the 
 whatever parts of these classes that doesn't by default work as your database type needs it to work.
 
 Although the project is _not_ intended to be used directly, but rather through its special implementation,
-such as the [MySQL](https://github.com/polterguy/magic.lambda.mysql) or [MS SQL](https://github.com/polterguy/magic.lambda.mssql)
+such as the MySQL or MS SQL
 adapters - You _can_ consume the project directly, and it does provide slots
 for working directly with the generic adapter - Although, it will never actually execute the SQL,
 but only allow you to dynamically parse a lambda object, producing generic SQL and parameters in
