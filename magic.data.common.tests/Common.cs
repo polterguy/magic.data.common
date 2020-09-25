@@ -29,7 +29,7 @@ namespace magic.data.common.tests
         {
             var signaler = Initialize();
             var lambda = new Parser(hl).Lambda();
-            await signaler.SignalAsync("wait.eval", lambda);
+            await signaler.SignalAsync("eval", lambda);
             return lambda;
         }
 
