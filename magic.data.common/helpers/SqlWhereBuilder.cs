@@ -105,8 +105,8 @@ namespace magic.data.common.helpers
 
             // Extracting actual where node, and doing some more sanity checking.
             var where = whereNodes.First();
-            if (!where.Children.Any())
-                return; // Empty [where] collection.
+            if (!where.Children.Any() || !where.Children.Where(x => x.Children.Any()).Any())
+                return; // Empty [where], [and] or [or] collection.
 
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
@@ -166,7 +166,7 @@ namespace magic.data.common.helpers
             Node booleanNode,
             bool paranthesis = true)
         {
-            if (paranthesis)
+            if (paranthesis && booleanNode.Children.Any())
                 builder.Append("(");
 
             var no = 0;
@@ -197,7 +197,7 @@ namespace magic.data.common.helpers
                 }
             }
 
-            if (paranthesis)
+            if (paranthesis && booleanNode.Children.Any())
                 builder.Append(")");
         }
 
