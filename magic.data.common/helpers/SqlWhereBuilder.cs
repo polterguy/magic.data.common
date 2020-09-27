@@ -105,7 +105,7 @@ namespace magic.data.common.helpers
 
             // Extracting actual where node, and doing some more sanity checking.
             var where = whereNodes.First();
-            if (!where.Children.Any() || !where.Children.Where(x => x.Children.Any()).Any())
+            if (!where.Children.Any() || !where.Children.Any(x => x.Children.Any()))
                 return; // Empty [where], [and] or [or] collection.
 
             // Appending actual "where" parts into SQL.
