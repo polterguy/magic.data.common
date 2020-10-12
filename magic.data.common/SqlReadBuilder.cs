@@ -199,7 +199,7 @@ namespace magic.data.common
                         .Append(" join ");
                     break;
                 default:
-                    throw new ArgumentException($"I don't understand '{joinType}' here, only [outer] or [inner]");
+                    throw new ArgumentException($"I don't understand '{joinType}' here, only [left], [right], [inner] and [full]");
             }
 
             // Appending secondary table name, and its "on" parts.
