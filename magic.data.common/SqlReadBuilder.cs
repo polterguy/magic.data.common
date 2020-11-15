@@ -235,7 +235,12 @@ namespace magic.data.common
             builder.Append(" group by ");
 
             var groupByNode = groupByNodes.First();
-            builder.Append(string.Join(",", groupByNode.Children.Select(x => EscapeTypeName(x.Name))));
+            builder.Append(string.Join(",", groupByNode.Children.Select(x =>
+            {
+                if (x.Name.Contains('('))
+                    return x.Name; // Group by aggregate column.
+                return EscapeTypeName(x.Name);
+            })));
         }
 
         /*
