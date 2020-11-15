@@ -123,7 +123,34 @@ namespace magic.data.common
 
         #endregion
 
-        #region [ -- Private helper methods -- ]
+        #region [ -- Protected and private helper methods -- ]
+
+        /// <summary>
+        /// Appends any [group] (by) arguments, if given.
+        /// </summary>
+        /// <param name="builder">Where to render the SQL</param>
+        protected void AppendGroupBy(StringBuilder builder)
+        {
+            // Checking if we have a [group] argument.
+            var groupByNodes = Root.Children.Where(x => x.Name == "group");
+            if (!groupByNodes.Any())
+                return;
+
+            // Sanity checking that we only have one [group] argument.
+            if (groupByNodes.Count() > 1)
+                throw new ArgumentException("I can only handle one [group] argument.");
+
+            // Appending group by stamenent into builder.
+            builder.Append(" group by ");
+
+            var groupByNode = groupByNodes.First();
+            builder.Append(string.Join(",", groupByNode.Children.Select(x =>
+            {
+                if (x.Name.Contains('('))
+                    return x.Name; // Group by aggregate column.
+                return EscapeTypeName(x.Name);
+            })));
+        }
 
         /*
          * Appends all requested columns into resulting builder.
@@ -215,32 +242,6 @@ namespace magic.data.common
             {
                 AppendJoinedTables(builder, idxInner);
             }
-        }
-
-        /*
-         * Appends any [group] (by) arguments, if given.
-         */
-        void AppendGroupBy(StringBuilder builder)
-        {
-            // Checking if we have a [group] argument.
-            var groupByNodes = Root.Children.Where(x => x.Name == "group");
-            if (!groupByNodes.Any())
-                return;
-
-            // Sanity checking that we only have one [group] argument.
-            if (groupByNodes.Count() > 1)
-                throw new ArgumentException("I can only handle one [group] argument.");
-
-            // Appending group by stamenent into builder.
-            builder.Append(" group by ");
-
-            var groupByNode = groupByNodes.First();
-            builder.Append(string.Join(",", groupByNode.Children.Select(x =>
-            {
-                if (x.Name.Contains('('))
-                    return x.Name; // Group by aggregate column.
-                return EscapeTypeName(x.Name);
-            })));
         }
 
         /*
