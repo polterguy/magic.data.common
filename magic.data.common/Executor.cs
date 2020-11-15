@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Data.Common;
 using System.Threading.Tasks;
 using magic.node;
@@ -16,6 +17,64 @@ namespace magic.data.common
     /// </summary>
     public static class Executor
     {
+        /// <summary>
+        /// Creates a new SQL command of some type, and parametrizes it with each
+        /// child node specified in the invocation node as a key/value DB parameter -
+        /// For then to invoke the specified functor lambda callback.
+        /// </summary>
+        /// <param name="input">Node containing SQL and parameters as children.</param>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="transaction">Database transaction, or null if there are none.</param>
+        /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
+        public static void Execute(
+            Node input,
+            DbConnection connection,
+            Transaction transaction,
+            Action<DbCommand, long> functor)
+        {
+            // Making sure we dispose our command after execution.
+            using (var cmd = connection.CreateCommand())
+            {
+                // Checking if caller supplied a [max] argument, defaulting to -1
+                var max = input.Children.FirstOrDefault(x => x.Name == "max")?.GetEx<long>() ?? -1;
+
+                // Parametrizing and decorating command.
+                PrepareCommand(cmd, transaction, input);
+
+                // Invoking lambda callback supplied by caller.
+                functor(cmd, max);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new SQL command of some type, and parametrizes it with each
+        /// child node specified in the invocation node as a key/value DB parameter -
+        /// For then to invoke the specified functor lambda callback.
+        /// </summary>
+        /// <param name="input">Node containing SQL and parameters as children.</param>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="transaction">Database transaction, or null if there are none.</param>
+        /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
+        /// <returns>An awaitable task.</returns>
+        public static async Task ExecuteAsync(
+            Node input,
+            DbConnection connection,
+            Transaction transaction,
+            Func<DbCommand, long, Task> functor)
+        {
+            using (var cmd = connection.CreateCommand())
+            {
+                // Checking if caller supplied a [max] argument, defaulting to -1
+                var max = input.Children.FirstOrDefault(x => x.Name == "max")?.GetEx<long>() ?? -1;
+
+                // Parametrizing and decorating command.
+                PrepareCommand(cmd, transaction, input);
+
+                // Invoking lambda callback supplied by caller.
+                await functor(cmd, max);
+            }
+        }
+
         /// <summary>
         /// Creates a new SQL command of some type, and parametrizes it with each
         /// child node specified in the invocation node as a key/value DB parameter -
