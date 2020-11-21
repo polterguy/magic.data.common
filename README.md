@@ -33,8 +33,8 @@ a single SQL.
 
 ## Project's intentions
 
-This project will _never_ solve _all_ your SQL problems, and it's probably impossible to abstract away
-all differences between all different database providers - But its intentions are to make it possible to
+This project will _not_ solve _all_ your SQL problems, and it's probably impossible to abstract away
+all differences between all different database providers - But its intention is to make it possible to
 generically declare a lambda object for 80% of your use cases, which you can then later decide which database
 to execute towards.
 
@@ -47,6 +47,32 @@ This allows you to polymorphistically create a lambda structure, for 80% of your
 towards any database type - Completely de-coupling your database vendor's specific dialect, from your 
 application's DAL, or _"Database Access Layer"_, and have this project, combined with its specialized
 implementations, take care of automatically generating the dialect your particular database type requires.
+
+## Generic slots
+
+The project contains the following generic database adapter slots.
+
+* __[data.connect]__ - Connects to a database
+* __[data.execute]__ - Executes an arbitrary SQL statement returning nothing
+* __[data.select]__ - Runs an SQL statement, and returns the result as a record set
+* __[data.scalar]__ - Runs an SQL statement, and returns the result as single scalar value
+* __[data.create]__ - Creates a new database record
+* __[data.read]__ - Reads a database record
+* __[data.update]__ - Updates a database record
+* __[data.delete]__ - Deletes a database record
+* __[data.transaction.create]__ - Creates a new database transaction
+* __[data.transaction.rollback]__ - Rollbacks an existing database transaction
+* __[data.transaction.commit]__ - Commits a database transaction
+
+All of the above slots can be given a **[database-type]** argument, such as for instance _"mysql"_ or _"mssql"_.
+If no such argument is supplied, the database type chosen will be the default database type taken from your
+_"appsettings.json"_ file.
+
+All of these slots will basically just forward the actual execution to your specialised database adapter type,
+implying for instance _"mssql"_ or _"mysql"_, and are hence arguably _"base slots"_ where for instance the **[data.connect]**
+slot simply forwards to **[mysql.connect]**, if MySQL should be used. This allows you to polymorphistically use these
+slots, and have them resolved to your specialised database adapter type, simplifying your DAL code, by eliminating the
+need to check what database type is the default to be used.
 
 ## SQL injection attacks
 
