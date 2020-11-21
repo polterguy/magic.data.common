@@ -3,9 +3,11 @@
  * See the enclosed LICENSE file for details.
  */
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using magic.node;
+using magic.node.extensions;
 using magic.signals.contracts;
 
 namespace magic.data.common.slots
@@ -35,7 +37,10 @@ namespace magic.data.common.slots
         /// <param name="input">Arguments to your slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            var databaseType = _configuration["magic:databases:default"];
+            var databaseType = 
+                input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
+                _configuration["magic:databases:default"];
+            input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
             signaler.Signal($"{databaseType}.transaction.create", input);
         }
 
@@ -47,7 +52,10 @@ namespace magic.data.common.slots
         /// <returns>An awaitable task.</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
-            var databaseType = _configuration["magic:databases:default"];
+            var databaseType = 
+                input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
+                _configuration["magic:databases:default"];
+            input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
             await signaler.SignalAsync($"{databaseType}.transaction.create", input);
         }
     }
