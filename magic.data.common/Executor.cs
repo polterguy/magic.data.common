@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.node.extensions;
 
@@ -125,6 +126,55 @@ namespace magic.data.common
                 // Invoking lambda callback supplied by caller.
                 await functor(cmd);
             }
+        }
+
+        /// <summary>
+        /// Creates a connection string according to the arguments provided,
+        /// and returns to caller.
+        /// </summary>
+        /// <param name="input">Node containing value trying to connect to a database</param>
+        /// <param name="databaseType">Type of database adapter</param>
+        /// <param name="defaultCatalogue">The default catalogue to use if no explicit database was specified</param>
+        /// <param name="configuration">Configuration object from where to retrieve connection string templates</param>
+        /// <returns>Connection string</returns>
+        public static string GetConnectionString(
+            Node input,
+            string databaseType,
+            string defaultCatalogue,
+            IConfiguration configuration)
+        {
+            var connectionString = input.Value == null ? null : input.GetEx<string>();
+
+            // Checking if this is a "generic connection string".
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                var generic = configuration[$"magic:databases:{databaseType}:generic"];
+                connectionString = generic.Replace("{database}", defaultCatalogue);
+            }
+            else if (connectionString.StartsWith("[", StringComparison.InvariantCulture) &&
+                connectionString.EndsWith("]", StringComparison.InvariantCulture))
+            {
+                connectionString = connectionString.Substring(1, connectionString.Length - 2);
+                if (connectionString.Contains("|"))
+                {
+                    var segments = connectionString.Split('|');
+                    if (segments.Length != 2)
+                        throw new ArgumentException($"I don't understand '{connectionString}' as a connection string");
+                    var generic = configuration[$"magic:databases:{databaseType}:{segments[0]}"];
+                    connectionString = generic.Replace("{database}", segments[1]);
+                }
+                else
+                {
+                    var generic = configuration[$"magic:databases:{databaseType}:generic"];
+                    connectionString = generic.Replace("{database}", connectionString);
+                }
+            }
+            else if (!connectionString.Contains(";"))
+            {
+                var generic = configuration[$"magic:databases:{databaseType}:generic"];
+                connectionString = generic.Replace("{database}", connectionString);
+            }
+            return connectionString;
         }
 
         #region [ -- Private helper methods -- ]
