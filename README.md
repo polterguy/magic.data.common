@@ -37,7 +37,7 @@ or only the database name if you wish. If you pass in only the database name, th
 database type of choice from your _"appsettings.json"_ file will be used, substituting its `{database}` parts
 with the database of your choice.
 
-Inside of this, which actually is a lambda **[eval]** invocation, you can use any of the other slots, requiring
+Inside of this slot, which actually is a lambda **[eval]** invocation, you can use any of the other slots, requiring
 an existing and open database connection to function. You can see an example below.
 
 ```
@@ -46,9 +46,14 @@ data.connect:sakila
       table:actor
 ```
 
+**Notice**, since the **[data.connect]** slot actually takes a lambda object, you can also add any amount
+of other lambda invocations inside of the lambda object supplied to the slot - Allowing you to for instance
+create loops, conditional executions, etc - *Inside* of your invocation to **[data.connect]**. This is also
+true for all other slots taking a lambda object, such as for instance **[data.transaction.create]**, etc.
+
 ### [data.select]
 
-This slot allows you to pass in any arbitrary SQL you wish, and it will evaluate to a `DataReader`, and return
+This slot allows you to pass in any arbitrary SQL you wish, and evaluate it to a `DataReader`, and return
 all records as a lambda object. You can find an example below.
 
 ```
@@ -57,7 +62,7 @@ data.connect:sakila
 ```
 
 Assuming you have the _"sakila"_ database from Oracle installed in your database, and your default
-database type is MySQL - The results of the above will end up looking like the following.
+database type is MySQL - The result of the above will end up looking like the following.
 
 ```
 data.connect
@@ -80,8 +85,8 @@ data.connect
 ```
 
 Notice, this slot requires SQL resembling your specialised database type of dialect, and will
-not in any ways transpile towards your specific underlaying database type. If you can, you
-should rather use **[data.read]** for instance, to avoid lockin towards a specific database
+not in any ways transpile the SQL towards your specific underlaying database type of SQL dialect.
+If you can, you should rather use **[data.read]**, to avoid lockin towards a specific database
 vendor's SQL dialect.
 
 ### [data.scalar]
@@ -102,7 +107,7 @@ data.connect
    data.scalar:long:200
 ```
 
-Yet again you should prefer the **[data.read]** slot if you can.
+Yet again you should prefer the **[data.xxx]** slots if you can.
 
 ### [data.execute]
 
@@ -170,7 +175,7 @@ All of these slots have **[data.xxx]** equivalent slots, which again polymorphis
 invokes your specialised data adapter's equivalent, and/or can be parametrised with a
 database type - Which again resolves to the **[mysql.xxx]** equivalent if you supply
 _"mysql"_ as your **[database-type]**, and/or MySQL is your default database type
-as configured in your appsettings.json file.
+as configured in your _"appsettings.json"_ file.
 
 Hence, the documentation for these slots is also the documentation for your **[data.xxx]**
 slots.
@@ -223,12 +228,14 @@ select * from 'foo' limit 25
 
 You can optionally supply the following arguments to this slot.
 
-* __[columns]__ - Columns to select.
-* __[order]__ - Which column to order the results by.
-* __[direction]__ - Which direction to order your columns.
-* __[limit]__ - How many records to return, default is 25. Set this value to -1 to avoid having the parser inject it.
-* __[offset]__ - Offset of where to start returning records.
-* __[where]__ - Where condition. Described further down, since it's common for all slots that supports `where` conditions.
+* __[columns]__ - Columns to select
+* __[order]__ - Which column to order the results by
+* __[direction]__ - Which direction to order your columns
+* __[limit]__ - How many records to return, default is 25. Set this value to -1 to avoid having the parser inject it
+* __[offset]__ - Offset of where to start returning records
+* __[where]__ - Where condition
+* __[join]__ - Join condition
+* __[group]__ - Group by declaration
 
 For instance, to select only the _"field1"_ column and the _"field2"_ column from _"table1"_,
 and ordering descending by _"field3"_ - You can use something resembling the following.
@@ -297,7 +304,7 @@ To page your **[sql.read]** results, use **[limit]** and **[offset]**, such as t
 Notice, even though we use _"limit"_ and _"offset"_ - The correct syntax will be applied for your database type,
 depending upon which database type you're using - Implying for Microsoft SQL Server, it will inject MS SQL dialect,
 and not MySQL dialect. But the syntax for your lambda object still remains the same, making it simpler to create
-SQL syntax valid for your specific database type.
+SQL dialect valid for your specific database type.
 
 ```
 sql.read
@@ -421,52 +428,6 @@ select * from 'table1' inner join 'table2' on 'table1'.'fk1' != 'table2'.'pk1'
 The **[type]** argument to your **[join]** arguments, can be _"inner"_, _"full"_, _"left"_ or _"right"_,
 resulting in the equivalent type of join for your SQL.
 
-#### Group by
-
-You can also provide a **[group]** argument to your lambda, resulting in a _"group by"_ statement injected
-into the resulting SQL. Below is an example.
-
-```
-sql.read
-   table:table1
-   limit:-1
-   columns
-      col1
-      count(*)
-         as:count
-   group
-      col1
-```
-
-The above will result in the following SQL.
-
-```
-select col1, count(*) as count from 'table1' group by 'col1'
-```
-
-You can supply multiple group by columns, in addition to _"namespacing"_ your columns, with your table names,
-such as we illustrate below.
-
-```
-sql.read
-   table:table1
-   limit:-1
-   columns
-      count(*)
-   group
-      table1.foo1
-      table1.foo2
-```
-
-The above of course results in the following SQL.
-
-```
-select count(*) from 'table1' group by 'table1'.'foo1','table1'.'foo2'
-```
-
-You can of course combine your **[group]** arguments with **[where]** arguments, and **[join]** arguments,
-allowing you to create complex aggregate results, statistics, joining multiple tables, etc.
-
 #### 'Namespacing' columns
 
 When you're joining results from multiple tables, it's often required that you specify which table you want some resulting
@@ -517,6 +478,52 @@ select
 **Notice** - Spacing is not applied to the actual generated SQL result, but have been applied to some of the SQL
 examples in this documentation, to make the SQL more readable.
 
+#### Group by
+
+You can also provide a **[group]** argument to your lambda, resulting in a _"group by"_ statement injected
+into the resulting SQL. Below is an example.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   columns
+      col1
+      count(*)
+         as:count
+   group
+      col1
+```
+
+The above will result in the following SQL.
+
+```
+select col1, count(*) as count from 'table1' group by 'col1'
+```
+
+You can supply multiple group by columns, in addition to _"namespacing"_ your columns with your table names,
+such as we illustrate below.
+
+```
+sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      table1.foo1
+      table1.foo2
+```
+
+The above of course results in the following SQL.
+
+```
+select count(*) from 'table1' group by 'table1'.'foo1','table1'.'foo2'
+```
+
+You can of course combine your **[group]** arguments with **[where]** arguments, and **[join]** arguments,
+allowing you to create complex aggregate results, statistics, joining multiple tables, etc.
+
 ### [sql.update]
 
 This slot allows you to update one or more records, in a specified **[table]**. Just like create, it requires
@@ -538,11 +545,14 @@ sql.update:update 'table1' set 'field1' = @v0
    @v0:howdy
 ```
 
+**Notice**, if you don't apply a **[where]** argument, then *all* records in your table will
+be updated - Which is highly unlikely what your intentions are. Hence, make sure you apply a
+**[where]** argument as you invoke this slot.
+
 ### [sql.delete]
 
-This slot works similar to the **[sql.select]** slot, except it doesn't allow for **[join]**, **[group]**,
-**[order]**, etc. This slot is for deleting records. But its **[where]** argument is applied in a similar
-fashion. You can find an example below.
+This slot is for deleting records. Its **[where]** argument is applied in a similar fashion as the where
+argument to **[sql.select]** and **[sql.update]**. You can find an example below.
 
 ```
 sql.delete
@@ -651,9 +661,11 @@ sql.read:select * from 'table1' where 'field1' = @0 or ('field2' = @1 and 'field
 ```
 
 **Notice**, the parent of a list of criteria is deciding which logical operator to separate your conditions
-with, contrary to traditional languages, where you separate your conditions with the logical operator.
-This might seem a little bit backwards in the beginning, but this is a general rule with everything in
-Hyperlambda, and after a while will feel more natural than the alternatives.
+with, contrary to traditional languages, where you separate your conditions with the logical operator, and
+explicitly add paranthesis to group your levels. This might seem a little bit backwards in the beginning,
+but this is a general rule with everything in Hyperlambda, and after a while will feel more natural than
+the alternative. The reasons for this is to allow for semantically traverse your lambda objects, allowing
+the computer to logically understand what it does more easily - Among other things.
 
 #### Comparison operators
 
@@ -687,7 +699,8 @@ select * from 'foo' where 'field1' != @0
 ```
 
 Notice the above **[field1.neq]**, which is substituted by the SQL generator to become a `!=` comparison operator
-on the `field1` column versus the `field2` column.
+on the `field1` column versus the `xxx` argument. The comparison operator is *always* expected to be the
+last parts of your _"LHS"_ (Left Hand Side) parts of your criteria - Implying the *value* of the node.
 
 #### The [in] comparison operator
 
@@ -711,21 +724,6 @@ The above will generate the following SQL, in addition to returning 3 parameters
 ```
 select * from 'table1' where 'table1'.'field1' in (@0,@1,@2) limit 25
 ```
-
-#### Extension comparison operators
-
-You can also extend the existing comparison operators with your own, such as for instance having `ltmt`
-implying `<>`. To do this, you'll have to register your comparison operator using the static `AddComparisonOperator`
-method on the `SqlWhereBuilder` class. Below is an example.
-
-```csharp
-SqlWhereBuilder.AddComparisonOperator("ltmt", (builder, args, colNode, escapeChar) => {
-    builder.Append(" <> ");
-    SqlWhereBuilder.AppendArgs(args, colNode, builder, escapeChar);
-});
-```
-
-The above will give you access to use `ltmt` as a comparison operator, resolving to `<>` in your SQL.
 
 #### Escaping character
 
@@ -766,6 +764,21 @@ column _"foo"_ on _"table1"_. You can see the resulting SQL below.
 select * from 'table1' where 'table1.foo' = @0 limit 25
 ```
 
+#### Extension comparison operators
+
+You can also extend the existing comparison operators with your own, such as for instance having `ltmt`
+resulting in `<>`. To do this, you'll have to register your comparison operator using the static
+`AddComparisonOperator` method on the `SqlWhereBuilder` class. Below is an example.
+
+```csharp
+SqlWhereBuilder.AddComparisonOperator("ltmt", (builder, args, colNode, escapeChar) => {
+    builder.Append(" <> ");
+    SqlWhereBuilder.AppendArgs(args, colNode, builder, escapeChar);
+});
+```
+
+The above will give you access to use `ltmt` as a comparison operator, resolving to `<>` in your SQL.
+
 ### Meta data
 
 One of the really nice things about the semantic approach to generating SQL, is that it
@@ -775,16 +788,19 @@ dynamically change the table name, using refactoring and replacement concepts. O
 the initial step into _meta data traversal_ in Hyperlambda, things like this, which is impossible
 to achieve in traditional programming languages, becomes a commodity with Hyperlambda.
 
+> Hyperlambda understands Hyperlambda
+
 ## SQL injection attacks
 
 The project protects you automatically against SQL injection attacks, and protect values, and criteria, etc.
 But you should _not_ allow any potentially insecure clients to dynamically declare which columns
 to select, and/or field _names_ for your `where` clauses. It will only protect your _values_,
-and _not_ table names or column names against SQL injection attacks. Also, the project does not verify that
-the SQL is possible to execute towards your database, such as verifying that specified tables or columns
-actually exists. It does its best however, to verify that your Hyperlambda is structured correctly, and that
-it will create valid SQL - But you should *not assume* the SQL the project generates is valid, before
-you have tested it.
+and _not_ table names or column names against SQL injection attacks.
+
+The project does *not* verify that your SQL is possible to execute towards your database, such as verifying
+that specified tables or columns actually exists. It does its best however, to verify that your Hyperlambda
+is structured correctly, and that it will create valid SQL - But you should *not assume* the SQL the project
+generates is valid, before you have tested it.
 
 ## Creating your own data adapter
 
