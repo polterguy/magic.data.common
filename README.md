@@ -3,8 +3,17 @@
 
 This is the generic data adapter, that transform dynamically from a lambda node structure into SQL, and
 polymorphistically invokes your specialised data adapter, resulting in SQL statements executed towards
-your database type of choice. In addition, it contains helper slots to give you more _"raw"_ database,
+your database type of choice. In addition, it contains helper slots to give you more _"raw"_ database
 access, and also slots to help you open database connections, create transactions, etc.
+
+## [sql.xxx] slots
+
+These slots never executes SQL towards your data adapter, but rather simply generates your SQL, and
+returns the results of the SQL generation process back to you. They're mostly intended for debugging
+purposes, and/or learning purposes, and can be interchanged with their **[data.xxx]** equivalent,
+and/or their **[mysql.xxx]**/**[mssql.xxx]** equivalent, etc. In this documentation we will mostly
+be using these slots, but you can substitute our usage of these slots with for instance **[data.xxx]**
+if you wish to actually execute some SQL towards your database adapter of choice.
 
 ## [data.xxx] slots
 
