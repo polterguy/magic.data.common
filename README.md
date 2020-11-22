@@ -4,7 +4,7 @@
 This is the generic data adapter, that transform dynamically from a lambda node structure into SQL, and
 polymorphistically invokes your specialised data adapter, resulting in SQL statements executed towards
 your database type of choice. In addition, it contains helper slots to give you more _"raw"_ database
-access, and also slots to help you open database connections, create transactions, etc.
+access, and also slots to help you open database connections, create transactions, execute SQL, etc.
 
 ## [sql.xxx] slots
 
@@ -21,6 +21,14 @@ All of the **[data.xxx]** slots are actually just polymorphistically evaluating 
 slots, such as for instance **[data.connect]**, that will invoke **[mysql.connect]** if this is your default
 database. However, all of these lots can also be given an explicit **[database-type]** argument, being for
 instance _"mssql"_, allowing you to choose a database type explicitly as you invoke it.
+
+If you don't provide an explicit **[database-type]** argument to these slots, the default database
+type will be retrieved from your _"appsettings.json"_ file, from the `magic:databases:default` value,
+and substitute the _"data"_ parts with the value found from your configuration setting, to invoke
+your specialised implementation. For instance, if you're using MySQL as your default database type,
+and you invoke for instance **[data.connect]**, this will transform into an invocation to **[mysql.connect]**,
+allowing you to use generic database slot invocations, ignoring your database type, and to some extent
+its SQL dialect.
 
 ### [data.connect]
 
