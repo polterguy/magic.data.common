@@ -89,6 +89,12 @@ not in any ways transpile the SQL towards your specific underlaying database typ
 If you can, you should rather use **[data.read]**, to avoid lockin towards a specific database
 vendor's SQL dialect.
 
+You can also select multiple result sets if you have batch type of SQL statements, containing
+multiple SQL statements, and you want to return the result of all SQL statements you're executing.
+You do this by providing a **[multiple-result-sets]** argument and set its value to boolean true.
+If you do this, the slot will return an array of arrays, one outer array for each result set
+your SQL generates.
+
 ### [data.scalar]
 
 This slot is similar to the **[data.select]** slot, but will only return one value, as the
