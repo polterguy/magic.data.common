@@ -66,7 +66,9 @@ namespace magic.data.common
             using (var cmd = connection.CreateCommand())
             {
                 // Checking if caller supplied a [max] argument, defaulting to -1
-                var max = input.Children.FirstOrDefault(x => x.Name == "max")?.GetEx<long>() ?? -1;
+                var maxNode = input.Children.FirstOrDefault(x => x.Name == "max");
+                var max = maxNode?.GetEx<long>() ?? -1;
+                maxNode?.UnTie();
 
                 // Parametrizing and decorating command.
                 PrepareCommand(cmd, transaction, input);
