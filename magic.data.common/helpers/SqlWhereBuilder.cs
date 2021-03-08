@@ -252,8 +252,15 @@ namespace magic.data.common.helpers
             }
 
             // This is the default logic to apply, if no operators was specified.
-            builder.Append(columnName).Append(" = ");
-            AppendArgs(args, comparison, builder, EscapeChar);
+            if (comparison.Value == null)
+            {
+                builder.Append(columnName).Append(" is null");
+            }
+            else
+            {
+                builder.Append(columnName).Append(" = ");
+                AppendArgs(args, comparison, builder, EscapeChar);
+            }
         }
 
         /*
