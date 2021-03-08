@@ -291,8 +291,27 @@ namespace magic.data.common.helpers
                 ("like", "like")})
             {
                 result[idx.Item1] = (builder, args, colNode, escapeChar) => {
-                    builder.Append($" {idx.Item2} ");
-                    AppendArgs(args, colNode, builder, escapeChar);
+                    if (colNode.Value == null)
+                    {
+                        switch (idx.Item2)
+                        {
+                            case "=":
+                                builder.Append(" is null");
+                                break;
+
+                            case "!=":
+                                builder.Append(" is not null");
+                                break;
+
+                            default:
+                                throw new ArgumentException($"{idx.Item2} is an unsupported comparison operator for null value");
+                        }
+                    }
+                    else
+                    {
+                        builder.Append($" {idx.Item2} ");
+                        AppendArgs(args, colNode, builder, escapeChar);
+                    }
                 };
             }
 
