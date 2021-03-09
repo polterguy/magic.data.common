@@ -54,15 +54,28 @@ namespace magic.data.common
         /// <inheritdoc />
         protected override void AppendTableName(StringBuilder builder)
         {
-            var tableNode = Root.Children.FirstOrDefault(x => x.Name == "table") ??
+            if (!Root.Children.Any(x => x.Name == "table"))
                 throw new ArgumentException($"No [table] argument supplied to {GetType().FullName}");
 
-            builder.Append(EscapeTypeName(tableNode.GetEx<string>()));
-
-            // Then making sure we apply [join] tables, if there are any.
-            foreach (var idxJoin in tableNode.Children.Where(x => x.Name == "join"))
+            var first = true;
+            foreach (var idx in Root.Children.Where(x => x.Name == "table"))
             {
-                AppendJoinedTables(builder, idxJoin);
+                if (first)
+                    first = false;
+                else
+                    builder.Append(", ");
+                builder.Append(EscapeTypeName(idx.GetEx<string>()));
+
+                // Checking if we have an alias for table.
+                var alias = idx.Children.FirstOrDefault(x => x.Name == "as");
+                if (alias != null)
+                    builder.Append(" ").Append(alias.GetEx<string>());
+
+                // Then making sure we apply [join] tables, if there are any.
+                foreach (var idxJoin in idx.Children.Where(x => x.Name == "join"))
+                {
+                    AppendJoinedTables(builder, idxJoin);
+                }
             }
         }
 
@@ -88,18 +101,27 @@ namespace magic.data.common
             var orderNodes = Root.Children.Where(x => x.Name == "order");
             if (orderNodes.Any())
             {
-                // Sanity checking.
-                if (orderNodes.Count() > 1)
-                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [order] nodes");
+                // Figuring out direction to order result by, defaulting to ascending.
+                var direction = Root.Children.FirstOrDefault(x => x.Name == "direction")?.GetEx<string>() ?? "asc";
 
-                var orderValue = string.Join(
-                    ",",
-                    orderNodes.First()
-                        .GetEx<string>()
-                        .Split(',')
-                        .Select(x => EscapeTypeName(x.Trim())));
-                builder.Append(" order by " + orderValue);
-                AppendDirection(builder);
+                // Appending order by clause.
+                builder.Append(" order by ");
+
+                var first = true;
+                foreach (var idx in orderNodes)
+                {
+                    foreach (var idxCol in idx.GetEx<string>().Split(','))
+                    {
+                        if (first)
+                            first = false;
+                        else
+                            builder.Append(",");
+                        builder
+                            .Append(EscapeTypeName(idxCol.Trim()))
+                            .Append(" ")
+                            .Append(idx.Children.FirstOrDefault(x => x.Name == "direction")?.GetEx<string>() ?? direction);
+                    }
+                }
             }
             else
             {
@@ -229,8 +251,16 @@ namespace magic.data.common
                     throw new ArgumentException($"I don't understand '{joinType}' here, only [left], [right], [inner] and [full]");
             }
 
-            // Appending secondary table name, and its "on" parts.
-            builder.Append(EscapeTypeName(joinNode.GetEx<string>())).Append(" on ");
+            // Appending primary table name, and its "on" parts.
+            builder.Append(EscapeTypeName(joinNode.GetEx<string>()));
+
+            // Checking if we have an alias for table.
+            var alias = joinNode.Children.FirstOrDefault(x => x.Name == "as");
+            if (alias != null)
+                builder.Append(" ").Append(alias.GetEx<string>());
+
+            // Appending on condition.
+            builder.Append(" on ");
 
             // Retrieving and appending all "on" criteria.
             var onNode = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
@@ -241,32 +271,6 @@ namespace magic.data.common
             foreach (var idxInner in joinNode.Children.Where(x => x.Name == "join"))
             {
                 AppendJoinedTables(builder, idxInner);
-            }
-        }
-
-        /*
-         * Appends direction for order operation, asc/desc, if it exists.
-         */
-        void AppendDirection(StringBuilder builder)
-        {
-            // Checking if [direction] node exists.
-            var direction = Root.Children.Where(x => x.Name == "direction");
-            if (direction.Any())
-            {
-                // Sanity checking.
-                if (direction.Count() > 1)
-                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [direction] nodes");
-
-                var dir = direction.First().GetEx<string>();
-                switch (dir)
-                {
-                    case "asc":
-                    case "desc":
-                        builder.Append(" ").Append(dir);
-                        break;
-                    default:
-                        throw new ArgumentException($"I don't know how to sort according to the '{dir}' [direction], only 'asc' and 'desc'");
-                }
             }
         }
 
