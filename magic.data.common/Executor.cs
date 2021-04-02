@@ -56,6 +56,32 @@ namespace magic.data.common
         /// <param name="connection">Database connection.</param>
         /// <param name="transaction">Database transaction, or null if there are none.</param>
         /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
+        public static void Execute(
+            Node input,
+            DbConnection connection,
+            Transaction transaction,
+            Action<DbCommand> functor)
+        {
+            // Making sure we dispose our command after execution.
+            using (var cmd = connection.CreateCommand())
+            {
+                // Parametrizing and decorating command.
+                PrepareCommand(cmd, transaction, input);
+
+                // Invoking lambda callback supplied by caller.
+                functor(cmd);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new SQL command of some type, and parametrizes it with each
+        /// child node specified in the invocation node as a key/value DB parameter -
+        /// For then to invoke the specified functor lambda callback.
+        /// </summary>
+        /// <param name="input">Node containing SQL and parameters as children.</param>
+        /// <param name="connection">Database connection.</param>
+        /// <param name="transaction">Database transaction, or null if there are none.</param>
+        /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
         /// <returns>An awaitable task.</returns>
         public static async Task ExecuteAsync(
             Node input,
@@ -75,32 +101,6 @@ namespace magic.data.common
 
                 // Invoking lambda callback supplied by caller.
                 await functor(cmd, max);
-            }
-        }
-
-        /// <summary>
-        /// Creates a new SQL command of some type, and parametrizes it with each
-        /// child node specified in the invocation node as a key/value DB parameter -
-        /// For then to invoke the specified functor lambda callback.
-        /// </summary>
-        /// <param name="input">Node containing SQL and parameters as children.</param>
-        /// <param name="connection">Database connection.</param>
-        /// <param name="transaction">Database transaction, or null if there are none.</param>
-        /// <param name="functor">Lambda function responsible for executing the command somehow.</param>
-        public static void Execute(
-            Node input,
-            DbConnection connection,
-            Transaction transaction,
-            Action<DbCommand> functor)
-        {
-            // Making sure we dispose our command after execution.
-            using (var cmd = connection.CreateCommand())
-            {
-                // Parametrizing and decorating command.
-                PrepareCommand(cmd, transaction, input);
-
-                // Invoking lambda callback supplied by caller.
-                functor(cmd);
             }
         }
 
