@@ -102,7 +102,21 @@ namespace magic.data.common
             if (orderNodes.Any())
             {
                 // Figuring out direction to order result by, defaulting to ascending.
-                var direction = Root.Children.FirstOrDefault(x => x.Name == "direction")?.GetEx<string>() ?? "asc";
+                var directionNodes = Root.Children
+                    .Where(x => x.Name == "direction");
+
+                // Sanity checking invocation.
+                if (directionNodes.Count() > 1)
+                    throw new ArgumentException("Only on default [direction] argument is supported");
+
+                // Fetching default direction, which is used, unless [order] overrides it with sub-argument.
+                var defaultDirection = directionNodes
+                    .FirstOrDefault(x => x.Name == "direction")?
+                    .GetEx<string>() ?? "asc";
+
+                // Sanity checking invocation.
+                if (defaultDirection != null && (defaultDirection != "asc" && defaultDirection != "desc"))
+                    throw new ArgumentException("Only 'asc' and 'desc' are supported for the [direction] argument");
 
                 // Appending order by clause.
                 builder.Append(" order by ");
@@ -119,7 +133,9 @@ namespace magic.data.common
                         builder
                             .Append(EscapeTypeName(idxCol.Trim()))
                             .Append(" ")
-                            .Append(idx.Children.FirstOrDefault(x => x.Name == "direction")?.GetEx<string>() ?? direction);
+                            .Append(idx.Children
+                                .FirstOrDefault(x => x.Name == "direction")?
+                                .GetEx<string>() ?? defaultDirection);
                     }
                 }
             }

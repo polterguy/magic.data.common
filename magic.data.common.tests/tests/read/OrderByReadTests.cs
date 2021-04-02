@@ -24,7 +24,7 @@ namespace magic.data.common.tests.tests.read
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' order by 'fieldOrder' limit 25", sql);
+            Assert.Equal("select * from 'foo' order by 'fieldOrder' asc limit 25", sql);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace magic.data.common.tests.tests.read
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' order by 'foo'.'fieldOrder' limit 25", sql);
+            Assert.Equal("select * from 'foo' order by 'foo'.'fieldOrder' asc limit 25", sql);
         }
 
         [Fact]
@@ -54,21 +54,7 @@ namespace magic.data.common.tests.tests.read
             // Extracting SQL + params, and asserting correctness.
             var result = builder.Build();
             var sql = result.Get<string>();
-            Assert.Equal("select * from 'foo' order by 'foo'.'fieldOrder1','foo'.'fieldOrder2' limit 25", sql);
-        }
-
-        [Fact]
-        public void MultipleOrderBy_Throws()
-        {
-            // Creating node hierarchy.
-            var node = new Node();
-            node.Add(new Node("table", "foo"));
-            node.Add(new Node("order", "fieldOrder1"));
-            node.Add(new Node("order", "fieldOrder2"));
-            var builder = new SqlReadBuilder(node, "'");
-
-            // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Equal("select * from 'foo' order by 'foo'.'fieldOrder1' asc,'foo'.'fieldOrder2' asc limit 25", sql);
         }
 
         [Fact]
