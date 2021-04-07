@@ -115,7 +115,7 @@ namespace magic.data.common
                     .GetEx<string>() ?? "asc";
 
                 // Sanity checking invocation.
-                if (defaultDirection != null && (defaultDirection != "asc" && defaultDirection != "desc"))
+                if (defaultDirection != "asc" && defaultDirection != "desc")
                     throw new ArgumentException("Only 'asc' and 'desc' are supported for the [direction] argument");
 
                 // Appending order by clause.
