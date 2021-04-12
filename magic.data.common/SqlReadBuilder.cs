@@ -101,22 +101,8 @@ namespace magic.data.common
             var orderNodes = Root.Children.Where(x => x.Name == "order");
             if (orderNodes.Any())
             {
-                // Figuring out direction to order result by, defaulting to ascending.
-                var directionNodes = Root.Children
-                    .Where(x => x.Name == "direction");
-
-                // Sanity checking invocation.
-                if (directionNodes.Count() > 1)
-                    throw new ArgumentException("Only on default [direction] argument is supported");
-
-                // Fetching default direction, which is used, unless [order] overrides it with sub-argument.
-                var defaultDirection = directionNodes
-                    .FirstOrDefault(x => x.Name == "direction")?
-                    .GetEx<string>() ?? "asc";
-
-                // Sanity checking invocation.
-                if (defaultDirection != "asc" && defaultDirection != "desc")
-                    throw new ArgumentException("Only 'asc' and 'desc' are supported for the [direction] argument");
+                // Retrieving default direction.
+                var defaultDirection = GetDefaultDirection();
 
                 // Appending order by clause.
                 builder.Append(" order by ");
@@ -162,6 +148,33 @@ namespace magic.data.common
         #endregion
 
         #region [ -- Protected and private helper methods -- ]
+
+        /*
+         * Returns the default direction to use for order, unless [order] node
+         * explicitly overrides on a per field basis.
+         */
+        string GetDefaultDirection()
+        {
+            // Figuring out direction to order result by, defaulting to ascending.
+            var directionNodes = Root.Children
+                .Where(x => x.Name == "direction");
+
+            // Sanity checking invocation.
+            if (directionNodes.Count() > 1)
+                throw new ArgumentException("Only on default [direction] argument is supported");
+
+            // Fetching default direction, which is used, unless [order] overrides it with sub-argument.
+            var defaultDirection = directionNodes
+                .FirstOrDefault(x => x.Name == "direction")?
+                .GetEx<string>() ?? "asc";
+
+            // Sanity checking invocation.
+            if (defaultDirection != "asc" && defaultDirection != "desc")
+                throw new ArgumentException("Only 'asc' and 'desc' are supported for the [direction] argument");
+
+            // Returning default direction to caller.
+            return defaultDirection;
+        }
 
         /// <summary>
         /// Appends any [group] (by) arguments, if given.
