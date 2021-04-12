@@ -14,7 +14,9 @@ using magic.node.extensions;
 namespace magic.data.common
 {
     /// <summary>
-    /// Helper class for creating and parametrizing an SQL command of some type.
+    /// Helper class for creating and parametrizing an SQL command of some type, and
+    /// also for traversing records, plus other smaller helper methods, being commonalities
+    /// between different database type implementations.
     /// </summary>
     public static class Executor
     {
@@ -177,6 +179,43 @@ namespace magic.data.common
                 connectionString = generic.Replace("{database}", connectionString);
             }
             return connectionString;
+        }
+
+        /// <summary>
+        /// Returns true if invocation wants to retrieve multiple result sets.
+        /// </summary>
+        /// <param name="input">Node containing value trying to connect to a database</param>
+        /// <returns>True if caller wants to have multiple result sets returned</returns>
+        public static bool HasMultipleResultSets(Node input)
+        {
+            var mrsNode = input.Children.FirstOrDefault(x => x.Name == "multiple-result-sets");
+            var multipleResultSets = mrsNode?.GetEx<bool>() ?? false;
+            mrsNode?.UnTie();
+            return multipleResultSets;
+        }
+
+        /// <summary>
+        /// Builds one result record and puts into specified parentNode from data reader
+        /// </summary>
+        /// <param name="reader">Data reader to retrieve fields from</param>
+        /// <param name="parentNode">Node where to return result</param>
+        /// <param name="max">Maximum number of records to return</param>
+        /// <returns>True if we should continue building the next result, false otherwise</returns>
+        public static bool BuildResultRow(DbDataReader reader, Node parentNode, ref long max)
+        {
+            if (max != -1 && max-- == 0)
+                return false; // Reached maximum limit
+
+            var rowNode = new Node();
+            for (var idxCol = 0; idxCol < reader.FieldCount; idxCol++)
+            {
+                var colNode = new Node(
+                    reader.GetName(idxCol),
+                    magic.data.common.Converter.GetValue(reader[idxCol]));
+                rowNode.Add(colNode);
+            }
+            parentNode.Add(rowNode);
+            return true;
         }
 
         #region [ -- Private helper methods -- ]
