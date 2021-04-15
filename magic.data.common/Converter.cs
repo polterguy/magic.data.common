@@ -17,9 +17,14 @@ namespace magic.data.common
         /// for instance, if given DBNull as type, it will return simply "null" value, etc.
         /// </summary>
         /// <param name="value">Database value.</param>
-        /// <returns>The value in the equivalent .Net type.</returns>
+        /// <returns>The value as the equivalent CLR type created from its DB type.</returns>
         public static object GetValue(object value)
         {
+            /*
+             * Notice, most databases will return DBNull instead of null, hence in order
+             * to make sure we return it in "Hyperlambda style", we convert these values
+             * into CLR null values.
+             */
             if (value == null || value is DBNull)
                 return null;
 
@@ -29,6 +34,8 @@ namespace magic.data.common
              */
             if (value is DateTime dt)
                 return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
+
+            // Default, no conversion required.
             return value;
         }
     }

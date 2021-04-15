@@ -59,11 +59,65 @@ namespace magic.data.common.tests
    limit:-1
    table:table1
       join:table2
+         as:t2
          type:inner
          on
             and
-               field1:field2");
-            Assert.Equal("select * from 'table1' inner join 'table2' on 'field1' = 'field2'", lambda.Children.First().Get<string>());
+               field1:t2.field2");
+            Assert.Equal("select * from 'table1' inner join 'table2' t2 on 'field1' = 't2'.'field2'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadWithNullCondition()
+        {
+            var lambda = Common.Evaluate(@"
+sql.read
+   limit:-1
+   table:table1
+   where
+      and
+         foo1.eq
+         foo2.neq
+         foo3
+");
+            Assert.Equal("select * from 'table1' where 'foo1' is null and 'foo2' is not null and 'foo3' is null", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadWithUnknownComparisonOperator()
+        {
+            Assert.Throws<ArgumentException>(() => Common.Evaluate(@"
+sql.read
+   limit:-1
+   table:table1
+   where
+      and
+         foo1.like
+"));
+        }
+
+        [Fact]
+        public void ReadFromMultipleTables()
+        {
+            var lambda = Common.Evaluate(@"
+sql.read
+   limit:-1
+   table:table1
+   table:table2
+");
+            Assert.Equal("select * from 'table1', 'table2'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadWithAlias()
+        {
+            var lambda = Common.Evaluate(@"
+sql.read
+   limit:-1
+   table:table1
+      as:t1
+");
+            Assert.Equal("select * from 'table1' t1", lambda.Children.First().Get<string>());
         }
 
         [Fact]
@@ -143,6 +197,19 @@ namespace magic.data.common.tests
    group
       foo1");
             Assert.Equal("select count(*) from 'table1' group by 'foo1'", lambda.Children.First().Get<string>());
+        }
+
+        [Fact]
+        public void ReadGroupByAggregate()
+        {
+            var lambda = Common.Evaluate(@"sql.read
+   table:table1
+   limit:-1
+   columns
+      count(*)
+   group
+      count(*)");
+            Assert.Equal("select count(*) from 'table1' group by count(*)", lambda.Children.First().Get<string>());
         }
 
         [Fact]
