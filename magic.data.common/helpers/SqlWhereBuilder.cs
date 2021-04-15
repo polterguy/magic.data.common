@@ -66,13 +66,22 @@ namespace magic.data.common.helpers
         {
             if (args == null)
             {
-                // No args node given, assuming direct comparison.
-                var rhs = string.Join(
-                    ".",
-                    colNode.GetEx<string>()
-                        .Split('.')
-                        .Select(x => EscapeColumnName(x, escapeChar)));
-                builder.Append(rhs);
+                // Checking if this is an explicit argument, added by caller explicitly.
+                var rhsValue = colNode.GetEx<string>();
+                if (rhsValue.StartsWith("@", StringComparison.InvariantCulture))
+                {
+                    builder.Append(rhsValue);
+                }
+                else
+                {
+                    // No args node given, and argument is not an arg, assuming direct comparison.
+                    var rhs = string.Join(
+                        ".",
+                        rhsValue
+                            .Split('.')
+                            .Select(x => EscapeColumnName(x, escapeChar)));
+                    builder.Append(rhs);
+                }
                 return;
             }
 
@@ -218,7 +227,7 @@ namespace magic.data.common.helpers
             }
             else if (columnName.Contains("."))
             {
-                // Possibly an oeprator, hence checking operator dictionary for a match.
+                // Possibly an operator, hence checking operator dictionary for a match.
                 var entities = columnName.Split('.');
                 var keyword = entities.Last();
                 if (_comparisonOperators.ContainsKey(keyword))

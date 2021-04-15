@@ -55,12 +55,21 @@ namespace magic.data.common.helpers
         public static Node Parse<T>(ISignaler signaler, Node input) where T : SqlBuilder
         {
             /*
+             * Retrieving all explicitly added arguments.
+             */
+            var explicitArgs = input.Children
+                .Where(x => x.Name.StartsWith("@", StringComparison.InvariantCulture)).ToList();
+
+            /*
              * Unfortunately this is our only means to create an instance of type,
              * since it requires arguments in its CTOR, and we can't create constraints
              * for constructor arguments using generic constraints.
              */
             var builder = Activator.CreateInstance(typeof(T), new object[] { input, signaler }) as T;
             var sqlNode = builder.Build();
+
+            // Adding all explicitly added arguments.
+            sqlNode.AddRange(explicitArgs);
 
             // Checking if this is a "build only" invocation.
             if (builder.IsGenerateOnly)

@@ -32,8 +32,17 @@ namespace magic.data.common
         /// <returns>Node containing insert SQL as root node, and parameters as children.</returns>
         public override Node Build()
         {
+            /*
+             * Retrieving all explicitly added arguments.
+             */
+            var explicitArgs = Root.Children
+                .Where(x => x.Name.StartsWith("@", StringComparison.InvariantCulture)).ToList();
+
             // Return value.
             var result = new Node("sql");
+
+            // Adding all explicitly added arguments.
+            result.AddRange(explicitArgs);
 
             // Starting build process.
             var builder = new StringBuilder();
