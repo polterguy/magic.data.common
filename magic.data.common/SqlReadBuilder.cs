@@ -348,7 +348,8 @@ namespace magic.data.common
                     throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
 
                 var offsetValue = offsetNodes.First().GetEx<long>();
-                builder.Append(" offset " + offsetValue);
+                if (offsetValue != 0)
+                    builder.Append(" offset " + offsetValue);
             }
         }
 
