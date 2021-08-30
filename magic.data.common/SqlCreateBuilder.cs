@@ -130,10 +130,12 @@ namespace magic.data.common
         {
             builder.Append(" values (");
             var idxNo = 0;
+            var first = true;
             foreach (var idx in values.Children)
             {
-                if (idxNo > 0)
+                if (!first)
                     builder.Append(", ");
+                first = false;
 
                 if (idx.Value == null)
                 {

@@ -64,10 +64,13 @@ namespace magic.data.common
                 throw new ArgumentException($"No actual [values] provided to '{GetType().FullName}'");
 
             var idxNo = 0;
+            var first = true;
             foreach (var idxCol in valuesNode.Children)
             {
-                if (idxNo > 0)
+                if (!first)
                     builder.Append(", ");
+                first = false;
+
                 builder.Append(EscapeColumnName(idxCol.Name));
                 if (idxCol.Value == null)
                 {
