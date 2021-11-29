@@ -114,7 +114,7 @@ namespace magic.data.common
                 {
                     var segments = connectionString.Split('|');
                     if (segments.Length != 2)
-                        throw new ArgumentException($"I don't understand '{connectionString}' as a connection string");
+                        throw new HyperlambdaException($"I don't understand '{connectionString}' as a connection string");
                     var generic = configuration[$"magic:databases:{databaseType}:{segments[0]}"];
                     connectionString = generic.Replace("{database}", segments[1]);
                 }

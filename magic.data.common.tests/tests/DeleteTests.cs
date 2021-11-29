@@ -47,7 +47,7 @@ namespace magic.data.common.tests.tests
             node.Add(where);
             node.Add(new Node("where"));
             var builder = new SqlDeleteBuilder(node, "'");
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace magic.data.common.tests.tests
             where.Add(and);
             node.Add(where);
             var builder = new SqlDeleteBuilder(node, "'");
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
 
         [Fact]

@@ -85,7 +85,7 @@ sql.read
         [Fact]
         public void ReadWithUnknownComparisonOperator()
         {
-            Assert.Throws<ArgumentException>(() => Common.Evaluate(@"
+            Assert.Throws<HyperlambdaException>(() => Common.Evaluate(@"
 sql.read
    limit:-1
    table:table1
@@ -241,7 +241,7 @@ sql.read
         [Fact]
         public void ReadMultipleGroupBy_Throws()
         {
-            Assert.Throws<ArgumentException>(() => Common.Evaluate(@"sql.read
+            Assert.Throws<HyperlambdaException>(() => Common.Evaluate(@"sql.read
    table:table1
    limit:-1
    columns

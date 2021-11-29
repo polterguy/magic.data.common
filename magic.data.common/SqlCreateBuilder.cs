@@ -60,14 +60,14 @@ namespace magic.data.common
 
             // Sanity checking, making sure there's exactly one [values] node.
             if (valuesNodes.Count() != 1)
-                throw new ArgumentException($"Exactly one [values] needs to be provided to '{GetType().FullName}'");
+                throw new HyperlambdaException($"Exactly one [values] needs to be provided to '{GetType().FullName}'");
 
             // Extracting single values node, and sanity checking it.
             var valuesNode = valuesNodes.First();
 
             // Sanity checking that we've actually got any values to insert.
             if (!valuesNode.Children.Any())
-                throw new ArgumentException("No [values] found in lambda");
+                throw new HyperlambdaException("No [values] found in lambda");
 
             // Appending column names.
             AppendColumnNames(builder, valuesNode);

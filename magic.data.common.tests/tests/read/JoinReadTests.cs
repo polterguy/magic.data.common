@@ -203,7 +203,7 @@ namespace magic.data.common.tests.tests.read
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
 
         [Fact]
@@ -218,7 +218,7 @@ namespace magic.data.common.tests.tests.read
             var builder = new SqlReadBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
     }
 }

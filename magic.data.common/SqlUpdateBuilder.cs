@@ -56,11 +56,11 @@ namespace magic.data.common
         {
             var valuesNodes = Root.Children.Where(x => x.Name == "values");
             if (!valuesNodes.Any())
-                throw new ArgumentException($"Missing [values] node in '{GetType().FullName}'");
+                throw new HyperlambdaException($"Missing [values] node in '{GetType().FullName}'");
 
             var valuesNode = valuesNodes.First();
             if (!valuesNode.Children.Any())
-                throw new ArgumentException($"No actual [values] provided to '{GetType().FullName}'");
+                throw new HyperlambdaException($"No actual [values] provided to '{GetType().FullName}'");
 
             var idxNo = 0;
             var first = true;

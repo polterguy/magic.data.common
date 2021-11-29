@@ -117,7 +117,7 @@ namespace magic.data.common.tests.tests
             var builder = new SqlUpdateBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace magic.data.common.tests.tests
             var builder = new SqlUpdateBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
     }
 }

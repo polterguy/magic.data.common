@@ -105,7 +105,7 @@ namespace magic.data.common.helpers
             // Finding where node, if any, and doing some basic sanity checking.
             var whereNodes = Root.Children.Where(x => x.Name == "where");
             if (whereNodes.Count() > 1)
-                throw new ArgumentException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
+                throw new HyperlambdaException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
 
             // Checking that we actually have a [where] declaration at all.
             if (!whereNodes.Any())
@@ -154,7 +154,7 @@ namespace magic.data.common.helpers
                         break;
 
                     default:
-                        throw new ArgumentException($"I don't understand '{idx.Name}' as a boolean operator, only [or] and [and] at this level");
+                        throw new HyperlambdaException($"I don't understand '{idx.Name}' as a boolean operator, only [or] and [and] at this level");
                 }
             }
         }
@@ -312,7 +312,7 @@ namespace magic.data.common.helpers
                                 break;
 
                             default:
-                                throw new ArgumentException($"{idx.Item2} is an unsupported comparison operator for null value");
+                                throw new HyperlambdaException($"{idx.Item2} is an unsupported comparison operator for null value");
                         }
                     }
                     else

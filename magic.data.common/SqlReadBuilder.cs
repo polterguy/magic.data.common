@@ -63,7 +63,7 @@ namespace magic.data.common
         protected override void AppendTableName(StringBuilder builder)
         {
             if (!Root.Children.Any(x => x.Name == "table"))
-                throw new ArgumentException($"No [table] argument supplied to {GetType().FullName}");
+                throw new HyperlambdaException($"No [table] argument supplied to {GetType().FullName}");
 
             var first = true;
             foreach (var idx in Root.Children.Where(x => x.Name == "table"))
@@ -169,7 +169,7 @@ namespace magic.data.common
 
             // Sanity checking invocation.
             if (directionNodes.Count() > 1)
-                throw new ArgumentException("Only on default [direction] argument is supported");
+                throw new HyperlambdaException("Only on default [direction] argument is supported");
 
             // Fetching default direction, which is used, unless [order] overrides it with sub-argument.
             var defaultDirection = directionNodes
@@ -178,7 +178,7 @@ namespace magic.data.common
 
             // Sanity checking invocation.
             if (defaultDirection != "asc" && defaultDirection != "desc")
-                throw new ArgumentException("Only 'asc' and 'desc' are supported for the [direction] argument");
+                throw new HyperlambdaException("Only 'asc' and 'desc' are supported for the [direction] argument");
 
             // Returning default direction to caller.
             return defaultDirection;
@@ -197,7 +197,7 @@ namespace magic.data.common
 
             // Sanity checking that we only have one [group] argument.
             if (groupByNodes.Count() > 1)
-                throw new ArgumentException("I can only handle one [group] argument.");
+                throw new HyperlambdaException("I can only handle one [group] argument.");
 
             // Appending group by stamenent into builder.
             builder.Append(" group by ");
@@ -226,7 +226,7 @@ namespace magic.data.common
 
             // Sanity checking invocation.
             if (columnsNodes.Count() > 1)
-                throw new ArgumentException("You can only declare [columns] once in your lambda.");
+                throw new HyperlambdaException("You can only declare [columns] once in your lambda.");
 
             // Adding all columns caller requested to SQL.
             builder.Append(string.Join(",", columnsNodes
@@ -285,7 +285,7 @@ namespace magic.data.common
                         .Append(" join ");
                     break;
                 default:
-                    throw new ArgumentException($"I don't understand '{joinType}' here, only [left], [right], [inner] and [full]");
+                    throw new HyperlambdaException($"I don't understand '{joinType}' here, only [left], [right], [inner] and [full]");
             }
 
             // Appending primary table name, and its "on" parts.
@@ -301,7 +301,7 @@ namespace magic.data.common
 
             // Retrieving and appending all "on" criteria.
             var onNode = joinNode.Children.FirstOrDefault(x => x.Name == "on") ??
-                throw new ArgumentException("No [on] argument supplied to [join]");
+                throw new HyperlambdaException("No [on] argument supplied to [join]");
             AppendBooleanLevel(onNode, null, builder);
 
             // Recursively iterating through all nested joins.
@@ -321,7 +321,7 @@ namespace magic.data.common
             {
                 // Sanity checking.
                 if (limitNodes.Count() > 1)
-                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
+                    throw new HyperlambdaException($"syntax error in '{GetType().FullName}', too many [limit] nodes");
 
                 var limitValue = limitNodes.First().GetEx<long>();
                 if (limitValue > -1)
@@ -344,7 +344,7 @@ namespace magic.data.common
             {
                 // Sanity checking.
                 if (offsetNodes.Count() > 1)
-                    throw new ArgumentException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
+                    throw new HyperlambdaException($"syntax error in '{GetType().FullName}', too many [offset] nodes");
 
                 var offsetValue = offsetNodes.First().GetEx<long>();
                 if (offsetValue != 0)

@@ -99,7 +99,7 @@ namespace magic.data.common.tests.tests
             var builder = new SqlCreateBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace magic.data.common.tests.tests
             var builder = new SqlCreateBuilder(node, "'");
 
             // Extracting SQL + params, and asserting correctness.
-            Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.Throws<HyperlambdaException>(() => builder.Build());
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace magic.data.common.tests.tests
             var values = new Node("values");
             values.Add(new Node("field1", "howdy"));
             node.Add(values);
-            Assert.Throws<ArgumentException>(() => new SqlCreateBuilder(node, "'").Build());
+            Assert.Throws<HyperlambdaException>(() => new SqlCreateBuilder(node, "'").Build());
         }
 
         [Fact]
