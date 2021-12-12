@@ -25,7 +25,7 @@ namespace magic.data.common.helpers
         /// <param name="slot">Last parts of the name of slot to signal.</param>
         /// <param name="configuration">Configuration object used to retrieve default database type if no explicit
         /// database type is supplied in arguments.</param>
-        public DataSlotBase(string slot, IConfiguration configuration)
+        protected DataSlotBase(string slot, IConfiguration configuration)
         {
             _configuration = configuration;
             _slot = slot;
