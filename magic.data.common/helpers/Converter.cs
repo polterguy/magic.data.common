@@ -4,7 +4,7 @@
 
 using System;
 
-namespace magic.data.common
+namespace magic.data.common.helpers
 {
     /// <summary>
     /// Helper class to convert values from database to lambda values.
