@@ -2,6 +2,7 @@
  * Magic Cloud, copyright Aista, Ltd. See the attached LICENSE file for details.
  */
 
+using System;
 using System.Linq;
 using Xunit;
 using magic.node;
@@ -47,7 +48,7 @@ namespace magic.data.common.tests.tests
             node.Add(where);
             node.Add(new Node("where"));
             var builder = new SqlDeleteBuilder(node, "'");
-            Assert.Throws<HyperlambdaException>(() => builder.Build());
+            Assert.Throws<InvalidOperationException>(() => builder.Build());
         }
 
         [Fact]
