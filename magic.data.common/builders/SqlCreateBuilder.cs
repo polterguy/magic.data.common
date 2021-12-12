@@ -8,7 +8,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.data.common.helpers;
 
-namespace magic.data.common
+namespace magic.data.common.builders
 {
     /// <summary>
     /// Specialised insert SQL builder, to create an insert SQL statement by semantically traversing an input node.

@@ -4,6 +4,7 @@
 
 using System;
 using Xunit;
+using magic.data.common.helpers;
 
 namespace magic.data.common.tests.tests
 {

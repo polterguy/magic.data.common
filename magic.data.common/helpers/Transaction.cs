@@ -6,7 +6,7 @@ using System;
 using System.Data.Common;
 using magic.signals.contracts;
 
-namespace magic.data.common
+namespace magic.data.common.helpers
 {
      /// <summary>
      /// Wraps a database transaction, such that it automatically is rolled back when

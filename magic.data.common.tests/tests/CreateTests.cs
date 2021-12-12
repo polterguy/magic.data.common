@@ -9,6 +9,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.data.common.helpers;
+using magic.data.common.builders;
 
 namespace magic.data.common.tests.tests
 {

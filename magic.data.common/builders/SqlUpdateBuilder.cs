@@ -8,7 +8,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.data.common.helpers;
 
-namespace magic.data.common
+namespace magic.data.common.builders
 {
     /// <summary>
     /// Specialised update SQL builder, to create a select SQL statement by semantically traversing an input node.

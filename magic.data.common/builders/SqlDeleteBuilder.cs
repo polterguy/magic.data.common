@@ -6,7 +6,7 @@ using System.Text;
 using magic.node;
 using magic.data.common.helpers;
 
-namespace magic.data.common
+namespace magic.data.common.builders
 {
     /// <summary>
     /// Specialised delete SQL builder, to create a delete SQL statement by

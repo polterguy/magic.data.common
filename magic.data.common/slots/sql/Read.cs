@@ -5,6 +5,7 @@
 using System.Linq;
 using magic.node;
 using magic.signals.contracts;
+using magic.data.common.builders;
 
 namespace magic.data.common.slots.sql
 {

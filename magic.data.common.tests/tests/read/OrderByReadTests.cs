@@ -5,6 +5,7 @@
 using Xunit;
 using magic.node;
 using magic.node.extensions;
+using magic.data.common.builders;
 
 namespace magic.data.common.tests.tests.read
 {

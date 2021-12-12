@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.node.extensions;
 
-namespace magic.data.common
+namespace magic.data.common.helpers
 {
     /// <summary>
     /// Helper class for creating and parametrizing an SQL command of some type, and
@@ -162,7 +162,7 @@ namespace magic.data.common
             {
                 var colNode = new Node(
                     reader.GetName(idxCol),
-                    magic.data.common.Converter.GetValue(reader[idxCol]));
+                    Converter.GetValue(reader[idxCol]));
                 rowNode.Add(colNode);
             }
             parentNode.Add(rowNode);
