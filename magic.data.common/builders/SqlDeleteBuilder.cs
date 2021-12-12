@@ -4,7 +4,6 @@
 
 using System.Text;
 using magic.node;
-using magic.data.common.helpers;
 
 namespace magic.data.common.builders
 {
