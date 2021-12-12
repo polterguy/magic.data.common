@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using magic.node;
 using magic.node.extensions;
-using magic.signals.contracts;
 
 namespace magic.data.common.builders
 {
@@ -47,24 +46,17 @@ namespace magic.data.common.builders
         /// Generic helper method to create an SqlBuilder of type T, and use it to semantically
         /// traverse a node hierarchy, to create the relevant SQL and its parameter collection.
         /// </summary>
-        /// <typeparam name="T">Type of SQL builder to create.</typeparam>
-        /// <param name="signaler">Signaler for instance.</param>
-        /// <param name="input">Node to parser.</param>
+        /// <param name="builder">Actual builder to use.</param>
         /// <returns>If execution of node should be done, the method will return the node to execute, otherwise null will be returned.</returns>
-        public static Node Parse<T>(ISignaler signaler, Node input) where T : SqlBuilder
+        public static Node Parse(SqlBuilder builder)
         {
             /*
              * Retrieving all explicitly added arguments.
              */
-            var explicitArgs = input.Children
+            var explicitArgs = builder
+                .Root
+                .Children
                 .Where(x => x.Name.StartsWith("@", StringComparison.InvariantCulture)).ToList();
-
-            /*
-             * Unfortunately this is our only means to create an instance of type,
-             * since it requires arguments in its CTOR, and we can't create constraints
-             * for constructor arguments using generic constraints.
-             */
-            var builder = Activator.CreateInstance(typeof(T), new object[] { input, signaler }) as T;
             var sqlNode = builder.Build();
 
             // Adding all explicitly added arguments.
@@ -73,9 +65,9 @@ namespace magic.data.common.builders
             // Checking if this is a "build only" invocation.
             if (builder.IsGenerateOnly)
             {
-                input.Value = sqlNode.Value;
-                input.Clear();
-                input.AddRange(sqlNode.Children.ToList());
+                builder.Root.Value = sqlNode.Value;
+                builder.Root.Clear();
+                builder.Root.AddRange(sqlNode.Children.ToList());
                 return null ;
             }
             return sqlNode;
