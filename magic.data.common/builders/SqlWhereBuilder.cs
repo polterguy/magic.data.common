@@ -81,14 +81,15 @@ namespace magic.data.common.builders
                             .Select(x => EscapeColumnName(x, escapeChar)));
                     builder.Append(rhs);
                 }
-                return;
             }
-
-            // Plain argument, referencing it in SQL, and adding to args collection.
-            var argNo = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
-            var argName = "@" + argNo;
-            builder.Append(argName);
-            args.Add(new Node(argName, colNode.GetEx<object>()));
+            else
+            {
+                // Plain argument, referencing it in SQL, and adding to args collection.
+                var argNo = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
+                var argName = "@" + argNo;
+                builder.Append(argName);
+                args.Add(new Node(argName, colNode.GetEx<object>()));
+            }
         }
 
         #endregion
@@ -103,18 +104,10 @@ namespace magic.data.common.builders
         protected virtual void AppendWhere(StringBuilder builder, Node args)
         {
             // Finding where node, if any, and doing some basic sanity checking.
-            var whereNodes = Root.Children.Where(x => x.Name == "where");
-            if (whereNodes.Count() > 1)
-                throw new HyperlambdaException($"Syntax error in '{GetType().FullName}', too many [where] nodes");
+            var where = Root.Children.SingleOrDefault(x => x.Name == "where");
 
-            // Checking that we actually have a [where] declaration at all.
-            if (!whereNodes.Any())
-                return; // No where statement supplied, or not children in [where] argument.
-
-            // Extracting actual where node, and doing some more sanity checking.
-            var where = whereNodes.First();
-            if (!where.Children.Any() || !where.Children.Any(x => x.Children.Any()))
-                return; // Empty [where], [and] or [or] collection.
+            if (where == null || !where.Children.Any() || !where.Children.Any(x => x.Children.Any()))
+                return; // Non existing [where], empty [where], or empty [and] or [or] collection inside [where].
 
             // Appending actual "where" parts into SQL.
             builder.Append(" where ");
