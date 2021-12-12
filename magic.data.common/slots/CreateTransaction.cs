@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.transaction.create")]
-    public class CreateTransaction : DataSlot
+    public class CreateTransaction : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.

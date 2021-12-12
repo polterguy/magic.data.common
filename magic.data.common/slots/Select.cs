@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.select")]
-    public class Select : DataSlot
+    public class Select : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.

@@ -14,7 +14,7 @@ namespace magic.data.common.helpers
     /// <summary>
     /// Abstract base class for generic slots simply invoking specialized slot for database type.
     /// </summary>
-    public abstract class DataSlot : ISlot, ISlotAsync
+    public abstract class DataSlotBase : ISlot, ISlotAsync
     {
         readonly string _slot;
         readonly IConfiguration _configuration;
@@ -25,7 +25,7 @@ namespace magic.data.common.helpers
         /// <param name="slot">Last parts of the name of slot to signal.</param>
         /// <param name="configuration">Configuration object used to retrieve default database type if no explicit
         /// database type is supplied in arguments.</param>
-        public DataSlot(string slot, IConfiguration configuration)
+        public DataSlotBase(string slot, IConfiguration configuration)
         {
             _configuration = configuration;
             _slot = slot;

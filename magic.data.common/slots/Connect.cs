@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.connect")]
-    public class Connect : DataSlot
+    public class Connect : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.

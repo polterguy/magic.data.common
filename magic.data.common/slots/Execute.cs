@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.execute")]
-    public class Execute : DataSlot
+    public class Execute : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.

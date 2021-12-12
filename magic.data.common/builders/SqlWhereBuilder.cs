@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using magic.node;
 using magic.node.extensions;
 
-namespace magic.data.common.helpers
+namespace magic.data.common.builders
 {
     /// <summary>
     /// Common base class for SQL generators requiring a where clause.

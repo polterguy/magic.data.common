@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.transaction.commit")]
-    public class CommitTransaction : DataSlot
+    public class CommitTransaction : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.

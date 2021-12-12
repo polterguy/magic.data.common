@@ -9,7 +9,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 
-namespace magic.data.common.helpers
+namespace magic.data.common.builders
 {
     /// <summary>
     /// Common base class for SQL generators, allowing you to generate SQL from a lambda object.

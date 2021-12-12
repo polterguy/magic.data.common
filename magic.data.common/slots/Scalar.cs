@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.scalar")]
-    public class Scalar : DataSlot
+    public class Scalar : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.

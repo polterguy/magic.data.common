@@ -13,7 +13,7 @@ namespace magic.data.common.slots
     /// according to your configuration settings.
     /// </summary>
     [Slot(Name = "data.transaction.rollback")]
-    public class RollbackTransaction : DataSlot
+    public class RollbackTransaction : DataSlotBase
     {
         /// <summary>
         /// Creates a new instance of your type.
