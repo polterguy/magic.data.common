@@ -39,7 +39,7 @@ namespace magic.data.common.builders
         public bool IsGenerateOnly => Root.Children.FirstOrDefault(x => x.Name == "generate")?.Get<bool>() ?? false;
 
         /// <summary>
-        /// Returns the escape character, which is normally for instance " or `
+        /// Returns the escape character, which is typically " or ` character
         /// </summary>
         protected string EscapeChar { get; private set; }
 
