@@ -17,7 +17,7 @@ namespace magic.data.common.tests.tests
     {
         class SqlMockCreateBuilder : SqlCreateBuilder
         {
-            public SqlMockCreateBuilder(Node node, ISignaler signaler)
+            public SqlMockCreateBuilder(Node node)
                 : base(node, "'")
             { }
         }
@@ -159,7 +159,7 @@ namespace magic.data.common.tests.tests
             var values = new Node("values");
             values.Add(new Node("field1", "howdy"));
             node.Add(values);
-            var result = SqlBuilder.Parse<SqlMockCreateBuilder>(null, node);
+            var result = SqlBuilder.Parse(new SqlMockCreateBuilder(node));
             Assert.NotNull(result);
 
             // Extracting SQL + params, and asserting correctness.
@@ -180,7 +180,7 @@ namespace magic.data.common.tests.tests
             var values = new Node("values");
             values.Add(new Node("field1", "howdy"));
             node.Add(values);
-            var result = SqlBuilder.Parse<SqlMockCreateBuilder>(null, node);
+            var result = SqlBuilder.Parse(new SqlMockCreateBuilder(node));
             Assert.Null(result);
 
             // Extracting SQL + params, and asserting correctness.

@@ -43,11 +43,12 @@ namespace magic.data.common.builders
         protected string EscapeChar { get; private set; }
 
         /// <summary>
-        /// Generic helper method to create an SqlBuilder of type T, and use it to semantically
-        /// traverse a node hierarchy, to create the relevant SQL and its parameter collection.
+        /// Generic helper method to use an existing SQL builder and return it to caller as an executable SQL.
         /// </summary>
         /// <param name="builder">Actual builder to use.</param>
-        /// <returns>If execution of node should be done, the method will return the node to execute, otherwise null will be returned.</returns>
+        /// <returns>If execution of node should be done, the method will return the node to execute,
+        /// otherwise null will be returned, and the builder's root node will contain SQL and arguments
+        /// as children.</returns>
         public static Node Parse(SqlBuilder builder)
         {
             /*
