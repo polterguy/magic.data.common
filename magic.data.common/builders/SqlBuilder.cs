@@ -90,7 +90,7 @@ namespace magic.data.common.builders
             // Retrieving actual table name from [table] node.
             var tableName = Root.Children.FirstOrDefault(x => x.Name == "table")?.GetEx<string>();
             if (tableName == null)
-                throw new HyperlambdaException($"No [table[ supplied to '{GetType().FullName}'");
+                throw new HyperlambdaException($"No [table] supplied to '{GetType().FullName}'");
             builder.Append(EscapeTypeName(tableName));
         }
 
