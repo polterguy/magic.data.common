@@ -11,9 +11,10 @@ access, and also slots to help you open database connections, create transaction
 These slots never executes SQL towards your data adapter, but rather simply generates your SQL, and
 returns the results of the SQL generation process back to you. They're mostly intended for debugging
 purposes, and/or learning purposes, and can be interchanged with their **[data.xxx]** equivalent,
-and/or their **[mysql.xxx]**/**[mssql.xxx]** equivalent, etc. In this documentation we will mostly
-be using these slots, but you can substitute our usage of these slots with for instance **[data.xxx]**
-if you wish to actually execute some SQL towards your database adapter of choice.
+and/or their **[mysql.xxx]**/**[mssql.xxx]**/**[pgsql.xxx]** equivalent, etc. In this documentation we
+will mostly be using these slots, but you can substitute our usage of these slots with for
+instance **[data.xxx]** if you wish to actually execute some SQL towards your database adapter of
+§choice.
 
 ## [data.*] slots
 
