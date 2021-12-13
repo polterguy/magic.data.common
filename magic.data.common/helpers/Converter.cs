@@ -28,11 +28,45 @@ namespace magic.data.common.helpers
                 return null;
 
             /*
-             * Notice, internally we always treat everything as UTC,
-             * and we assume everything we get from database is always UTC.
+             * Trying to make sure we as intelligently as possible can handle all different types
+             * that can be returned from any database.
              */
-            if (value is DateTime dt)
-                return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
+            switch (value.GetType().FullName)
+            {
+                case "System.String":
+                case "System.Byte":
+                case "System.SByte":
+                case "System.Boolean":
+                case "System.Decimal":
+                case "System.Float":
+                case "System.Double":
+                case "System.Single":
+                case "System.Int32":
+                case "System.UInt32":
+                case "System.Int64":
+                case "System.UInt64":
+                case "System.Int16":
+                case "System.UInt16":
+                case "System.Enum":
+                case "System.Byte[]":
+                case "System.Guid":
+
+                    // No conversion required.
+                    break;
+
+                case "System.DateTime":
+
+                    // Making sure we always return UTC.
+                    var dt = (DateTime)value;
+                    value = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
+                    break;
+
+                default:
+
+                    // Returning object as string.
+                    value = value.ToString();
+                    break;
+            }
 
             // Default, no conversion required.
             return value;
