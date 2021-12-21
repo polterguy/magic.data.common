@@ -6,8 +6,8 @@ using System;
 using System.Linq;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 
 namespace magic.data.common.helpers
@@ -96,7 +96,7 @@ namespace magic.data.common.helpers
             Node input,
             string databaseType,
             string defaultCatalogue,
-            IConfiguration configuration)
+            IMagicConfiguration configuration)
         {
             var connectionString = input.Value == null ? null : input.GetEx<string>();
 

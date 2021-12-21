@@ -46,10 +46,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="magic.node.extensions" Version="10.0.5" />
     <PackageReference Include="magic.signals.contracts" Version="10.0.5" />
   </ItemGroup>

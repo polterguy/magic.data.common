@@ -4,8 +4,8 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 
@@ -17,7 +17,7 @@ namespace magic.data.common.helpers
     public abstract class DataSlotBase : ISlot, ISlotAsync
     {
         readonly string _slot;
-        readonly IConfiguration _configuration;
+        readonly IMagicConfiguration _configuration;
 
         /// <summary>
         /// Creates an instance of your type.
@@ -25,7 +25,7 @@ namespace magic.data.common.helpers
         /// <param name="slot">Last parts of the name of slot to signal.</param>
         /// <param name="configuration">Configuration object used to retrieve default database type if no explicit
         /// database type is supplied in arguments.</param>
-        protected DataSlotBase(string slot, IConfiguration configuration)
+        protected DataSlotBase(string slot, IMagicConfiguration configuration)
         {
             _configuration = configuration;
             _slot = slot;
@@ -56,7 +56,7 @@ namespace magic.data.common.helpers
 
         #region [ -- Private helper methods -- ]
 
-        static string GetDefaultDatabaseType(IConfiguration configuration, Node input)
+        static string GetDefaultDatabaseType(IMagicConfiguration configuration, Node input)
         {
             var databaseType = 
                 input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??

@@ -2,7 +2,7 @@
  * Magic Cloud, copyright Aista, Ltd. See the attached LICENSE file for details.
  */
 
-using Microsoft.Extensions.Configuration;
+using magic.node.contracts;
 using magic.signals.contracts;
 using magic.data.common.helpers;
 
@@ -19,7 +19,7 @@ namespace magic.data.common.slots
         /// Creates a new instance of your type.
         /// </summary>
         /// <param name="configuration">Configuration for your application.</param>
-        public RollbackTransaction(IConfiguration configuration)
+        public RollbackTransaction(IMagicConfiguration configuration)
             : base(".transaction.rollback", configuration)
         { }
     }

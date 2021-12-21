@@ -4,8 +4,8 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 
@@ -18,13 +18,13 @@ namespace magic.data.common.slots.crud
     [Slot(Name = "data.delete")]
     public class Delete : ISlot, ISlotAsync
     {
-        readonly IConfiguration _configuration;
+        readonly IMagicConfiguration _configuration;
 
         /// <summary>
         /// Creates a new instance of your type.
         /// </summary>
         /// <param name="configuration">Configuration for your application.</param>
-        public Delete(IConfiguration configuration)
+        public Delete(IMagicConfiguration configuration)
         {
             _configuration = configuration;
         }
