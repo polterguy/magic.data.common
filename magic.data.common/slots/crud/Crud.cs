@@ -12,11 +12,14 @@ using magic.signals.contracts;
 namespace magic.data.common.slots.crud
 {
     /// <summary>
-    /// [data.read] slot, for reading records from your database,
+    /// [data.create] slot, for creating a record in your database,
     /// according to your configuration settings.
     /// </summary>
+    [Slot(Name = "data.create")]
     [Slot(Name = "data.read")]
-    public class Read : ISlot, ISlotAsync
+    [Slot(Name = "data.update")]
+    [Slot(Name = "data.delete")]
+    public class Crud : ISlot, ISlotAsync
     {
         readonly IMagicConfiguration _configuration;
 
@@ -24,7 +27,7 @@ namespace magic.data.common.slots.crud
         /// Creates a new instance of your type.
         /// </summary>
         /// <param name="configuration">Configuration for your application.</param>
-        public Read(IMagicConfiguration configuration)
+        public Crud(IMagicConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -40,7 +43,7 @@ namespace magic.data.common.slots.crud
                 input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
                 _configuration["magic:databases:default"];
             input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
-            signaler.Signal($"{databaseType}.read", input);
+            signaler.Signal($"{databaseType}.{GetCrudSlot(input.Name)}", input);
         }
 
         /// <summary>
@@ -55,7 +58,19 @@ namespace magic.data.common.slots.crud
                 input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
                 _configuration["magic:databases:default"];
             input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
-            await signaler.SignalAsync($"{databaseType}.read", input);
+            await signaler.SignalAsync($"{databaseType}.{GetCrudSlot(input.Name)}", input);
         }
+
+        #region [ -- Private helper methods -- ]
+
+        /*
+         * Returns create, read, update or delete, according to what slot was actually invoked by caller.
+         */
+        static string GetCrudSlot(string name)
+        {
+            return name.Substring(name.IndexOf('.') + 1);
+        }
+
+        #endregion
     }
 }
