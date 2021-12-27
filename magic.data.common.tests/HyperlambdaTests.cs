@@ -11,6 +11,18 @@ namespace magic.data.common.tests
     public class HyperlambdaTests
     {
         [Fact]
+        public void CrudCreate_Throws()
+        {
+            var exception = Assert.Throws<HyperlambdaException>(() => Common.Evaluate(@"data.create
+   generate:true
+   database-type:foo-bar
+   table:table1
+   values
+      field1:value1"));
+            Assert.Contains("[foo-bar.create]", exception.Message);
+        }
+
+        [Fact]
         public void CreateSingleValue()
         {
             var lambda = Common.Evaluate(@"sql.create
