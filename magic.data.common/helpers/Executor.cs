@@ -192,7 +192,7 @@ namespace magic.data.common.helpers
             {
                 var par = cmd.CreateParameter();
                 par.ParameterName = idxPar.Name;
-                par.Value = idxPar.GetEx<object>();
+                par.Value = idxPar.GetEx<object>() ?? DBNull.Value;
                 cmd.Parameters.Add(par);
             }
 
