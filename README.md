@@ -14,7 +14,7 @@ purposes, and/or learning purposes, and can be interchanged with their **[data.x
 and/or their **[mysql.xxx]**/**[mssql.xxx]**/**[pgsql.xxx]** equivalent, etc. In this documentation we
 will mostly be using these slots, but you can substitute our usage of these slots with for
 instance **[data.xxx]** if you wish to actually execute some SQL towards your database adapter of
-§choice.
+choice.
 
 ## [data.*] slots
 
@@ -37,7 +37,6 @@ This slot will open a database connection for you. You can pass in a complete co
 or only the database name if you wish. If you pass in only the database name, the generic connection string for your
 database type of choice from your _"appsettings.json"_ file will be used, substituting its `{database}` parts
 with the database of your choice.
-
 Inside of this slot, which actually is a lambda **[eval]** invocation, you can use any of the other slots, requiring
 an existing and open database connection to function. You can see an example below.
 
@@ -47,36 +46,31 @@ data.connect:sakila
       table:actor
 ```
 
-**Notice**, since the **[data.connect]** slot actually takes a lambda object, you can also add any amount
-of other lambda invocations inside of the lambda object supplied to the slot - Allowing you to for instance
-create loops, conditional executions, etc - *Inside* of your invocation to **[data.connect]**. This is also
+Since the **[data.connect]** slot actually takes a lambda object, you can also add any amount
+of other lambda invocations inside of the lambda object supplied to the slot, allowing you to for instance
+create loops, conditional executions, etc, _inside_ of your invocation to **[data.connect]**. This is also
 true for all other slots taking a lambda object, such as for instance **[data.transaction.create]**, etc.
-
 Inside your lambda object, an invocation towards your database such as e.g. **[data.read]**, will be
 using this database connection, as long as the type of database is matching. The database connection will
 be kept open, and implicitly used, for the entirety of the lambda object. If you need another database
 connection inside of your lambda object, you'll need to nest **[data.connect]** invocations.
-
 You can also explicitly choose which connection string to use as you open a connection, by separating the
-connection string and the database catalogue name by a `|` symbol, and wrapping your entire value inside
+connection string and the database name by a `|` symbol, and wrapping your entire value inside
 of brackets. If you have a connection string in your _"appsettings.json"_ file named for instance _"foo"_,
-and this connection string points to a server instance having a database named _"bar"_, this would resemble
-the following.
+and this connection string points to a server instance having a database named _"bar"_, you could open
+a connection to this database using something resembling the following.
 
 ```
-// Opening up "bar" database from "foo" connection string from appsettings.json
 data.connect:[foo|bar]
 ```
 
 This is why your connection strings should contain the `{database}` as a generic argument, since the slot
-substitutes the `{database}` parts dynamically as you create new connections. Below is an example.
+substitutes the `{database}` parts dynamically as you create new connections. Below is an example of such
+a connection string configuration setting.
 
 ```
 "generic": "Server=localhost\\SQLEXPRESS;Database={database};Trusted_Connection=True;"
 ```
-
-Notice the `{database}` parts in the above connection string. This is substituted with your database name
-as you create database connections.
 
 ### [data.select]
 
@@ -89,7 +83,7 @@ data.connect:sakila
 ```
 
 Assuming you have the _"sakila"_ database from Oracle installed in your database, and your default
-database type is MySQL - The result of the above will end up looking like the following.
+database type is MySQL, the result of the above will end up looking like the following.
 
 ```
 data.connect
@@ -111,11 +105,10 @@ data.connect
          last_name:LOLLOBRIGIDA
 ```
 
-Notice, this slot requires SQL resembling your specialised database type of dialect, and will
-not in any ways transpile the SQL towards your specific underlaying database type of SQL dialect.
+This slot requires SQL resembling your specialised database type of dialect, and will
+not in any ways transpile the SQL towards your specific underlaying database type's SQL dialect.
 If you can, you should rather use **[data.read]**, to avoid lockin towards a specific database
 vendor's SQL dialect.
-
 You can also select multiple result sets if you have batch type of SQL statements, containing
 multiple SQL statements, and you want to return the result of all SQL statements you're executing.
 You do this by providing a **[multiple-result-sets]** argument and set its value to boolean true.
@@ -149,8 +142,8 @@ Which would result in something resembling the following.
 
 ### [data.scalar]
 
-This slot is similar to the **[data.select]** slot, but will only return one value, as the
-value of its node after execution, and is typically used for aggregate results. You can see
+This slot is similar to the **[data.select]** slot, but will only return one value as the
+value of its node after execution. This slot is typically used for aggregate results. You can see
 an example below.
 
 ```
@@ -177,7 +170,7 @@ find an example below.
 data.connect:sakila
 
    // Notice, will throw! (hopefully!)
-   data.scalar:delete from non_existing_table
+   data.execute:delete from non_existing_table
 ```
 
 Yet again, prefer **[data.delete]** if you can.
@@ -189,7 +182,7 @@ can use the following 3 slots to create, rollback, and/or commit transactions to
 
 * __[data.transaction.create]__ - Creates a new database transaction
 * __[data.transaction.commit]__ - Commits an existing open transaction
-* __[data.transaction.rollback]__ - Rolls back an existing open transaction
+* __[data.transaction.rollback]__ - Roll back an existing open transaction
 
 **Notice** - The default logic for a database transaction, is that unless it's _explicitly committed_
 before leaving scope, it will roll back by default. Below is an example of a transaction that will
@@ -217,7 +210,7 @@ data.connect:sakila
    data.scalar:select count(*) from film_actor
 ```
 
-**Notice** - A transaction will follow your connection, implying to count items
+A transaction typically follows your connection, implying to count items
 after the transaction has been rolled back, we'll need a _new_ connection, as the
 above example illustrates.
 
@@ -228,13 +221,11 @@ which might or might not work for your database adapter of choice. This allows y
 SQL statements _without_ executing anything towards your database. This allows you to play
 around with the syntax, to understand how it works, and see how some semantic graph object
 results in an SQL statement before using it.
-
 All of these slots have **[data.\*]** equivalent slots, which again polymorphistically
 invokes your specialised data adapter's equivalent, and/or can be parametrised with a
 database type - Which again resolves to the **[mysql.\*]** equivalent if you supply
 _"mysql"_ as your **[database-type]**, and/or MySQL is your default database type
 as configured in your _"appsettings.json"_ file.
-
 Hence, the documentation for these slots is also the documentation for your **[data.\*]**
 slots.
 
@@ -264,7 +255,9 @@ sql.create:insert into 'table1' ('field1', 'field2') values (@0, @1)
 The basic idea is that everything that might be dynamically injected into your data access layer,
 should be consumed as `SqlParameters`, or something equivalent, to prevent SQL injection attacks
 towards your database. This is true for all arguments passed in as data for all slots in the project.
-The slot will in its specialized implementations return the ID of the inserted record if possible.
+The slot will in its specialized implementations return the ID of the inserted record if possible,
+unless you explicitly parametrize it with a **[return-id]** argument and set its value to boolean
+`false`.
 
 ### [sql.read]
 
@@ -276,36 +269,38 @@ sql.read
    table:foo
 ```
 
-The above will result in the following SQL returned to you. **Notice**, if you're using the special implementations,
-such as e.g. **[data.read]**, and/or **[mssql.read]** - The returned SQL might vary, according to your dialect. But the
-results of executing the SQL will be the same.
+The above will result in the following SQL returned to you. If you're using the special implementations,
+such as e.g. **[data.read]**, and/or **[mssql.read]** - The returned SQL might vary according to your dialect.
+But the results of executing the SQL will be the same.
 
 ```
 select * from 'foo' limit 25
 ```
 
-You can optionally supply the following arguments to this slot.
+To avoid accidentally exhausting your database, this slot will by default limit your result set
+to 25 records unless explicitly overridden by your code with a **[limit]** argument. You can optionally
+supply the following arguments to this slot.
 
 * __[columns]__ - Columns to select
-* __[order]__ - Which column(s) to order the results by. You can supply multiple of these arguments.
+* __[order]__ - Which column(s) to order the results by. You can supply multiple **[order]** arguments
 * __[direction]__ - Which direction to order your columns
-* __[limit]__ - How many records to return, default is 25. Set this value to -1 to avoid having the parser inject it
+* __[limit]__ - How many records to return, default is 25. Set this value to -1 to avoid having the parser inject its default value
 * __[offset]__ - Offset of where to start returning records
 * __[where]__ - Where condition
 * __[join]__ - Join condition
 * __[group]__ - Group by declaration
 
 For instance, to select only the _"field1"_ column and the _"field2"_ column from _"table1"_,
-and ordering descending by _"field3"_ - You can use something resembling the following.
+and ordering descendingly by _"field3"_ - You can use something resembling the following.
 
 ```
 sql.read
    table:table1
-   order:field3
-   direction:desc
    columns
       field1
       field2
+   order:field3
+   direction:desc
 ```
 
 This will result in the following SQL returned.
@@ -314,8 +309,7 @@ This will result in the following SQL returned.
 select 'field1','field2' from 'table1' order by 'field3' desc limit 25
 ```
 
-**Notice** - The **[direction]** argument can _only_ be either _"asc"_ or _"desc"_, implying ascending or descending.
-
+The **[direction]** argument can _only_ be either _"asc"_ or _"desc"_, implying ascending or descending.
 You can also supply multiple ordering columns, by separating them by _","_. See an example below, which also specifies
 what table to use while ordering your results.
 
@@ -337,8 +331,10 @@ following illustrates.
 ```
 sql.read
    table:table1
+
    order:field1
       direction:asc
+
    order:field2
       direction:desc
 ```
@@ -367,14 +363,14 @@ The above will result in the following SQL.
 select count(*) as count from 'table1'
 ```
 
-**Notice**, by setting **[limit]** to _"-1"_, like we do above, we avoid adding the limit parts to our SQL. Unless
-you explicitly specify a limit, the default value will always be 25, to avoid accidentally exhausting your database,
-and/or web server by selecting all records from a table with millions of records.
+By setting **[limit]** to _"-1"_, like we do above, we avoid adding the limit parts to our SQL. Unless
+you explicitly specify a limit, the default value will always be 25 to avoid accidentally exhausting your database,
+and/or web server, by selecting all records from a table with millions of records.
 
 ### Paging
 
 To page your **[sql.read]** results, use **[limit]** and **[offset]**, such as the following illustrates.
-Notice, even though we use _"limit"_ and _"offset"_ - The correct syntax will be applied for your database type,
+Even though we use _"limit"_ and _"offset"_, the correct syntax will be applied for your database type,
 depending upon which database type you're using - Implying for Microsoft SQL Server, it will inject MS SQL dialect,
 and not MySQL dialect. But the syntax for your lambda object still remains the same, making it simpler to create
 SQL dialect valid for your specific database type 100% transparently.
@@ -397,8 +393,10 @@ You can also extract columns with an alias, _"renaming"_ the column in its resul
 sql.read
    table:table1
    columns
+
       table1.foo1
          as:howdy
+
       table1.foo2
          as:world
 ```
@@ -417,24 +415,28 @@ any type of _"projections"_ you wish.
 ### Joins
 
 The project supports joins by parametrizing your **[sql.read]** invocation with **[join]** arguments, beneath your
-**[table]** argument. You can _only_ add **[join]** beneath **[table]** for **[sql.read]** invocations though.
+**[table]** argument(s). You can _only_ add **[join]** beneath **[table]** for **[sql.read]** invocations though.
 If you have created the Sakila example database from Oracle, and you're using MySQL as your default database type,
 you can execute the following MySQL join SQL statement to see a fairly complex recursive join.
 
 ```
 data.connect:sakila
    data.read
+
       columns
          title
          description
          last_name
          first_name
+
       table:film
+
          join:film_actor
             type:inner
             on
                and
                   film.film_id:film_actor.film_id
+
             join:actor
                type:inner
                on
@@ -442,11 +444,12 @@ data.connect:sakila
                      film_actor.actor_id:actor.actor_id
 ```
 
-**Notice** - The above lambda assumes you've got Oracle's Sakila database in your MySQL instance. If you only wish to see
-its resulting SQL, add the **[generate]** argument to the above root invocation, and set its value to _"true"_.
-
+The above lambda assumes you've got Oracle's Sakila database in your MySQL instance. If you only wish to see
+its resulting SQL, add a **[generate]** argument to the above root invocation, and set its value to _"true"_.
 All specialised slots, dynamically building and executing some SQL towards your database, supports
 the **[generate]** argument, allowing you to easily _"debug"_ your SQL statements, and see what they actually do.
+Below is an example of the SQL created by the above invocation if you add a **[generate]** argument to it
+and set its value to boolean `true`.
 
 ```sql
 select `film`.`title`, `film`.`description`, `actor`.`last_name`, `actor`.`first_name` from `film`
@@ -463,6 +466,7 @@ sql.read
    generate:true
    limit:-1
    table:table1
+
       join:table2
          on
             and
@@ -478,17 +482,19 @@ select * from 'table1'
       'table1'.'fk2' = 'table2'.'pk2'
 ```
 
-**Notice** - Joining tables works _almost_ the exact same way as using a **[where]** argument, allowing you
+Joining tables works _almost_ the exact same way as using a **[where]** argument, allowing you
 to supply an operator for your join, such as we illustrate below, where we're using the `!=` operator,
-instead of the (default) equality comparison. See the **[where]** criteria for details about comparison
-operators.
-
+instead of the (default) equality comparison. However, when you create your **[join]** segments
+you can _only_ have columns from tables reference columns from tables, and not add static arguments
+to your join. If you need static arguments you have to add these into your **[where]** parts.
+See the **[where]** criteria for details about comparison operators.
 You can also explicitly choose a **[type]** of join, such as we illustrate below.
 
 ```
 sql.read
    limit:-1
    table:table1
+
       join:table2
          type:inner
          on
@@ -511,7 +517,6 @@ There is one crucial semantic difference between a **[join]** condition and a **
 that the library assumes a join is _always_ between two columns, while a where always assume you're _always_
 comparing against a static value. This implies that you _cannot_ add static values into your SQL as a part of
 your **[join]** condition, while the opposite is true for a **[while]**.
-
 Although this technically doesn't allow you to create any SQL you want to create, it is still more
 in _"the spirit"_ of SQL as a standard - And you can always add your static conditions into your **[where]**
 parts, while adding your table comparisons into your **[join]** conditions. This allows you to create
@@ -550,7 +555,6 @@ you normally rarely need, but might be useful on rare occasions. The reasons why
 of your join condition starts with an `@` character, which assumes you are referencing an argument and not a field
 in your joined table. This only has effects on your **[join]** parts, implying **[xxx.read]** slot invocations,
 since these are the only slots supporting joins.
-
 The above is the only exception that allows you to join on static values and not column names. However, as a general
 rule of thumb, we encourage users to **[join]** on table columns and add static values into your **[where]** conditions.
 
@@ -575,11 +579,13 @@ data.connect:sakila
          actor.first_name
 
       table:film
+
          join:film_actor
             type:inner
             on
                and
                   film.film_id:film_actor.film_id
+
             join:actor
                type:inner
                on
@@ -601,9 +607,8 @@ select
    limit 25
 ```
 
-**Notice** - Spacing is not applied to the actual generated SQL result, but have been applied to some of the SQL
-examples in this documentation, to make the SQL more readable.
-
+Spacing is not applied to the actual generated SQL result, but have been applied to some of the SQL
+examples in this documentation to make the SQL more readable.
 If you supply **[as]** arguments to your tables, you can also use your alias to reference tables inside of
 your invocation.
 
@@ -658,7 +663,7 @@ allowing you to create complex aggregate results, statistics, joining multiple t
 This slot allows you to update one or more records, in a specified **[table]**. Just like create, it requires
 one mandatory argument, being **[values]**, implying columns/values you wish to update. This slot also takes
 an optional **[where]** argument, which is described further down in this document. Its simplest version can be
-imagined such as follows.
+imagined as follows.
 
 ```
 sql.update
@@ -703,7 +708,7 @@ sql.delete:delete from 'table1' where 'field1' = @0 and 'field2' = @1
 
 ### The [where] argument
 
-This argument is common for both **[sql.update]**, **[sql.delete]** and **[sql.read]**, in addition
+This argument is common for **[sql.update]**, **[sql.delete]**, and **[sql.read]**, in addition
 to that a **[join]** will also be logically parsed much the same way as a **[where]** argument. The where
 argument follows a recursive structure, allowing you to supply multiple layers of `where` criteria,
 being applied recursively, using some sort of comparison operator, applied to all conditions in the
@@ -714,6 +719,7 @@ sql.read
    table:table1
    limit:-1
    where
+
       and
          field1:howdy
 ```
@@ -732,12 +738,13 @@ sql.read
    table:table1
    limit:-1
    where
+
       and
          field1:howdy
          field2:world
 ```
 
-The above resulting in the following.
+The above results in the following.
 
 ```
 sql.read:select * from 'table1' where 'field1' = @0 and 'field2' = @1
@@ -753,6 +760,7 @@ sql.read
    table:table1
    limit:-1
    where
+
       or
          field1:howdy
          field2:world
@@ -766,7 +774,7 @@ sql.read:select * from 'table1' where 'field1' = @0 or 'field2' = @1
     @1:world
 ```
 
-You can also nest operators, producing paranthesis, creating complex conditions, such as the following
+You can also nest operators, producing paranthesis, and create complex conditions, such as the following
 illustrates.
 
 ```
@@ -774,14 +782,16 @@ sql.read
    table:table1
    limit:-1
    where
+
       or
          field1:howdy
+
          and
             field2:world
             field3:dudes
 ```
 
-Which of course results in the following result.
+Which results in the following.
 
 ```
 sql.read:select * from 'table1' where 'field1' = @0 or ('field2' = @1 and 'field3' = @2)
@@ -790,12 +800,13 @@ sql.read:select * from 'table1' where 'field1' = @0 or ('field2' = @1 and 'field
    @2:dudes
 ```
 
-**Notice**, the parent of a list of criteria is deciding which logical operator to separate your conditions
+The parent of a list of criteria is deciding which logical operator to separate your conditions
 with, contrary to traditional languages, where you separate your conditions with the logical operator, and
 explicitly add paranthesis to group your levels. This might seem a little bit weird in the beginning,
 but this is a general rule with everything in Hyperlambda, and after a while will feel more natural than
 the alternative. The reasons for this is to allow for semantically traversing your lambda objects, allowing
-the computer to logically understand what it does more easily - Among other things.
+the computer to logically understand what it does more easily - Among other things. Think of the boolean
+logical parts of your SQL slots as _"grouping your comparisons"_ or a _"logical function invocation"_ if it helps.
 
 ### Comparison operators
 
@@ -818,6 +829,7 @@ illustrates.
 sql.read
    table:foo
    where
+
       and
          field1.neq:xxx
 ```
@@ -842,6 +854,7 @@ be found below.
 sql.read
    table:table1
    where
+
       and
          table1.field1.in
             :long:5
@@ -851,7 +864,7 @@ sql.read
 
 The above will generate the following SQL, in addition to returning 3 parameters to the caller.
 
-```
+```sql
 select * from 'table1' where 'table1'.'field1' in (@0,@1,@2) limit 25
 ```
 
@@ -864,6 +877,7 @@ you can escape your column name, by prepending a `\` to it. See an example below
 sql.read
    table:table1
    where
+
       and
          table1.\neq:foo
 ```
@@ -874,7 +888,7 @@ Notice how the `\` character above results in the following SQL.
 select * from 'table1' where 'table1'.'neq' = @0 limit 25
 ```
 
-As you can see, the `\neq` is interpreted as a column name, and not a `neq` operator. And since the equality operator
+As you can see, the `\neq` is interpreted as a column name, and not a `neq` operator, and since the equality operator
 is the default selected if no operator is supplied, the comparison operator becomes `=`.
 
 You can also escape columns entirely, if you for instance have a column that contains a `.` in its name,
@@ -884,15 +898,16 @@ such as we illustrate below.
 sql.read
    table:table1
    where
+
       and
-         \table1.foo:bar
+         \foo.bar:bar
 ```
 
-Notice how the above lambda will interpret the `table1.foo` parts as a column name, and not as
-column _"foo"_ on _"table1"_. You can see the resulting SQL below.
+Notice how the above lambda will interpret the `foo.bar` parts as a column name, and not as
+column _"bar"_ on _"foo"_. You can see the resulting SQL below.
 
 ```sql
-select * from 'table1' where 'table1.foo' = @0 limit 25
+select * from 'table1' where 'foo.bar' = @0 limit 25
 ```
 
 ### Extension comparison operators
@@ -912,21 +927,20 @@ The above will give you access to use `ltmt` as a comparison operator, resolving
 
 ### Meta data
 
-One of the really nice things about this semantic approach to generating SQL, is that it
+One of the really nice things about this semantic approach to generating SQL is that it
 allows you to retrieve meta data from your Hyperlambda snippets, asking questions such as for instance
 _"find all files that somehow selects columns from the 'xxx' table"_ - And for that matter, even
 dynamically change the table name, using semantic refactoring and replacement concepts. Once you've
-crossed the initial step into _meta data traversal_ in Hyperlambda, things like this, which is
-almost impossible to achieve in traditional programming languages, becomes quite simple in fact.
+crossed the initial step into _meta data traversal_ in Hyperlambda, things like this becomes
+second hand nature with Hyperlambda.
 
 ## SQL injection attacks
 
-The project protects you automatically against SQL injection attacks, and protect values, and criteria, etc.
+This project protects you automatically against SQL injection attacks, and protect values, and criteria, etc -
 But you should _not_ allow any potentially insecure clients to dynamically declare which columns
 to select, and/or field _names_ for your `where` clauses. It will only protect your _values_,
 and _not_ table names or column names against SQL injection attacks.
-
-The project does *not* verify that your SQL is possible to execute towards your database, such as verifying
+The project does also _not_ verify that your SQL is possible to execute towards your database, such as verifying
 that specified tables or columns actually exists. It does its best however, to verify that your Hyperlambda
 is structured correctly, and that it will create somewhat valid SQL - But you should *not assume* the SQL
 the project generates is valid, before you have tested it.
@@ -936,15 +950,15 @@ the project generates is valid, before you have tested it.
 If you wish to extend Magic to support a custom database type, you can do so using C# for instance.
 This project contains 4 base classes, which you can inherit from to extend and implement your custom logic.
 
-* `SqlCreateBuilder` - Helper class to generate insert SQL statements.
-* `SqlDeleteBuilder` - Helper class to generate delete SQL statements.
-* `SqlReadBuilder` - Helper class to generate select SQL statements.
-* `SqlUpdateBuilder` - Helper class to generate update SQL statements.
+* `SqlCreateBuilder` - Helper class to generate insert SQL statements
+* `SqlDeleteBuilder` - Helper class to generate delete SQL statements
+* `SqlReadBuilder` - Helper class to generate select SQL statements
+* `SqlUpdateBuilder` - Helper class to generate update SQL statements
 
 If you create your own database implementation, you'll need to inherit from the above classes, and override
 whatever parts of these classes that doesn't by default work as your database type needs it to work.
 If you wish to do this, you would probably benefit from looking at one of the existing specialised
-implementations, such as the MySQL or SQL Server specific implementation.
+implementations, such as the MySQL, SQL Server or PostgreSQL specific implementations.
 
 ## Project website
 
