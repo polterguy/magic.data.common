@@ -19,7 +19,7 @@
     </PackageReference>
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="magic.signals" Version="10.0.15" />
-    <PackageReference Include="magic.lambda" Version="10.0.15" />
+    <PackageReference Include="magic.lambda" Version="10.0.16" />
   </ItemGroup>
 
   <ItemGroup>
