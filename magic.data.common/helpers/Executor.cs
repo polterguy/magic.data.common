@@ -7,8 +7,8 @@ using System.Linq;
 using System.Data.Common;
 using System.Threading.Tasks;
 using magic.node;
-using magic.node.contracts;
 using magic.node.extensions;
+using magic.data.common.contracts;
 
 namespace magic.data.common.helpers
 {
@@ -96,14 +96,14 @@ namespace magic.data.common.helpers
             Node input,
             string databaseType,
             string defaultCatalogue,
-            IMagicConfiguration configuration)
+            IDataSettings settings)
         {
             var connectionString = input.Value == null ? null : input.GetEx<string>();
 
             // Checking if this is a "generic connection string".
             if (string.IsNullOrEmpty(connectionString))
             {
-                var generic = configuration[$"magic:databases:{databaseType}:generic"];
+                var generic = settings.ConnectionString("generic", databaseType);
                 connectionString = generic.Replace("{database}", defaultCatalogue);
             }
             else if (connectionString.StartsWith("[", StringComparison.InvariantCulture) &&
@@ -115,18 +115,18 @@ namespace magic.data.common.helpers
                     var segments = connectionString.Split('|');
                     if (segments.Length != 2)
                         throw new HyperlambdaException($"I don't understand '{connectionString}' as a connection string");
-                    var generic = configuration[$"magic:databases:{databaseType}:{segments[0]}"];
+                    var generic = settings.ConnectionString(segments[0], databaseType);
                     connectionString = generic.Replace("{database}", segments[1]);
                 }
                 else
                 {
-                    var generic = configuration[$"magic:databases:{databaseType}:generic"];
+                    var generic = settings.ConnectionString("generic", databaseType);
                     connectionString = generic.Replace("{database}", connectionString);
                 }
             }
             else if (!connectionString.Contains(";"))
             {
-                var generic = configuration[$"magic:databases:{databaseType}:generic"];
+                var generic = settings.ConnectionString("generic", databaseType);
                 connectionString = generic.Replace("{database}", connectionString);
             }
             return connectionString;

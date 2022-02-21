@@ -12,12 +12,20 @@ using magic.node;
 using magic.node.contracts;
 using magic.signals.services;
 using magic.signals.contracts;
+using magic.data.common.contracts;
 using magic.node.extensions.hyperlambda;
 
 namespace magic.data.common.tests
 {
     public static class Common
     {
+        internal class DbSettings : IDataSettings
+        {
+            public string DefaultDatabaseType { get; } = "mysql";
+
+            public string ConnectionString(string name, string databaseType = null) => "foo";
+        }
+
         static public Node Evaluate(string hl, bool config = true)
         {
             var signaler = Initialize(config);
@@ -40,9 +48,7 @@ namespace magic.data.common.tests
             services.AddTransient<ISignaler, Signaler>();
             var types = new SignalsProvider(InstantiateAllTypes<ISlot>(services));
             services.AddTransient<ISignalsProvider>((svc) => types);
-            var mockConfiguration = new Mock<IMagicConfiguration>();
-            mockConfiguration.SetupGet(x => x[It.IsAny<string>()]).Returns("60");
-            services.AddTransient((svc) => mockConfiguration.Object);
+            services.AddTransient<IDataSettings, DbSettings>();
             var provider = services.BuildServiceProvider();
             return provider.GetService<ISignaler>();
         }

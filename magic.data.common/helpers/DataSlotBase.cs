@@ -8,6 +8,7 @@ using magic.node;
 using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
+using magic.data.common.contracts;
 
 namespace magic.data.common.helpers
 {
@@ -17,17 +18,16 @@ namespace magic.data.common.helpers
     public abstract class DataSlotBase : ISlot, ISlotAsync
     {
         readonly string _slot;
-        readonly IMagicConfiguration _configuration;
+        readonly IDataSettings _settings;
 
         /// <summary>
         /// Creates an instance of your type.
         /// </summary>
         /// <param name="slot">Last parts of the name of slot to signal.</param>
-        /// <param name="configuration">Configuration object used to retrieve default database type if no explicit
-        /// database type is supplied in arguments.</param>
-        protected DataSlotBase(string slot, IMagicConfiguration configuration)
+        /// <param name="settings">Configuration object.</param>
+        protected DataSlotBase(string slot, IDataSettings settings)
         {
-            _configuration = configuration;
+            _settings = settings;
             _slot = slot;
         }
 
@@ -38,7 +38,7 @@ namespace magic.data.common.helpers
         /// <param name="input">Arguments to your slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            var databaseType = GetDefaultDatabaseType(_configuration, input);
+            var databaseType = GetDefaultDatabaseType(_settings, input);
             signaler.Signal($"{databaseType}{_slot}", input);
         }
 
@@ -50,17 +50,17 @@ namespace magic.data.common.helpers
         /// <returns>An awaitable task.</returns>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
-            var databaseType = GetDefaultDatabaseType(_configuration, input);
+            var databaseType = GetDefaultDatabaseType(_settings, input);
             await signaler.SignalAsync($"{databaseType}{_slot}", input);
         }
 
         #region [ -- Private helper methods -- ]
 
-        static string GetDefaultDatabaseType(IMagicConfiguration configuration, Node input)
+        static string GetDefaultDatabaseType(IDataSettings settings, Node input)
         {
             var databaseType = 
                 input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
-                configuration["magic:databases:default"];
+                settings.DefaultDatabaseType;
             input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
             return databaseType;
         }

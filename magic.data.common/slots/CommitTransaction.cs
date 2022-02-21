@@ -2,9 +2,9 @@
  * Magic Cloud, copyright Aista, Ltd. See the attached LICENSE file for details.
  */
 
-using magic.node.contracts;
 using magic.signals.contracts;
 using magic.data.common.helpers;
+using magic.data.common.contracts;
 
 namespace magic.data.common.slots
 {
@@ -18,9 +18,9 @@ namespace magic.data.common.slots
         /// <summary>
         /// Creates a new instance of your type.
         /// </summary>
-        /// <param name="configuration">Configuration for your application.</param>
-        public CommitTransaction(IMagicConfiguration configuration)
-            : base(".transaction.commit", configuration)
+        /// <param name="settings">Configuration object.</param>
+        public CommitTransaction(IDataSettings settings)
+            : base(".transaction.commit", settings)
         { }
     }
 }

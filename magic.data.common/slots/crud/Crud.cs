@@ -4,8 +4,8 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using magic.data.common.contracts;
 using magic.node;
-using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 
@@ -21,15 +21,15 @@ namespace magic.data.common.slots.crud
     [Slot(Name = "data.delete")]
     public class Crud : ISlot, ISlotAsync
     {
-        readonly IMagicConfiguration _configuration;
+        readonly IDataSettings _settings;
 
         /// <summary>
         /// Creates a new instance of your type.
         /// </summary>
-        /// <param name="configuration">Configuration for your application.</param>
-        public Crud(IMagicConfiguration configuration)
+        /// <param name="settings">Configuration object.</param>
+        public Crud(IDataSettings settings)
         {
-            _configuration = configuration;
+            _settings = settings;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace magic.data.common.slots.crud
         {
             var databaseType = 
                 input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
-                _configuration["magic:databases:default"];
+                _settings.DefaultDatabaseType;
             input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
             signaler.Signal($"{databaseType}.{GetCrudSlot(input.Name)}", input);
         }
@@ -56,7 +56,7 @@ namespace magic.data.common.slots.crud
         {
             var databaseType = 
                 input.Children.FirstOrDefault(x => x.Name == "database-type")?.GetEx<string>() ??
-                _configuration["magic:databases:default"];
+                _settings.DefaultDatabaseType;
             input.Children.FirstOrDefault(x => x.Name == "database-type")?.UnTie();
             await signaler.SignalAsync($"{databaseType}.{GetCrudSlot(input.Name)}", input);
         }
