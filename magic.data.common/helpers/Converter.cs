@@ -3,6 +3,7 @@
  */
 
 using System;
+using magic.node.extensions;
 
 namespace magic.data.common.helpers
 {
@@ -57,8 +58,7 @@ namespace magic.data.common.helpers
                 case "System.DateTime":
 
                     // Making sure we always return UTC.
-                    var dt = (DateTime)value;
-                    value = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, DateTimeKind.Utc);
+                    value = ((DateTime)value).EnsureUtc();
                     break;
 
                 default:
