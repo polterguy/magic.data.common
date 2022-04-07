@@ -25,48 +25,15 @@ namespace magic.data.common.helpers
              * to make sure we return it in "Hyperlambda style", we convert these values
              * into CLR null values.
              */
-            if (value == null || value is DBNull)
+            if (value is DBNull)
                 return null;
 
             /*
-             * Trying to make sure we as intelligently as possible can handle all different types
-             * that can be returned from any database.
+             * Making sure we associate a timezone with our date, defaulting
+             * to UTC is not specified from database adapter.
              */
-            switch (value.GetType().FullName)
-            {
-                case "System.String":
-                case "System.Byte":
-                case "System.SByte":
-                case "System.Boolean":
-                case "System.Decimal":
-                case "System.Float":
-                case "System.Double":
-                case "System.Single":
-                case "System.Int32":
-                case "System.UInt32":
-                case "System.Int64":
-                case "System.UInt64":
-                case "System.Int16":
-                case "System.UInt16":
-                case "System.Enum":
-                case "System.Byte[]":
-                case "System.Guid":
-
-                    // No conversion required.
-                    break;
-
-                case "System.DateTime":
-
-                    // Making sure we always return UTC.
-                    value = ((DateTime)value).EnsureUtc();
-                    break;
-
-                default:
-
-                    // Returning object as string.
-                    value = value.ToString();
-                    break;
-            }
+            if (value is DateTime date)
+                return date.EnsureTimezone(true);
 
             // Default, no conversion required.
             return value;
