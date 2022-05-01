@@ -90,7 +90,7 @@ namespace magic.data.common.helpers
         /// <param name="input">Node containing value trying to connect to a database</param>
         /// <param name="databaseType">Type of database adapter</param>
         /// <param name="defaultCatalogue">The default catalogue to use if no explicit database was specified</param>
-        /// <param name="configuration">Configuration object from where to retrieve connection string templates</param>
+        /// <param name="settings">Configuration object from where to retrieve connection string templates</param>
         /// <returns>Connection string</returns>
         public static string GetConnectionString(
             Node input,
