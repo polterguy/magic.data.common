@@ -151,8 +151,9 @@ namespace magic.data.common.helpers
         /// <param name="reader">Data reader to retrieve fields from</param>
         /// <param name="parentNode">Node where to return result</param>
         /// <param name="max">Maximum number of records to return</param>
+        /// <param name="converter">Optional method to convert individual values</param>
         /// <returns>True if we should continue building the next result, false otherwise</returns>
-        public static bool BuildResultRow(DbDataReader reader, Node parentNode, ref long max)
+        public static bool BuildResultRow(DbDataReader reader, Node parentNode, ref long max, Func<object, object> converter = null)
         {
             if (max != -1 && max-- == 0)
                 return false; // Reached maximum limit
@@ -162,7 +163,7 @@ namespace magic.data.common.helpers
             {
                 var colNode = new Node(
                     reader.GetName(idxCol),
-                    Converter.GetValue(reader[idxCol]));
+                    converter == null ? Converter.GetValue(reader[idxCol]) : converter(reader[idxCol]));
                 rowNode.Add(colNode);
             }
             parentNode.Add(rowNode);

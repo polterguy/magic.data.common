@@ -28,13 +28,6 @@ namespace magic.data.common.helpers
             if (value is DBNull)
                 return null;
 
-            /*
-             * Making sure we associate a timezone with our date, defaulting
-             * to UTC is not specified from database adapter.
-             */
-            if (value is DateTime date)
-                return date.EnsureTimezone(true);
-
             // Default, no conversion required.
             return value;
         }

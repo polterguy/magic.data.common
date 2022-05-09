@@ -20,15 +20,16 @@ namespace magic.data.common.builders
          * These are the default built in comparison operators, resolving to a function that
          * is responsible for handling a particular comparison operators for you.
          */
-        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string>> _comparisonOperators = CreateDefaultComparisonOperators();
+        readonly static Dictionary<string, Action<StringBuilder, Node, Node, string, DateTimeKind>> _comparisonOperators = CreateDefaultComparisonOperators();
 
         /// <summary>
         /// Creates a new SQL builder.
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        protected SqlWhereBuilder(Node node, string escapeChar)
-            : base(node, escapeChar)
+        /// <param name="kind">Kind of date to convert date to if date is specified in another kind</param>
+        protected SqlWhereBuilder(Node node, string escapeChar, DateTimeKind kind = DateTimeKind.Unspecified)
+            : base(node, escapeChar, kind)
         { }
 
         #region [ -- Public static methods -- ]
@@ -42,7 +43,7 @@ namespace magic.data.common.builders
         /// <param name="functor">Function to invoke once comparison operator is encountered.</param>
         public static void AddComparisonOperator(
             string key,
-            Action<StringBuilder, Node, Node, string> functor)
+            Action<StringBuilder, Node, Node, string, DateTimeKind> functor)
         {
             _comparisonOperators[key] = functor;
         }
@@ -57,11 +58,12 @@ namespace magic.data.common.builders
         /// <param name="colNode">Column node, containing actual comparison condition.</param>
         /// <param name="builder">Where to append the resulting SQL.</param>
         /// <param name="escapeChar">Escape character for table names.</param>
-        public static void AppendArgs(
+        static public void AppendArgs(
             Node args,
             Node colNode,
             StringBuilder builder,
-            string escapeChar)
+            string escapeChar,
+            DateTimeKind kind)
         {
             if (args == null)
             {
@@ -88,7 +90,10 @@ namespace magic.data.common.builders
                 var argNo = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
                 var argName = "@" + argNo;
                 builder.Append(argName);
-                args.Add(new Node(argName, colNode.GetEx<object>()));
+                var val = colNode.GetEx<object>();
+                if (kind != DateTimeKind.Unspecified && val is DateTime dateVal && dateVal.Kind != kind)
+                    val = kind == DateTimeKind.Local ? dateVal.ToLocalTime() : dateVal.ToUniversalTime();
+                args.Add(new Node(argName, val));
             }
         }
 
@@ -230,7 +235,7 @@ namespace magic.data.common.builders
                             .Take(entities.Count() - 1)
                             .Select(x => EscapeColumnName(x)));
                     builder.Append(columnName);
-                    _comparisonOperators[keyword](builder, args, comparison, EscapeChar);
+                    _comparisonOperators[keyword](builder, args, comparison, EscapeChar, Kind);
                     return;
                 }
 
@@ -260,7 +265,7 @@ namespace magic.data.common.builders
             else
             {
                 builder.Append(columnName).Append(" = ");
-                AppendArgs(args, comparison, builder, EscapeChar);
+                AppendArgs(args, comparison, builder, EscapeChar, Kind);
             }
         }
 
@@ -277,9 +282,9 @@ namespace magic.data.common.builders
         /*
          * Creates our default built in comparison operators.
          */
-        static Dictionary<string, Action<StringBuilder, Node, Node, string>> CreateDefaultComparisonOperators()
+        static Dictionary<string, Action<StringBuilder, Node, Node, string, DateTimeKind>> CreateDefaultComparisonOperators()
         {
-            var result = new Dictionary<string, Action<StringBuilder, Node, Node, string>>();
+            var result = new Dictionary<string, Action<StringBuilder, Node, Node, string, DateTimeKind>>();
 
             // Plain default comparison operators.
             foreach (var idx in new (string, string) [] {
@@ -291,7 +296,7 @@ namespace magic.data.common.builders
                 ("lteq", "<="),
                 ("like", "like")})
             {
-                result[idx.Item1] = (builder, args, colNode, escapeChar) => {
+                result[idx.Item1] = (builder, args, colNode, escapeChar, kind) => {
                     if (colNode.Value == null)
                     {
                         switch (idx.Item2)
@@ -311,13 +316,13 @@ namespace magic.data.common.builders
                     else
                     {
                         builder.Append($" {idx.Item2} ");
-                        AppendArgs(args, colNode, builder, escapeChar);
+                        AppendArgs(args, colNode, builder, escapeChar, kind);
                     }
                 };
             }
 
             // Special case for "in" comparison operator.
-            result["in"] = (builder, args, colNode, escapeChar) => {
+            result["in"] = (builder, args, colNode, escapeChar, kind) => {
                 builder.Append(" in (");
                 var argNo = args.Children.Count(x => x.Name.StartsWith("@") && x.Name.Skip(1).First() != 'v');
                 builder.Append(string.Join(",", colNode.Children.Select(x =>

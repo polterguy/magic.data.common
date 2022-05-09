@@ -20,10 +20,12 @@ namespace magic.data.common.builders
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        protected SqlBuilder(Node node, string escapeChar)
+        /// <param name="kind">Kind of date to convert date to if date is specified in another kind</param>
+        protected SqlBuilder(Node node, string escapeChar, DateTimeKind kind)
         {
             Root = node ?? throw new ArgumentNullException(nameof(node));
             EscapeChar = escapeChar ?? throw new ArgumentNullException(nameof(escapeChar));
+            Kind = kind;
         }
 
         /// <summary>
@@ -41,6 +43,11 @@ namespace magic.data.common.builders
         /// Returns the escape character, which is typically " or ` character
         /// </summary>
         protected string EscapeChar { get; private set; }
+
+        /// <summary>
+        /// Returns the escape character, which is typically " or ` character
+        /// </summary>
+        protected DateTimeKind Kind { get; private set; }
 
         /// <summary>
         /// Generic helper method to use an existing SQL builder and return it to caller as an executable SQL.

@@ -20,8 +20,9 @@ namespace magic.data.common.builders
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        public SqlReadBuilder(Node node, string escapeChar)
-            : base(node, escapeChar)
+        /// <param name="kind">Kind of date to convert date to if date is specified in another kind</param>
+        public SqlReadBuilder(Node node, string escapeChar, DateTimeKind kind = DateTimeKind.Unspecified)
+            : base(node, escapeChar, kind)
         { }
 
         /// <summary>

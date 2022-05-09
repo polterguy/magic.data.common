@@ -2,6 +2,7 @@
  * Magic Cloud, copyright Aista, Ltd. See the attached LICENSE file for details.
  */
 
+using System;
 using System.Linq;
 using System.Text;
 using magic.node;
@@ -19,8 +20,9 @@ namespace magic.data.common.builders
         /// </summary>
         /// <param name="node">Root node to generate your SQL from.</param>
         /// <param name="escapeChar">Escape character to use for escaping table names etc.</param>
-        public SqlCreateBuilder(Node node, string escapeChar)
-            : base(node, escapeChar)
+        /// <param name="kind">Kind of date to convert date to if date is specified in another kind</param>
+        public SqlCreateBuilder(Node node, string escapeChar, DateTimeKind kind = DateTimeKind.Unspecified)
+            : base(node, escapeChar, kind)
         { }
 
         /// <summary>
@@ -140,7 +142,10 @@ namespace magic.data.common.builders
                     continue;
                 }
                 builder.Append("@" + idxNo);
-                args.Add(new Node("@" + idxNo, idx.GetEx<object>()));
+                var val = idx.GetEx<object>();
+                if (Kind != DateTimeKind.Unspecified && val is DateTime dateVal && dateVal.Kind != Kind)
+                    val = Kind == DateTimeKind.Local ? dateVal.ToLocalTime() : dateVal.ToUniversalTime();
+                args.Add(new Node("@" + idxNo, val));
                 ++idxNo;
             }
             builder.Append(")");
