@@ -242,9 +242,9 @@ namespace magic.data.common.tests.tests.read
             node.Add(new Node("table", "foo"));
 
             // Adding our custom operator.
-            SqlWhereBuilder.AddComparisonOperator("qwerty", (builder, args, colNode, escapeChar) => {
+            SqlWhereBuilder.AddComparisonOperator("qwerty", (builder, args, colNode, escapeChar, kind) => {
                 builder.Append(" <> ");
-                SqlWhereBuilder.AppendArgs(args, colNode, builder, escapeChar);
+                SqlWhereBuilder.AppendArgs(args, colNode, builder, escapeChar, kind);
             });
 
             var builder = new SqlReadBuilder(node, "'");
