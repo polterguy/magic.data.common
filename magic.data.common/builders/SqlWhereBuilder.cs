@@ -58,6 +58,7 @@ namespace magic.data.common.builders
         /// <param name="colNode">Column node, containing actual comparison condition.</param>
         /// <param name="builder">Where to append the resulting SQL.</param>
         /// <param name="escapeChar">Escape character for table names.</param>
+        /// <param name="kind">Default DateTimeKind to apply unless explicitly given.</param>
         static public void AppendArgs(
             Node args,
             Node colNode,
