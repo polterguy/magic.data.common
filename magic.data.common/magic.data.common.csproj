@@ -10,7 +10,7 @@
     <Description>A generic and dynamic SQL data adapter, allowing you to generate SQL dialects, specific to your database type, such as MySQL or SQL Server. This is the core base class data adapter for Magic. To use package go to https://polterguy.github.io</Description>
     <PackageProjectUrl>https://aista.com</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>14.4.1</PackageVersion>
+    <PackageVersion>14.4.5</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.data.common</RepositoryUrl>
@@ -46,8 +46,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="magic.node.extensions" Version="14.4.1" />
-    <PackageReference Include="magic.signals.contracts" Version="14.4.1" />
+    <PackageReference Include="magic.node.extensions" Version="14.4.5" />
+    <PackageReference Include="magic.signals.contracts" Version="14.4.5" />
   </ItemGroup>
 
 </Project>
