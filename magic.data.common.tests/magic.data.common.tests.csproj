@@ -18,8 +18,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Moq" Version="4.16.1" />
-    <PackageReference Include="magic.signals" Version="14.4.5" />
-    <PackageReference Include="magic.lambda" Version="14.4.5" />
+    <PackageReference Include="magic.signals" Version="14.5.0" />
+    <PackageReference Include="magic.lambda" Version="14.5.0" />
   </ItemGroup>
 
   <ItemGroup>
