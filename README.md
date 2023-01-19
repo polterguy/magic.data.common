@@ -1,22 +1,22 @@
 
-# The common data adapter parts of Magic
+# magic.data.common
 
-This is the generic data adapter, that transform dynamically from a lambda node structure into SQL, and
-polymorphistically invokes your specialised data adapter, resulting in SQL statements executed towards
-your database type of choice. In addition, it contains helper slots to give you more _"raw"_ database
-access, and also slots to help you open database connections, create transactions, execute SQL, etc.
+The magic.data.commonproject is the generic data adapter, that transform dynamically from a lambda node
+structure into SQL, and polymorphistically invokes your specialised data adapter, resulting in SQL
+statements executed towards your database type of choice. In addition, it contains helper slots to give
+you more _"raw"_ database access, in addition to slots helping you to open database connections,
+create transactions, execute SQL, etc.
 
-## [sql.*] slots
+## How to use [sql.*]
 
 These slots never executes SQL towards your data adapter, but rather simply generates your SQL, and
 returns the results of the SQL generation process back to you. They're mostly intended for debugging
 purposes, and/or learning purposes, and can be interchanged with their **[data.xxx]** equivalent,
-and/or their **[mysql.xxx]**/**[mssql.xxx]**/**[pgsql.xxx]** equivalent, etc. In this documentation we
-will mostly be using these slots, but you can substitute our usage of these slots with for
-instance **[data.xxx]** if you wish to actually execute some SQL towards your database adapter of
-choice.
+and/or their **[mysql.xxx]**/**[mssql.xxx]**/**[pgsql.xxx]** equivalent, etc. You can substitute
+these slots with for instance **[data.xxx]** if you wish to actually execute some SQL towards your
+database adapter of choice.
 
-## [data.*] slots
+## How to use [data.*]
 
 All of the **[data.xxx]** slots are actually just polymorphistically evaluating your specialised adapter's
 slots, such as for instance **[data.connect]**, that will invoke **[mysql.connect]** if this is your default
@@ -31,7 +31,7 @@ and you invoke for instance **[data.connect]**, this will transform into an invo
 allowing you to use generic database slot invocations, ignoring your database type, creating the correct
 SQL dialect for you automagically.
 
-### [data.connect]
+### How to use [data.connect]
 
 This slot will open a database connection for you. You can pass in a complete connection string (not recommended),
 or only the database name if you wish. If you pass in only the database name, the generic connection string for your
@@ -49,7 +49,7 @@ data.connect:sakila
 Since the **[data.connect]** slot actually takes a lambda object, you can also add any amount
 of other lambda invocations inside of the lambda object supplied to the slot, allowing you to for instance
 create loops, conditional executions, etc, _inside_ of your invocation to **[data.connect]**. This is also
-true for all other slots taking a lambda object, such as for instance **[data.transaction.create]**, etc.
+true for all other slots taking a lambda object, such as for instance **[data.transaction.create]**.
 Inside your lambda object, an invocation towards your database such as e.g. **[data.read]**, will be
 using this database connection, as long as the type of database is matching. The database connection will
 be kept open, and implicitly used, for the entirety of the lambda object. If you need another database
