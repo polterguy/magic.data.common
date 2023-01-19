@@ -72,7 +72,7 @@ a connection string configuration setting.
 "generic": "Server=localhost\\SQLEXPRESS;Database={database};Trusted_Connection=True;"
 ```
 
-### [data.select]
+### How to use [data.select]
 
 This slot allows you to pass in any arbitrary SQL you wish, and evaluate it to a `DataReader`, and return
 all records as a lambda object. You can find an example below.
@@ -140,7 +140,7 @@ Which would result in something resembling the following.
             field2:bar2
 ```
 
-### [data.scalar]
+### How to use [data.scalar]
 
 This slot is similar to the **[data.select]** slot, but will only return one value as the
 value of its node after execution. This slot is typically used for aggregate results. You can see
@@ -160,7 +160,7 @@ data.connect
 
 Yet again you should prefer the **[data.\*]** slots if you can.
 
-### [data.execute]
+### How to use [data.execute]
 
 This slot should be used if you don't expect any type of result at all, such as in for instance
 delete or update invocations, where you don't care about the result of the operation. You can
@@ -214,7 +214,7 @@ A transaction typically follows your connection, implying to count items
 after the transaction has been rolled back, we'll need a _new_ connection, as the
 above example illustrates.
 
-## [sql.*] slots
+## How to use [sql.*] slots
 
 All of these slots simply generates SQL for you, using the _generic_ SQL dialect syntax,
 which might or might not work for your database adapter of choice. This allows you to create
@@ -229,7 +229,7 @@ as configured in your _"appsettings.json"_ file.
 Hence, the documentation for these slots is also the documentation for your **[data.\*]**
 slots.
 
-### [sql.create]
+### How to use [sql.create]
 
 This slot will generate the SQL necessary to insert a record into a database for you. Besides the table
 argument, this slot can only be given one argument, which is __[values]__. Below is an example of usage.
@@ -259,7 +259,7 @@ The slot will in its specialized implementations return the ID of the inserted r
 unless you explicitly parametrize it with a **[return-id]** argument and set its value to boolean
 `false`.
 
-### [sql.read]
+### How to use [sql.read]
 
 This slot requires only one mandatory argument, being your table name. The slot creates a select
 SQL statement for you. An example can be found below.
@@ -658,7 +658,7 @@ select count(*) from 'table1' group by 'table1'.'foo1','table1'.'foo2'
 You can of course combine your **[group]** arguments with **[where]** arguments, and **[join]** arguments,
 allowing you to create complex aggregate results, statistics, joining multiple tables, etc.
 
-### [sql.update]
+### How to use [sql.update]
 
 This slot allows you to update one or more records, in a specified **[table]**. Just like create, it requires
 one mandatory argument, being **[values]**, implying columns/values you wish to update. This slot also takes
@@ -683,7 +683,7 @@ sql.update:update 'table1' set 'field1' = @v0
 be updated - Which is highly unlikely what your intentions are. Hence, make sure you apply a
 **[where]** argument as you invoke this slot.
 
-### [sql.delete]
+### How to use [sql.delete]
 
 This slot is for deleting records. Its **[where]** argument is applied in a similar fashion as the where
 argument to **[sql.select]** and **[sql.update]**. You can find an example further down in this document of
