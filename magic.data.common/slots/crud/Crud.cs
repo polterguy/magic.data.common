@@ -19,6 +19,7 @@ namespace magic.data.common.slots.crud
     [Slot(Name = "data.read")]
     [Slot(Name = "data.update")]
     [Slot(Name = "data.delete")]
+    [Slot(Name = "data.scan")]
     public class Crud : ISlot, ISlotAsync
     {
         readonly IDataSettings _settings;
