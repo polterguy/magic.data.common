@@ -118,18 +118,28 @@ namespace magic.data.common.builders
                 var first = true;
                 foreach (var idx in orderNodes)
                 {
-                    foreach (var idxCol in idx.GetEx<string>().Split(','))
+                    var colName = idx.GetEx<string>();
+                    if (colName.Contains("("))
                     {
-                        if (first)
-                            first = false;
-                        else
-                            builder.Append(",");
-                        builder
-                            .Append(EscapeTypeName(idxCol.Trim()))
-                            .Append(" ")
-                            .Append(idx.Children
-                                .FirstOrDefault(x => x.Name == "direction")?
-                                .GetEx<string>() ?? defaultDirection);
+                        builder.Append(colName).Append(" ").Append(idx.Children
+                                    .FirstOrDefault(x => x.Name == "direction")?
+                                    .GetEx<string>() ?? defaultDirection);
+                    }
+                    else
+                    {
+                        foreach (var idxCol in colName.Split(','))
+                        {
+                            if (first)
+                                first = false;
+                            else
+                                builder.Append(",");
+                            builder
+                                .Append(EscapeTypeName(idxCol.Trim()))
+                                .Append(" ")
+                                .Append(idx.Children
+                                    .FirstOrDefault(x => x.Name == "direction")?
+                                    .GetEx<string>() ?? defaultDirection);
+                        }
                     }
                 }
             }
