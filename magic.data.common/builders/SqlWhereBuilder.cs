@@ -310,6 +310,10 @@ namespace magic.data.common.builders
                                 builder.Append(" is not null");
                                 break;
 
+                            case "like":
+                                builder.Append(" like '%'");
+                                break;
+
                             default:
                                 throw new HyperlambdaException($"{idx.Item2} is an unsupported comparison operator for null value");
                         }
